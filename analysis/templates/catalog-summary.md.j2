@@ -1,3 +1,23 @@
+{#
+  Template: catalog-summary.md.j2
+  Purpose: Present a high-level overview of the service catalog, distributions,
+           and spotlight details for quick stakeholder review.
+
+  Inputs (context):
+  - generated_at: ISO timestamp
+  - catalog: full catalog object (metadata + services)
+  - services: list of service objects from catalog.services
+  - total_services: integer
+  - domains: mapping domain -> count
+  - maturities: mapping maturity -> count
+  - runtimes: mapping runtime -> count
+
+  Expected filters/macros:
+  - format_date, format_number, status_badge, average
+
+  Output: GitHub-flavored Markdown (GFM)
+  Rendered by: scripts/render_report.py
+#}
 # 📋 Service Catalog Summary
 
 **Generated:** {{ generated_at | format_date }}

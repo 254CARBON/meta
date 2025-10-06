@@ -1,3 +1,17 @@
+<!--
+This README is the living specification and operator guide for the 254Carbon Meta repository.
+It outlines goals, responsibilities, file layout, data models, workflows, and how the pieces
+fit together. The structure below is intentionally comprehensive to support onboarding,
+automation agents, and humans alike. When updating major repo features, prefer updating
+the corresponding section here to keep documentation and code in lockstep.
+
+Authoring notes:
+- Keep examples realistic and runnable when possible.
+- Link to concrete files (schemas, scripts, workflows) by path.
+- Prefer describing intent and invariants over implementation details that change often.
+- Treat this document as the single source of truth for repo semantics and interfaces.
+-->
+
 
 # 254Carbon Meta Repository (`254carbon-meta`)
 
@@ -274,6 +288,34 @@ Automatic PRs (if enabled by `upgrade-policies.yaml`) for:
 - Patch library updates
 - Renovate / automation synergy (meta acts as orchestrator)
 
+Spec index backend options (detect_drift.SpecRegistry):
+- `static` (default): in-memory sample index for offline/dev usage.
+- `file`: load JSON index from a local file.
+
+Configure via environment variables:
+- `SPECS_BACKEND`: `static` or `file` (default: `static`).
+- `SPECS_INDEX_FILE`: path to a JSON index when using `file` backend.
+
+Programmatic usage:
+- `SpecRegistry(backend='file', backend_config={'path': 'path/to/specs-index.json'})`
+- Custom backends can be supplied by passing an instance with `fetch_index(specs_repo)`.
+
+Backends
+
+| Backend | Description | Configure | Notes |
+|--------|-------------|-----------|-------|
+| `static` | In-memory sample index for offline/dev work | Default (no env needed) | Matches examples in tests and docs |
+| `file` | Load JSON index from local path | `SPECS_BACKEND=file`, `SPECS_INDEX_FILE=/path/to/index.json` | Great for CI pinning or air‑gapped runs |
+
+Example JSON index
+
+```
+{
+  "gateway-core": { "latest_version": "1.2.0", "description": "Core gateway API" },
+  "auth-spec":    { "latest_version": "3.0.0", "description": "Authentication spec" }
+}
+```
+
 ---
 
 ## 8. Quality Metrics Aggregation
@@ -549,20 +591,281 @@ Introduce new drift rule:
 
 | Stage | Capability | Status |
 |-------|------------|--------|
-| M1 | Basic catalog aggregation | Complete (baseline) |
-| M2 | Dependency direction enforcement | In progress |
-| M3 | Drift detection (spec & manifest) | In progress |
-| M4 | Quality scoring composite | Planned |
-| M5 | Auto upgrade PRs (minor specs / patches) | Planned |
-| M6 | Release train orchestration | Planned |
-| M7 | AI risk-aware task planner | Future |
-| M8 | SLA / SLO ingestion (observability link) | Future |
-| M9 | Cross-domain change impact analysis | Future |
-| M10 | Architecture evolution suggestions | Future |
+| M1 | Basic catalog aggregation | ✅ Complete (baseline) |
+| M2 | Dependency direction enforcement | ✅ Complete |
+| M3 | Drift detection (spec & manifest) | ✅ Complete |
+| M4 | Quality scoring composite | ✅ Complete |
+| M5 | Auto upgrade PRs (minor specs / patches) | ✅ Complete |
+| M6 | Release train orchestration | ✅ Complete |
+| M7 | AI risk-aware task planner | ✅ Complete |
+| M8 | SLA / SLO ingestion (observability link) | ✅ Complete |
+| M9 | Cross-domain change impact analysis | ✅ Complete |
+| M10 | Architecture evolution suggestions | ✅ Complete |
+
+## 21. M4-M10 Feature Documentation
+
+### M4: Quality Scoring Composite
+
+**Scripts:** `scripts/compute_quality.py`, `workflows/github/quality-aggregate.yml`
+
+**Features:**
+- Composite quality scoring using weighted algorithm (0-100 scale)
+- Maturity-specific score adjustments
+- Quality grade calculation (A-F)
+- Platform-wide quality statistics
+- Automated quality trend analysis
+
+**Quality Algorithm:**
+```
+base_score = 50
++ (coverage * coverage_weight * 100)
++ (security_score * security_weight * 100)
++ (policy_bonus if all_policies_pass else 0)
++ (stability_score * stability_weight * 100)
+- (drift_penalty_per_issue * drift_issue_count)
+```
+
+**Usage:**
+```bash
+# Compute quality scores
+meta quality compute
+
+# Generate quality dashboard
+meta report render --report-type quality --input-file catalog/latest_quality_snapshot.json
+```
+
+### M5: Automated Upgrade PRs
+
+**Scripts:** `scripts/generate_upgrade_pr.py`, `workflows/github/auto-upgrade.yml`
+
+**Features:**
+- Automated GitHub PR creation for spec upgrades
+- Batch upgrade processing with concurrency control
+- Risk assessment before PR creation
+- Auto-merge capability for patch upgrades
+- Upgrade tracking and monitoring
+
+**PR Types:**
+- **Patch upgrades:** Fully automated, auto-merge eligible
+- **Minor upgrades:** Automated with CI validation
+- **Major upgrades:** Manual review required
+
+**Usage:**
+```bash
+# Plan upgrades
+meta upgrade plan --dry-run
+
+# Generate upgrade PR for specific service
+meta upgrade generate --service gateway --spec-version gateway-core@1.2.0
+```
+
+### M6: Release Train Orchestration
+
+**Scripts:** `scripts/plan_release_train.py`, `scripts/execute_release_train.py`
+
+**Features:**
+- Multi-service release coordination
+- Quality gate validation
+- Spec version alignment checking
+- Sequential/wave-based rollout
+- Post-release verification
+
+**Release Train Lifecycle:**
+1. **Planning:** Define participants, gates, dependencies
+2. **Validation:** Check all prerequisites met
+3. **Staging:** Prepare releases, create tags
+4. **Execution:** Coordinated rollout across services
+5. **Verification:** Health checks and monitoring
+
+**Usage:**
+```bash
+# Plan release train
+meta release plan --train Q4-curve-upgrade
+
+# Execute release train (manual trigger)
+# (Would be implemented in execute_release_train.py)
+```
+
+### M7: AI Risk-Aware Task Planner
+
+**Scripts:** `scripts/generate_agent_context.py`, `scripts/assess_risk.py`
+
+**Features:**
+- Comprehensive AI agent context bundles
+- Service risk scoring and assessment
+- Change impact prediction
+- Safe vs forbidden operation definitions
+- Automated task opportunity identification
+
+**Context Bundle Contents:**
+- Service catalog distillation
+- Domain architecture mapping
+- Drift hotspots and risk cues
+- Policy reminders and guidelines
+- Task opportunities and priorities
+
+**Usage:**
+```bash
+# Generate AI agent context
+meta agent-context generate
+
+# Assess service risk
+meta risk assess --service gateway --change-type spec_upgrade
+```
+
+### M8: SLA/SLO Ingestion (Observability Link)
+
+**Scripts:** `scripts/ingest_observability.py`
+
+**Features:**
+- Integration with Prometheus, Datadog, and other observability systems
+- SLA/SLO metric collection (availability, latency, error rates)
+- Compliance percentage calculation
+- Service performance monitoring
+- Alert correlation with platform health
+
+**Metrics Collected:**
+- Availability percentage (uptime %)
+- Latency metrics (p50, p95, p99)
+- Error rates and throughput
+- Resource utilization (CPU, memory)
+- SLO compliance status
+
+**Usage:**
+```bash
+# Ingest observability data
+meta observability ingest --system prometheus
+
+# Ingest for specific service
+meta observability ingest --service gateway
+```
+
+### M9: Cross-Domain Change Impact Analysis
+
+**Scripts:** `scripts/analyze_impact.py`, `workflows/github/impact-analysis.yml`
+
+**Features:**
+- PR-triggered impact analysis
+- Blast radius calculation
+- Risk level assessment for changes
+- Affected service identification
+- Testing scope recommendations
+
+**Analysis Types:**
+- **Direct Impact:** Services directly depending on changed service
+- **Transitive Impact:** Services indirectly affected
+- **Domain Impact:** All services in affected domains
+- **Contract Impact:** Services using changed APIs/events
+
+**Usage:**
+```bash
+# Analyze PR impact
+meta impact analyze --pr 123
+
+# Generate impact report
+meta report render --report-type dependency --input-file analysis/reports/impact/pr-123_latest_impact.json
+```
+
+### M10: Architecture Evolution Suggestions
+
+**Scripts:** `scripts/analyze_architecture.py`
+
+**Features:**
+- Architectural anti-pattern detection
+- Service coupling analysis
+- Domain boundary violation identification
+- Refactoring opportunity suggestions
+- Architecture health scoring
+
+**Anti-patterns Detected:**
+- Circular dependencies
+- Excessive fan-out (too many dependencies)
+- Excessive fan-in (too many dependents)
+- Domain pollution (mixed concerns)
+- God services (too many responsibilities)
+
+**Usage:**
+```bash
+# Analyze architecture
+meta architecture suggest
+
+# Generate architecture report
+meta report render --report-type dependency --input-file analysis/reports/architecture/latest_architecture_health.json
+```
+
+## 22. Advanced Operations
+
+### Unified CLI Interface
+
+The `scripts/meta_cli.py` provides a single command-line interface for all meta operations:
+
+```bash
+# Platform overview
+meta status
+
+# Catalog operations
+meta catalog build
+meta catalog validate
+
+# Quality operations
+meta quality compute
+
+# Drift operations
+meta drift detect
+
+# Upgrade operations
+meta upgrade plan --service gateway
+meta upgrade generate --service gateway --spec-version gateway-core@1.2.0
+
+# Release operations
+meta release plan --train Q4-curve-upgrade
+
+# AI operations
+meta agent-context generate
+meta risk assess --service gateway --change-type spec_upgrade
+
+# Impact analysis
+meta impact analyze --pr 123
+
+# Architecture analysis
+meta architecture suggest
+
+# Observability
+meta observability ingest --system prometheus
+
+# Reporting
+meta report render --report-type quality --input-file catalog/latest_quality_snapshot.json
+```
+
+### Configuration Management
+
+All features are configuration-driven:
+
+- **`config/rules.yaml`:** Validation rules and policies
+- **`config/thresholds.yaml`:** Quality and drift thresholds
+- **`config/upgrade-policies.yaml`:** Automated upgrade rules
+- **System-specific configs:** `config/observability-{system}.yaml`
+
+### Integration Points
+
+**GitHub Actions Integration:**
+- Automated workflows for catalog building, quality computation, drift detection
+- PR-triggered impact analysis
+- Release train orchestration
+
+**External System Integration:**
+- GitHub API for PR management and repository operations
+- Observability platforms (Prometheus, Datadog) for metrics collection
+- Spec repositories for version management
+
+**AI Agent Integration:**
+- Context bundles for autonomous operations
+- Risk assessment for safe decision making
+- Task opportunity identification
 
 ---
 
-## 21. Contribution Workflow
+## 23. Contribution Workflow
 
 1. Open issue describing: feature, rule extension, scoring change.
 2. Branch name:  

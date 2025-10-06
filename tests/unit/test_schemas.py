@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Test Suite: Schema Validation
+# Purpose: Sanity-check regex patterns and required fields for schemas
+# Maintenance tips: Prefer minimal embedded schemas; avoid coupling to repo files
 """
 Unit tests for schema validation.
 """

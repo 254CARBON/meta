@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Test Suite: Catalog Building
+# Purpose: Validate manifest loading, catalog assembly, and schema/field checks
+# Maintenance tips: Keep schema fixtures minimal; prefer mocking filesystem paths
 """
 Unit tests for catalog building functionality.
 """

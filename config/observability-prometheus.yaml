@@ -1,0 +1,82 @@
+# 254Carbon Meta Repository - Prometheus Observability Configuration
+#
+# Configuration for ingesting metrics from Prometheus monitoring system.
+
+prometheus:
+  base_url: "http://prometheus:9090"
+  auth_token: null
+  timeout: 30
+
+metrics:
+  # Service availability query
+  availability_query: |
+    up{service="$service", namespace="254carbon"}
+
+  # Request latency query (p95)
+  latency_query: |
+    histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{service="$service", namespace="254carbon"}[5m]))
+
+  # Error rate query
+  error_rate_query: |
+    rate(http_requests_total{service="$service", status=~"5..", namespace="254carbon"}[5m])
+    /
+    rate(http_requests_total{service="$service", namespace="254carbon"}[5m])
+
+  # Request throughput query
+  throughput_query: |
+    rate(http_requests_total{service="$service", namespace="254carbon"}[5m])
+
+  # CPU utilization query
+  cpu_query: |
+    rate(container_cpu_usage_seconds_total{pod=~"$service-.*", namespace="254carbon"}[5m])
+    /
+    rate(container_spec_cpu_quota{pod=~"$service-.*", namespace="254carbon"}[5m])
+    * 100
+
+  # Memory utilization query
+  memory_query: |
+    container_memory_usage_bytes{pod=~"$service-.*", namespace="254carbon"}
+    /
+    container_spec_memory_limit_bytes{pod=~"$service-.*", namespace="254carbon"}
+    * 100
+
+slo_config:
+  # Service Level Objective targets
+  availability_target: 99.9    # 99.9% uptime
+  latency_target_p95: 100      # 100ms p95 latency
+  error_rate_target: 0.1       # 0.1% error rate
+
+# Service-specific overrides
+service_overrides:
+  gateway:
+    availability_query: |
+      up{service="gateway", namespace="254carbon"}
+    latency_query: |
+      histogram_quantile(0.95, rate(gateway_request_duration_seconds_bucket[5m]))
+
+  streaming:
+    availability_query: |
+      up{service="streaming", namespace="254carbon"}
+    throughput_query: |
+      rate(streaming_messages_total{service="streaming", namespace="254carbon"}[5m])
+
+# Query optimization
+query_optimization:
+  # Cache query results for frequently accessed metrics
+  enable_caching: true
+  cache_ttl_seconds: 300
+
+  # Parallel query execution for multiple services
+  enable_parallel: true
+  max_concurrent_queries: 10
+
+# Alert integration
+alerts:
+  # Automatically create alerts for SLO breaches
+  enable_slo_alerts: true
+
+  # Alert when services are down for extended periods
+  downtime_alert_threshold_minutes: 5
+
+  # Alert when error rates exceed threshold
+  error_rate_alert_threshold: 1.0

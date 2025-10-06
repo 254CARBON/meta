@@ -1,0 +1,151 @@
+name: AI Agent Context Generation
+
+on:
+  # Trigger after catalog, quality, or drift updates
+  workflow_run:
+    workflows: ["Build Service Catalog", "Quality Metrics Aggregation", "Drift Detection"]
+    types:
+      - completed
+
+  # Manual trigger for immediate context refresh
+  workflow_dispatch:
+    inputs:
+      force_refresh:
+        description: 'Force refresh even if no changes detected'
+        required: false
+        default: false
+        type: boolean
+
+  # Trigger on catalog changes
+  push:
+    branches: [ main ]
+    paths: [ 'catalog/**' ]
+
+  # Trigger on configuration changes
+  push:
+    branches: [ main ]
+    paths: [ 'config/**', 'scripts/generate_agent_context.py' ]
+
+jobs:
+  generate-agent-context:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Check if context needs refresh
+      id: check_refresh
+      run: |
+        # Check if any relevant files have changed since last context generation
+        if [ "${{ github.event.inputs.force_refresh }}" == "true" ]; then
+          echo "needs_refresh=true" >> $GITHUB_OUTPUT
+          echo "reason=Manual force refresh requested" >> $GITHUB_OUTPUT
+        else
+          # Check for changes in catalog, quality, or drift data
+          if git diff --quiet HEAD~1..HEAD catalog/ analysis/reports/drift/ catalog/quality-snapshot.json 2>/dev/null; then
+            echo "needs_refresh=false" >> $GITHUB_OUTPUT
+            echo "reason=No relevant changes detected" >> $GITHUB_OUTPUT
+          else
+            echo "needs_refresh=true" >> $GITHUB_OUTPUT
+            echo "reason=Relevant data files have changed" >> $GITHUB_OUTPUT
+          fi
+        fi
+
+    - name: Generate AI agent context
+      if: steps.check_refresh.outputs.needs_refresh == 'true'
+      run: |
+        python scripts/generate_agent_context.py
+
+    - name: Upload context bundle
+      if: steps.check_refresh.outputs.needs_refresh == 'true'
+      uses: actions/upload-artifact@v3
+      with:
+        name: agent-context-${{ github.run_id }}
+        path: |
+          ai/global-context/
+          ai/global-context/agent-context.json
+          ai/global-context/agent-guidelines.md
+          ai/global-context/task-opportunities.md
+        retention-days: 30
+
+    - name: Validate context bundle
+      if: steps.check_refresh.outputs.needs_refresh == 'true'
+      run: |
+        python scripts/validate_agent_context.py
+
+    - name: Commit context updates
+      if: steps.check_refresh.outputs.needs_refresh == 'true'
+      run: |
+        git config --local user.email "254carbon-meta@github-actions.com"
+        git config --local user.name "254Carbon Meta Bot"
+
+        # Check if there are context-related changes
+        if git diff --quiet ai/global-context/; then
+          echo "No context changes to commit"
+          exit 0
+        fi
+
+        git add ai/global-context/
+        git commit -m "🤖 Update AI agent context bundle
+
+        Generated fresh context for AI agents
+        Generated: $(date -u +%Y-%m-%dT%H:%M:%SZ)
+        Run: ${{ github.run_id }}
+
+        Includes: service catalog, quality metrics, drift analysis, risk cues"
+
+        git push
+
+    - name: Skip context generation
+      if: steps.check_refresh.outputs.needs_refresh == 'false'
+      run: |
+        echo "⏭️ Context generation skipped: ${{ steps.check_refresh.outputs.reason }}"
+
+  context-validation:
+    runs-on: ubuntu-latest
+    needs: generate-agent-context
+    if: needs.generate-agent-context.result == 'success'
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Download context bundle
+      uses: actions/download-artifact@v3
+      with:
+        name: agent-context-${{ github.run_id }}
+        path: temp-context/
+
+    - name: Validate context schema
+      run: |
+        python scripts/validate_context_schema.py
+
+    - name: Test context usability
+      run: |
+        python scripts/test_agent_context.py
+
+    - name: Generate context summary
+      run: |
+        python scripts/generate_context_summary.py > context-summary.md
+
+    - name: Upload context summary
+      uses: actions/upload-artifact@v3
+      with:
+        name: context-summary-${{ github.run_id }}
+        path: context-summary.md
+        retention-days: 7

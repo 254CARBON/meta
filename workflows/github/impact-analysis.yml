@@ -1,0 +1,123 @@
+name: Impact Analysis
+
+on:
+  # Trigger on pull requests to service repositories
+  pull_request:
+    branches: [ main ]
+    types: [ opened, synchronize, reopened ]
+
+  # Trigger on pushes to main (for testing)
+  push:
+    branches: [ main ]
+    paths: [ 'scripts/analyze_impact.py', 'config/**' ]
+
+  # Manual trigger for specific PR analysis
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'Pull request number to analyze'
+        required: true
+        type: integer
+      comment_pr:
+        description: 'Post analysis as PR comment'
+        required: false
+        default: true
+        type: boolean
+
+jobs:
+  analyze-impact:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Determine PR number
+      id: pr_info
+      run: |
+        if [ "${{ github.event.inputs.pr_number }}" != "" ]; then
+          echo "pr_number=${{ github.event.inputs.pr_number }}" >> $GITHUB_OUTPUT
+        elif [ "${{ github.event.pull_request.number }}" != "" ]; then
+          echo "pr_number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
+        else
+          # This shouldn't happen, but handle gracefully
+          echo "pr_number=0" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Analyze PR impact
+      if: steps.pr_info.outputs.pr_number != '0'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        python scripts/analyze_impact.py \
+          --pr ${{ steps.pr_info.outputs.pr_number }} \
+          --output-file impact-analysis-${{ steps.pr_info.outputs.pr_number }}.json
+
+    - name: Upload impact analysis
+      if: steps.pr_info.outputs.pr_number != '0'
+      uses: actions/upload-artifact@v3
+      with:
+        name: impact-analysis-${{ github.run_id }}
+        path: |
+          impact-analysis-${{ steps.pr_info.outputs.pr_number }}.json
+          analysis/reports/impact-analysis.log
+        retention-days: 30
+
+    - name: Generate impact report
+      if: steps.pr_info.outputs.pr_number != '0'
+      run: |
+        python scripts/render_report.py \
+          --report-type dependency \
+          --input-file impact-analysis-${{ steps.pr_info.outputs.pr_number }}.json \
+          --output-file impact-report.md
+
+    - name: Post impact analysis as PR comment
+      if: github.event.inputs.comment_pr == 'true' && steps.pr_info.outputs.pr_number != '0'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        python scripts/post_impact_comment.py \
+          --pr ${{ steps.pr_info.outputs.pr_number }} \
+          --report-file impact-report.md
+
+    - name: Set PR labels based on impact
+      if: steps.pr_info.outputs.pr_number != '0'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        python scripts/set_impact_labels.py \
+          --pr ${{ steps.pr_info.outputs.pr_number }} \
+          --analysis-file impact-analysis-${{ steps.pr_info.outputs.pr_number }}.json
+
+    - name: Request reviewers based on impact
+      if: steps.pr_info.outputs.pr_number != '0'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        python scripts/request_impact_reviewers.py \
+          --pr ${{ steps.pr_info.outputs.pr_number }} \
+          --analysis-file impact-analysis-${{ steps.pr_info.outputs.pr_number }}.json
+
+    - name: Archive impact data
+      if: steps.pr_info.outputs.pr_number != '0'
+      run: |
+        # Move impact analysis to historical data
+        mkdir -p analysis/historical/impact
+        timestamp=$(date +%Y%m%d_%H%M%S)
+        mv impact-analysis-${{ steps.pr_info.outputs.pr_number }}.json "analysis/historical/impact/pr-${{ steps.pr_info.outputs.pr_number }}_${timestamp}_analysis.json"

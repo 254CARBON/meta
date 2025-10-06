@@ -1,0 +1,173 @@
+#
+# GitHub Actions workflow: Quality Metrics Aggregation
+# Purpose: Computes and aggregates per-service quality signals and posts summaries.
+# Triggers: nightly schedule, manual dispatch, and post-catalog build/validation.
+#
+name: Quality Metrics Aggregation
+
+on:
+  # Nightly run at 3 AM UTC
+  schedule:
+    - cron: '0 3 * * *'
+
+  # Manual trigger for immediate quality check
+  workflow_dispatch:
+    inputs:
+      create_issues:
+        description: 'Create GitHub issues for failing services'
+        required: false
+        default: true
+        type: boolean
+      post_summary:
+        description: 'Post summary to Slack/Discord'
+        required: false
+        default: false
+        type: boolean
+
+  # Trigger after catalog updates
+  workflow_run:
+    workflows: ["Build Service Catalog", "Validate Service Catalog"]
+    types:
+      - completed
+
+  # Trigger on drift detection completion
+  workflow_run:
+    workflows: ["Drift Detection"]
+    types:
+      - completed
+
+jobs:
+  compute-quality:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Full history for trend analysis
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Compute quality scores
+      run: |
+        python scripts/compute_quality.py
+
+    - name: Upload quality snapshot
+      uses: actions/upload-artifact@v3
+      with:
+        name: quality-snapshot-${{ github.run_id }}
+        path: |
+          catalog/quality-snapshot.json
+          catalog/latest_quality_snapshot.json
+          catalog/quality-computation.log
+        retention-days: 30
+
+    - name: Analyze quality trends
+      run: |
+        python scripts/analyze_quality_trends.py
+
+    - name: Generate quality report
+      run: |
+        python scripts/render_report.py \
+          --report-type quality \
+          --input-file catalog/latest_quality_snapshot.json \
+          --output-file quality-report.md
+
+    - name: Create issues for failing services
+      if: github.event.inputs.create_issues == 'true' || github.event_name == 'schedule'
+      run: |
+        python scripts/create_quality_issues.py
+
+    - name: Comment on recent PRs with quality changes
+      run: |
+        python scripts/comment_quality_changes.py
+
+    - name: Post summary to Slack/Discord
+      if: github.event.inputs.post_summary == 'true'
+      env:
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      run: |
+        python scripts/post_quality_summary.py
+
+    - name: Archive quality data
+      run: |
+        # Move current snapshot to historical data
+        mkdir -p analysis/historical/quality
+        timestamp=$(date +%Y%m%d_%H%M%S)
+        cp catalog/quality-snapshot.json "analysis/historical/quality/quality_${timestamp}.json"
+
+    - name: Commit quality updates
+      run: |
+        git config --local user.email "254carbon-meta@github-actions.com"
+        git config --local user.name "254Carbon Meta Bot"
+
+        # Check if there are quality-related changes
+        if git diff --quiet catalog/quality-snapshot.json; then
+          echo "No quality changes to commit"
+          exit 0
+        fi
+
+        git add catalog/quality-snapshot.json catalog/latest_quality_snapshot.json
+        git commit -m "🤖 Update quality metrics
+
+        Automated quality score computation
+        Generated: $(date -u +%Y-%m-%dT%H:%M:%SZ)
+        Run: ${{ github.run_id }}"
+
+        git push
+
+  quality-summary:
+    runs-on: ubuntu-latest
+    needs: compute-quality
+    if: github.event_name == 'schedule' || github.event.inputs.post_summary == 'true'
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Download quality snapshot
+      uses: actions/download-artifact@v3
+      with:
+        name: quality-snapshot-${{ github.run_id }}
+        path: temp/
+
+    - name: Generate executive summary
+      run: |
+        # Create a concise summary for notifications
+        python scripts/generate_quality_summary.py > quality-executive-summary.md
+
+    - name: Post to Slack
+      if: env.SLACK_WEBHOOK != ''
+      env:
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+      run: |
+        python scripts/post_to_slack.py \
+          --webhook "$SLACK_WEBHOOK" \
+          --file quality-executive-summary.md \
+          --channel "#platform-health"
+
+    - name: Post to Discord
+      if: env.DISCORD_WEBHOOK != ''
+      env:
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      run: |
+        python scripts/post_to_discord.py \
+          --webhook "$DISCORD_WEBHOOK" \
+          --file quality-executive-summary.md \
+          --username "254Carbon Meta" \
+          --avatar "https://github.com/254carbon.png"

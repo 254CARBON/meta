@@ -1,3 +1,28 @@
+{#
+  Template: drift-report.md.j2
+  Purpose: Render a human-friendly drift detection report in Markdown, summarizing
+           issues, severity, recommendations, and high-level platform signals.
+
+  Inputs (context):
+  - generated_at: ISO timestamp of report generation
+  - report: object with keys:
+      metadata:
+        catalog_timestamp: ISO timestamp for catalog snapshot
+        total_services: integer
+        overall_healthy: boolean
+        total_issues: integer
+      summary:
+        issues_by_severity: { high, moderate, low, error }
+        issues_by_type: mapping of issue_type -> count
+      issues: list of issues with fields:
+        service, type, severity, description, current_value, expected_value, remediation
+
+  Expected filters/macros:
+  - format_date, severity_icon, format_number (provided by renderer)
+
+  Output: GitHub-flavored Markdown (GFM)
+  Rendered by: scripts/render_report.py
+#}
 # 🔍 Drift Detection Report
 
 **Generated:** {{ generated_at | format_date }}

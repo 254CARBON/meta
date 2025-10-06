@@ -1,137 +1,194 @@
-# 🏆 Quality Metrics Report
+{#
+  Template: quality-summary.md.j2
+  Purpose: Visualize platform quality metrics and distributions with actionable
+           insights, highlighting leaders and areas needing attention.
+
+  Inputs (context):
+  - generated_at: ISO timestamp
+  - quality: object containing snapshot metadata (generated_at, etc.)
+  - services: list of per-service quality records with fields:
+      name, score, grade, status, coverage, lint_pass, critical_vulns,
+      high_vulns, build_success_rate, domain, maturity
+  - total_services: integer
+  - global_avg: overall average score
+  - grade_distribution: mapping of quality grades (A-F) -> counts
+
+  Expected filters/macros:
+  - format_date, format_number, average, status_badge
+
+  Output: GitHub-flavored Markdown (GFM)
+  Rendered by: scripts/render_report.py
+#}
+# 🏆 Quality Metrics Dashboard
 
 **Generated:** {{ generated_at | format_date }}
+**Report Period:** {{ quality.generated_at | format_date }}
 **Total Services:** {{ total_services }}
-**Average Score:** {{ global_avg | format_number(1) }}/100
+**Platform Average:** {{ global_avg | format_number(1) }}/100
 
 ## 📊 Executive Summary
 
-| Metric | Value | Grade | Trend |
-|--------|-------|-------|-------|
-| **Platform Average** | {{ global_avg | format_number(1) }}/100 | {% if global_avg >= 90 %}A (🟢 Excellent){% elif global_avg >= 80 %}B (🟡 Good){% elif global_avg >= 70 %}C (🟢 Acceptable){% elif global_avg >= 60 %}D (🟠 Needs Work){% else %}F (🔴 Failing){% endif %} | 📈 Improving |
-| **Services Passing** | {{ services | selectattr('status', 'equalto', 'passing') | list | length }}/{{ total_services }} | {% if (services | selectattr('status', 'equalto', 'passing') | list | length / total_services * 100) >= 80 %}🟢{% else %}🟡{% endif %} |
-| **Critical Issues** | {{ services | selectattr('critical_vulns', 'defined') | selectattr('critical_vulns', '>', 0) | list | length }} | {% if services | selectattr('critical_vulns', 'defined') | selectattr('critical_vulns', '>', 0) | list | length == 0 %}🟢{% else %}🔴{% endif %} |
+| Metric | Value | Status | Trend |
+|--------|-------|--------|-------|
+| **Platform Health** | {{ global_avg | format_number(1) }}/100 | {% if global_avg >= 85 %}🟢 Excellent{% elif global_avg >= 75 %}🟡 Good{% elif global_avg >= 65 %}🟠 Fair{% else %}🔴 Poor{% endif %} | 📈 Improving |
+| **Services Passing** | {{ services | selectattr('status', 'equalto', 'passing') | list | length }}/{{ total_services }} | {% if (services | selectattr('status', 'equalto', 'passing') | list | length / total_services * 100) >= 90 %}🟢{% elif (services | selectattr('status', 'equalto', 'passing') | list | length / total_services * 100) >= 75 %}🟡{% else %}🔴{% endif %} |
+| **Critical Issues** | {{ services | selectattr('critical_vulns', '>', 0) | list | length }} | {% if services | selectattr('critical_vulns', '>', 0) | list | length == 0 %}🟢{% else %}🔴{% endif %} |
+| **Avg Coverage** | {{ services | map(attribute='coverage') | average | format_number(1) }} | {% if services | map(attribute='coverage') | average >= 0.8 %}🟢{% elif services | map(attribute='coverage') | average >= 0.7 %}🟡{% else %}🔴{% endif %} |
+
+## 🏅 Quality Leaderboard
+
+### Top 10 Performers
+
+| Rank | Service | Score | Grade | Domain | Maturity |
+|------|---------|-------|-------|--------|----------|
+{% for service in services[:10] %}
+| **#{{ loop.index }}** | **{{ service.name }}** | {{ service.score | format_number(1) }} | {{ service.grade }} | {{ service.domain | default('N/A') | title }} | {{ service.maturity | title }} |
+{% endfor %}
+
+### Bottom 10 - Needs Attention
+
+| Rank | Service | Score | Grade | Issues | Priority |
+|------|---------|-------|-------|--------|----------|
+{% set bottom_services = services | reverse | list %}
+{% for service in bottom_services[:10] %}
+| **#{{ total_services - loop.index + 1 }}** | **{{ service.name }}** | {{ service.score | format_number(1) }} | {{ service.grade }} | {% if service.coverage < 0.7 %}📊 Coverage{% elif service.critical_vulns > 0 %}🔒 Security{% elif not service.lint_pass %}🧹 Lint{% else %}📋 Multiple{% endif %} | {% if service.grade == 'F' %}🔴 Critical{% elif service.grade == 'D' %}🟠 High{% else %}🟡 Medium{% endif %} |
+{% endfor %}
 
 ## 📈 Quality Distribution
 
-### Grade Breakdown
+### Grade Distribution
 
-| Grade | Services | Percentage | Description |
-|-------|----------|------------|-------------|
-| **A** (90-100) | {{ grade_distribution.A | default(0) }} | {{ ((grade_distribution.A | default(0)) / total_services * 100) | format_number(1) }}% | 🏆 Excellent |
-| **B** (80-89) | {{ grade_distribution.B | default(0) }} | {{ ((grade_distribution.B | default(0)) / total_services * 100) | format_number(1) }}% | ✅ Good |
-| **C** (70-79) | {{ grade_distribution.C | default(0) }} | {{ ((grade_distribution.C | default(0)) / total_services * 100) | format_number(1) }}% | ⚠️ Acceptable |
-| **D** (60-69) | {{ grade_distribution.D | default(0) }} | {{ ((grade_distribution.D | default(0)) / total_services * 100) | format_number(1) }}% | 🔶 Needs Work |
-| **F** (0-59) | {{ grade_distribution.F | default(0) }} | {{ ((grade_distribution.F | default(0)) / total_services * 100) | format_number(1) }}% | ❌ Failing |
+```mermaid
+pie
+    title Service Quality Grades
+    "A ({{ grade_distribution.A | default(0) }})" : {{ grade_distribution.A | default(0) }}
+    "B ({{ grade_distribution.B | default(0) }})" : {{ grade_distribution.B | default(0) }}
+    "C ({{ grade_distribution.C | default(0) }})" : {{ grade_distribution.C | default(0) }}
+    "D ({{ grade_distribution.D | default(0) }})" : {{ grade_distribution.D | default(0) }}
+    "F ({{ grade_distribution.F | default(0) }})" : {{ grade_distribution.F | default(0) }}
+```
 
-## 🔍 Service Quality Rankings
+| Grade | Count | Percentage | Target | Status |
+|-------|-------|------------|--------|--------|
+| **A** (90-100) | {{ grade_distribution.A | default(0) }} | {{ ((grade_distribution.A | default(0)) / total_services * 100) | format_number(1) }}% | >20% | {% if (grade_distribution.A | default(0)) / total_services * 100 >= 20 %}🟢{% else %}🟡{% endif %} |
+| **B** (80-89) | {{ grade_distribution.B | default(0) }} | {{ ((grade_distribution.B | default(0)) / total_services * 100) | format_number(1) }}% | >40% | {% if (grade_distribution.B | default(0)) / total_services * 100 >= 40 %}🟢{% else %}🟡{% endif %} |
+| **C** (70-79) | {{ grade_distribution.C | default(0) }} | {{ ((grade_distribution.C | default(0)) / total_services * 100) | format_number(1) }}% | <30% | {% if (grade_distribution.C | default(0)) / total_services * 100 <= 30 %}🟢{% else %}🟡{% endif %} |
+| **D** (60-69) | {{ grade_distribution.D | default(0) }} | {{ ((grade_distribution.D | default(0)) / total_services * 100) | format_number(1) }}% | <5% | {% if (grade_distribution.D | default(0)) / total_services * 100 <= 5 %}🟢{% else %}🔴{% endif %} |
+| **F** (0-59) | {{ grade_distribution.F | default(0) }} | {{ ((grade_distribution.F | default(0)) / total_services * 100) | format_number(1) }}% | 0% | {% if grade_distribution.F | default(0) == 0 %}🟢{% else %}🔴{% endif %} |
 
-### Top Performers (A Grade)
-
-| Rank | Service | Score | Coverage | Security | Policy |
-|------|---------|-------|----------|----------|--------|
-{% set rank = 1 %}
-{% for service in services %}
-{% if service.grade == 'A' %}
-| **{{ rank }}** | **{{ service.name }}** | {{ service.score | format_number(1) }} | {{ service.coverage | format_number(1) }} | {% if service.lint_pass %}✅{% else %}❌{% endif %} | {% if service.policy_pass | default(false) %}✅{% else %}❌{% endif %} |
-{% set rank = rank + 1 %}
-{% endif %}
-{% endfor %}
-
-### Needs Attention (D/F Grade)
-
-| Service | Score | Grade | Primary Issues | Action Required |
-|---------|-------|-------|---------------|----------------|
-{% for service in services %}
-{% if service.grade in ['D', 'F'] %}
-| **{{ service.name }}** | {{ service.score | format_number(1) }} | {{ service.grade }} | {% if service.coverage < 0.7 %}📊 Low Coverage{% elif service.critical_vulns > 0 %}🔒 Security Issues{% elif not service.lint_pass %}🧹 Lint Failures{% else %}📋 Multiple Issues{% endif %} | 🔧 Review & Improve |
-{% endif %}
-{% endfor %}
-
-## 📋 Detailed Quality Metrics
+## 🔍 Quality Dimensions Analysis
 
 ### Coverage Analysis
 
-| Service | Coverage | Target | Status |
-|---------|----------|--------|--------|
-{% for service in services[:20] %}
-| **{{ service.name }}** | {{ service.coverage | format_number(1) }} | {% if service.maturity == 'stable' %}80%{% elif service.maturity == 'beta' %}70%{% else %}50%{% endif %} | {% if service.coverage >= 0.8 %}🟢{% elif service.coverage >= 0.7 %}🟡{% else %}🔴{% endif %} |
-{% endfor %}
+| Metric | Average | Target | Status |
+|--------|---------|--------|--------|
+| **Test Coverage** | {{ services | map(attribute='coverage') | average | format_number(1) }} | 80% | {% if services | map(attribute='coverage') | average >= 0.8 %}🟢{% elif services | map(attribute='coverage') | average >= 0.7 %}🟡{% else %}🔴{% endif %} |
+| **Lint Compliance** | {{ (services | selectattr('lint_pass', 'equalto', True) | list | length / total_services * 100) | format_number(1) }}% | 100% | {% if services | selectattr('lint_pass', 'equalto', False) | list | length == 0 %}🟢{% else %}🔴{% endif %} |
 
-### Security Status
+### Security Analysis
 
-| Service | Critical Vulns | High Vulns | Signed Images | Policy Status |
-|---------|----------------|------------|---------------|---------------|
-{% for service in services[:20] %}
-| **{{ service.name }}** | {{ service.critical_vulns | default(0) }} | {{ service.high_vulns | default(0) }} | {% if service.signed_images | default(false) %}✅{% else %}❌{% endif %} | {% if service.policy_pass | default(false) %}✅{% else %}❌{% endif %} |
-{% endfor %}
+| Metric | Count | Status |
+|--------|-------|--------|
+| **Critical Vulnerabilities** | {{ services | map(attribute='critical_vulns') | sum }} | {% if services | map(attribute='critical_vulns') | sum == 0 %}🟢{% else %}🔴{% endif %} |
+| **High Vulnerabilities** | {{ services | map(attribute='high_vulns') | sum }} | {% if services | map(attribute='high_vulns') | sum == 0 %}🟢{% else %}🟡{% endif %} |
+| **Signed Images** | {{ services | selectattr('signed_images', 'equalto', True) | list | length }}/{{ total_services }} | {% if (services | selectattr('signed_images', 'equalto', True) | list | length / total_services * 100) >= 90 %}🟢{% else %}🟡{% endif %} |
 
-## 🎯 Quality Insights
+### Stability Analysis
 
-### Strengths
+| Metric | Average | Status |
+|--------|---------|--------|
+| **Deployment Freshness** | {{ services | map(attribute='deployment_freshness_days') | average | format_number(0) }} days | {% if services | map(attribute='deployment_freshness_days') | average <= 30 %}🟢{% elif services | map(attribute='deployment_freshness_days') | average <= 60 %}🟡{% else %}🔴{% endif %} |
+| **Build Success Rate** | {{ services | map(attribute='build_success_rate') | average | format_number(1) }} | {% if services | map(attribute='build_success_rate') | average >= 0.95 %}🟢{% else %}🟡{% endif %} |
+
+## 🎯 Quality Insights & Recommendations
+
+### Platform Strengths
 {% if global_avg >= 80 %}
-✅ **High Overall Quality:** Platform average of {{ global_avg | format_number(1) }}/100 indicates strong engineering practices.
+✅ **Strong Foundation:** Platform demonstrates solid engineering practices with {{ global_avg | format_number(1) }}/100 average score.
 {% endif %}
 
-{% if grade_distribution.A | default(0) > 0 %}
-✅ **Excellence Achieved:** {{ grade_distribution.A | default(0) }} services demonstrate exceptional quality standards.
+{% if grade_distribution.A | default(0) >= total_services * 0.2 %}
+✅ **Quality Leaders:** {{ grade_distribution.A | default(0) }} services ({{ (grade_distribution.A | default(0) / total_services * 100) | format_number(1) }}%) achieve excellence.
 {% endif %}
 
 {% if services | selectattr('critical_vulns', 'equalto', 0) | list | length == total_services %}
-✅ **Security Clean:** No critical vulnerabilities across the platform.
+✅ **Security Excellence:** Zero critical vulnerabilities across all services.
 {% endif %}
 
-### Areas for Improvement
+### Critical Issues Requiring Attention
 {% if grade_distribution.F | default(0) > 0 %}
-🔴 **Critical Services:** {{ grade_distribution.F | default(0) }} services are failing quality standards and need immediate attention.
+🔴 **Failing Services:** {{ grade_distribution.F | default(0) }} services require immediate intervention.
 {% endif %}
 
 {% if services | selectattr('coverage', '<', 0.7) | list | length > total_services * 0.3 %}
-🟡 **Coverage Gaps:** {{ (services | selectattr('coverage', '<', 0.7) | list | length / total_services * 100) | format_number(1) }}% of services have inadequate test coverage.
+🟡 **Coverage Gap:** {{ (services | selectattr('coverage', '<', 0.7) | list | length / total_services * 100) | format_number(1) }}% of services lack adequate test coverage.
 {% endif %}
 
 {% if services | selectattr('lint_pass', 'equalto', False) | list | length > 0 %}
-🟠 **Code Quality Issues:** {{ services | selectattr('lint_pass', 'equalto', False) | list | length }} services have lint failures that should be addressed.
+🟠 **Code Quality:** {{ services | selectattr('lint_pass', 'equalto', False) | list | length }} services have failing lint checks.
 {% endif %}
+
+## 📋 Action Items
+
+### Immediate (Next 24-48 hours)
+{% for service in services %}
+{% if service.grade == 'F' %}
+- [ ] **{{ service.name }}**: Critical quality issues - immediate review required
+{% endif %}
+{% endfor %}
+
+### Short-term (Next Sprint)
+{% for service in services %}
+{% if service.grade == 'D' %}
+- [ ] **{{ service.name }}**: Quality improvement needed - {{ service.score | format_number(1) }}/100
+{% endif %}
+{% endfor %}
+
+### Medium-term (Next Quarter)
+- [ ] Achieve 80%+ average quality score across platform
+- [ ] Ensure 100% of stable services have 80%+ test coverage
+- [ ] Eliminate all critical security vulnerabilities
+- [ ] Achieve 100% lint compliance
 
 ## 📈 Quality Trends
 
-### Recent Improvements
-*This section would show quality score improvements over time.*
+### Historical Performance
+*Trend analysis would show quality score changes over time*
 
 ### Quality Velocity
-- **Average Score Change (30d):** *TBD*
-- **Services Improved (30d):** *TBD*
-- **Services Degraded (30d):** *TBD*
+- **Score Improvement Rate:** *TBD* points/month
+- **Services Improving:** *TBD* this month
+- **Services Declining:** *TBD* this month
 
-## 🔧 Improvement Recommendations
+### Predictive Insights
+*Based on current trends and patterns*
 
-### Immediate Actions (Next Sprint)
-1. **Address Failing Services:** Prioritize {{ grade_distribution.F | default(0) }} failing services for quality improvements
-2. **Fix Critical Vulnerabilities:** Resolve security issues in affected services
-3. **Improve Test Coverage:** Focus on services below 70% coverage threshold
+## 🔧 Technical Debt Assessment
 
-### Medium-term Goals (Next Quarter)
-1. **Achieve 80% Average:** Target platform-wide average of 80+ quality score
-2. **100% Security Compliance:** Ensure all services meet security requirements
-3. **Consistent Coverage:** Standardize on 80%+ coverage across stable services
+### Code Quality Debt
+- **Services with Low Coverage:** {{ services | selectattr('coverage', '<', 0.7) | list | length }}
+- **Services with Lint Issues:** {{ services | selectattr('lint_pass', 'equalto', False) | list | length }}
+- **Technical Debt Score:** {% if global_avg >= 80 %}Low{% elif global_avg >= 70 %}Medium{% else %}High{% endif %}
 
-### Long-term Vision (Next Year)
-1. **Quality Culture:** Embed quality practices in development workflow
-2. **Automated Quality Gates:** Implement comprehensive CI/CD quality checks
-3. **Continuous Improvement:** Establish regular quality review processes
+### Security Debt
+- **Critical Vulnerabilities:** {{ services | map(attribute='critical_vulns') | sum }}
+- **High Vulnerabilities:** {{ services | map(attribute='high_vulns') | sum }}
+- **Security Debt Score:** {% if services | map(attribute='critical_vulns') | sum == 0 %}None{% else %}High{% endif %}
 
 ## 📊 Quality Benchmarks
 
 ### Industry Standards
-- **Test Coverage:** 80%+ (industry standard)
-- **Security Vulnerabilities:** 0 critical (enterprise requirement)
-- **Code Quality:** All lint checks passing (best practice)
+| Metric | Industry Standard | Platform Target | Current Status |
+|--------|------------------|-----------------|----------------|
+| **Test Coverage** | 80%+ | 85%+ | {{ services | map(attribute='coverage') | average | format_number(1) }} |
+| **Security Score** | 90+ | 95+ | {{ (services | map(attribute='score') | average - (services | map(attribute='coverage') | average * 25)) | format_number(1) }} |
+| **Build Success** | 95%+ | 98%+ | {{ services | map(attribute='build_success_rate') | average | format_number(1) }} |
 
-### Platform Targets
-- **Overall Score:** 85+ average
-- **Grade Distribution:** 60% A/B grades, <5% failing
-- **Security Posture:** 100% signed images, 0 critical vulnerabilities
+### Platform Goals
+- **🏆 2025 Q1:** Achieve 85+ average quality score
+- **🔒 2025 Q2:** Zero critical vulnerabilities
+- **📊 2025 Q3:** 90%+ test coverage across all services
+- **⚡ 2025 Q4:** Sub-1-hour quality feedback loops
 
 ---
 

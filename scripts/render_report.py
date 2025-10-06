@@ -2,10 +2,21 @@
 """
 254Carbon Meta Repository - Report Rendering Script
 
-Renders various reports using Jinja2 templates for GitHub integration.
+Renders Markdown reports from JSON/YAML inputs using Jinja2 templates for
+posting in PRs, issues, or publishing as artifacts.
 
 Usage:
     python scripts/render_report.py --report-type drift --input-file FILE --output-file FILE
+
+Templates and inputs:
+- Drift: expects the drift report shape from `scripts/detect_drift.py`.
+- Dependency: expects the graph validation report from `scripts/validate_graph.py`.
+- Catalog: expects the catalog document as per `schemas/service-index.schema.json`.
+- Quality: expects the quality snapshot from `scripts/compute_quality.py`.
+
+Environment:
+- Templates live under `analysis/templates/`; filters like `format_date` and
+  `severity_icon` are registered here for all templates.
 """
 
 import os

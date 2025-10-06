@@ -1,0 +1,193 @@
+#
+# GitHub Actions workflow: Automated Spec Upgrades
+# Purpose: Detects outdated spec versions and raises upgrade PRs according to policies.
+# Triggers: nightly schedule, repository dispatch on spec releases, and manual dispatch.
+#
+name: Automated Spec Upgrades
+
+on:
+  # Nightly run at 4 AM UTC (after quality computation)
+  schedule:
+    - cron: '0 4 * * *'
+
+  # Trigger on spec repository releases
+  repository_dispatch:
+    types: [spec-release]
+
+  # Manual trigger for immediate upgrades
+  workflow_dispatch:
+    inputs:
+      max_concurrent_prs:
+        description: 'Maximum concurrent PRs to create'
+        required: false
+        default: 3
+        type: integer
+      auto_merge_patches:
+        description: 'Auto-merge patch upgrades on success'
+        required: false
+        default: true
+        type: boolean
+      dry_run:
+        description: 'Run in dry-run mode (no actual PRs)'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  check-upgrade-eligibility:
+    runs-on: ubuntu-latest
+
+    outputs:
+      eligible_upgrades: ${{ steps.eligibility.outputs.upgrades }}
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Check upgrade eligibility
+      id: eligibility
+      run: |
+        python scripts/check_upgrade_eligibility.py > upgrade-eligibility.json
+
+        # Set output for next job
+        echo "upgrades=$(cat upgrade-eligibility.json)" >> $GITHUB_OUTPUT
+
+    - name: Upload eligibility report
+      uses: actions/upload-artifact@v3
+      with:
+        name: upgrade-eligibility-${{ github.run_id }}
+        path: upgrade-eligibility.json
+        retention-days: 7
+
+  generate-upgrade-prs:
+    runs-on: ubuntu-latest
+    needs: check-upgrade-eligibility
+    if: needs.check-upgrade-eligibility.outputs.eligible_upgrades != '[]'
+
+    strategy:
+      matrix:
+        service: ${{ fromJson(needs.check-upgrade-eligibility.outputs.eligible_upgrades) }}
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Generate upgrade PR
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        if [ "${{ github.event.inputs.dry_run }}" == "true" ]; then
+          DRY_RUN_FLAG="--dry-run"
+        else
+          DRY_RUN_FLAG=""
+        fi
+
+        python scripts/generate_upgrade_pr.py \
+          --service ${{ matrix.service.name }} \
+          --spec-version ${{ matrix.service.spec }} \
+          $DRY_RUN_FLAG
+
+    - name: Wait between PRs
+      run: |
+        # Wait to avoid overwhelming GitHub API
+        sleep ${{ github.event.inputs.max_concurrent_prs || 5 }}
+
+  monitor-upgrade-prs:
+    runs-on: ubuntu-latest
+    needs: generate-upgrade-prs
+    if: github.event.inputs.dry_run != 'true'
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Monitor upgrade PRs
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        python scripts/monitor_upgrade_prs.py
+
+  auto-merge-patches:
+    runs-on: ubuntu-latest
+    needs: monitor-upgrade-prs
+    if: github.event.inputs.auto_merge_patches == 'true'
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Auto-merge patch upgrades
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        python scripts/auto_merge_patches.py
+
+  upgrade-summary:
+    runs-on: ubuntu-latest
+    needs: [generate-upgrade-prs, auto-merge-patches]
+    if: always()
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Generate upgrade summary
+      run: |
+        python scripts/generate_upgrade_summary.py > upgrade-summary.md
+
+    - name: Upload upgrade summary
+      uses: actions/upload-artifact@v3
+      with:
+        name: upgrade-summary-${{ github.run_id }}
+        path: upgrade-summary.md
+        retention-days: 30
+
+    - name: Comment on PR with summary
+      if: github.event_name == 'workflow_dispatch'
+      run: |
+        # This would post a comment to the triggering PR if applicable
+        echo "Upgrade workflow completed"

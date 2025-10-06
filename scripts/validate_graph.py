@@ -2,10 +2,15 @@
 """
 254Carbon Meta Repository - Dependency Graph Validation Script
 
-Validates dependency relationships and builds dependency graph.
+Builds a service dependency graph from the catalog and validates it against
+architecture rules (directionality, cycles, forbidden patterns, external allowlist).
 
 Usage:
     python scripts/validate_graph.py [--catalog-file FILE] [--rules-file FILE]
+
+Outputs:
+- YAML graph (`catalog/dependency-graph.yaml`) and JSON violation report
+  (`catalog/dependency-violations.json`) suitable for dashboards and PR comments.
 """
 
 import os
@@ -54,13 +59,24 @@ class DependencyGraph:
     adjacency_list: Dict[str, List[str]] = field(default_factory=dict)
 
     def add_node(self, node: str) -> None:
-        """Add a node to the graph."""
+        """Add a node to the graph.
+
+        Args:
+            node: Service name to register in the graph.
+        """
         self.nodes.add(node)
         if node not in self.adjacency_list:
             self.adjacency_list[node] = []
 
     def add_edge(self, from_node: str, to_node: str, dep_type: DependencyType, description: str = "") -> None:
-        """Add a directed edge to the graph."""
+        """Add a directed edge to the graph.
+
+        Args:
+            from_node: Source service (dependent).
+            to_node: Target service (dependency).
+            dep_type: INTERNAL or EXTERNAL dependency.
+            description: Optional human-friendly description.
+        """
         self.add_node(from_node)
         self.add_node(to_node)
 
@@ -71,7 +87,12 @@ class DependencyGraph:
             self.adjacency_list[from_node].append(to_node)
 
     def has_cycle(self) -> Tuple[bool, List[str]]:
-        """Check for cycles using DFS."""
+        """Check for cycles using DFS.
+
+        Returns:
+            Tuple of (has_cycle, cycle_path). `cycle_path` is a best-effort
+            list of nodes involved when a cycle is detected.
+        """
         visited = set()
         rec_stack = set()
 
@@ -99,7 +120,12 @@ class DependencyGraph:
         return False, []
 
     def get_topological_order(self) -> List[str]:
-        """Get topological ordering of nodes."""
+        """Get topological ordering of nodes.
+
+        Returns:
+            A list of nodes in topological order, or an empty list if cycles
+            prevent a valid ordering.
+        """
         # Kahn's algorithm
         in_degree = {node: 0 for node in self.nodes}
 
@@ -143,7 +169,20 @@ class GraphValidator:
         self.graph = self._build_dependency_graph()
 
     def _find_catalog_file(self, catalog_file: str = None) -> Path:
-        """Find catalog file."""
+        """Find catalog file.
+
+        Uses explicit `catalog_file` when provided, otherwise probes standard
+        locations under `catalog/`.
+
+        Args:
+            catalog_file: Optional explicit path to a catalog file.
+
+        Returns:
+            Path to an existing YAML/JSON catalog file.
+
+        Raises:
+            FileNotFoundError: When no catalog file can be found.
+        """
         if catalog_file:
             return Path(catalog_file)
 
@@ -159,7 +198,11 @@ class GraphValidator:
             raise FileNotFoundError("No catalog file found. Run 'make build-catalog' first.")
 
     def _load_catalog(self) -> Dict[str, Any]:
-        """Load catalog from file."""
+        """Load catalog from file.
+
+        Returns:
+            Parsed catalog object from YAML or JSON.
+        """
         logger.info(f"Loading catalog from {self.catalog_path}")
 
         with open(self.catalog_path) as f:
@@ -169,7 +212,11 @@ class GraphValidator:
                 return json.load(f)
 
     def _load_rules(self) -> Dict[str, Any]:
-        """Load validation rules."""
+        """Load validation rules.
+
+        Returns:
+            Rules dictionary from `self.rules_file`, or defaults if missing.
+        """
         rules_path = Path(self.rules_file)
 
         if not rules_path.exists():
@@ -180,7 +227,11 @@ class GraphValidator:
             return yaml.safe_load(f)
 
     def _get_default_rules(self) -> Dict[str, Any]:
-        """Get default validation rules."""
+        """Get default validation rules.
+
+        Returns:
+            Minimal rule set used when `rules_file` is not present.
+        """
         return {
             "dependency": {
                 "enforce_directionality": True,
@@ -197,7 +248,11 @@ class GraphValidator:
         }
 
     def _build_dependency_graph(self) -> DependencyGraph:
-        """Build dependency graph from catalog."""
+        """Build dependency graph from catalog.
+
+        Returns:
+            A `DependencyGraph` containing nodes and edges for internal deps.
+        """
         logger.info("Building dependency graph...")
         graph = DependencyGraph()
 
@@ -229,7 +284,11 @@ class GraphValidator:
         return graph
 
     def validate_cycles(self) -> List[Dict[str, Any]]:
-        """Check for dependency cycles."""
+        """Check for dependency cycles.
+
+        Returns:
+            List with a single violation when cycles are detected, otherwise empty.
+        """
         logger.info("Checking for dependency cycles...")
 
         has_cycle, cycle_path = self.graph.has_cycle()
@@ -251,7 +310,11 @@ class GraphValidator:
         return violations
 
     def validate_external_dependencies(self) -> List[Dict[str, Any]]:
-        """Validate external dependencies against whitelist."""
+        """Validate external dependencies against whitelist.
+
+        Returns:
+            Violations for external dependencies not present in the allowlist.
+        """
         logger.info("Validating external dependencies...")
 
         allowed_external = self.rules.get("dependency", {}).get("allowed_external", [])
@@ -276,7 +339,11 @@ class GraphValidator:
         return violations
 
     def validate_directionality(self) -> List[Dict[str, Any]]:
-        """Validate directional cohesion rules."""
+        """Validate directional cohesion rules.
+
+        Returns:
+            Violations for edges that go from a lower to a higher domain layer.
+        """
         logger.info("Validating directional cohesion...")
 
         violations = []
@@ -319,7 +386,12 @@ class GraphValidator:
         return violations
 
     def validate_forbidden_patterns(self) -> List[Dict[str, Any]]:
-        """Validate against forbidden edge patterns."""
+        """Validate against forbidden edge patterns.
+
+        Returns:
+            Violations for edges whose domain pairing matches configured
+            `forbidden_reverse_edges` patterns.
+        """
         logger.info("Validating against forbidden patterns...")
 
         forbidden_patterns = self.rules.get("forbidden_reverse_edges", [])
@@ -355,7 +427,12 @@ class GraphValidator:
         return violations
 
     def generate_dependency_graph_yaml(self) -> Dict[str, Any]:
-        """Generate dependency graph YAML."""
+        """Generate dependency graph YAML.
+
+        Returns:
+            A dictionary describing nodes grouped by domain and internal edges,
+            suitable for serialization to YAML.
+        """
         services = self.catalog.get('services', [])
         service_domains = {s['name']: s.get('domain') for s in services}
 
@@ -391,7 +468,11 @@ class GraphValidator:
         return graph_yaml
 
     def run_validation(self) -> Dict[str, Any]:
-        """Run all validations and generate report."""
+        """Run all validations and generate report.
+
+        Returns:
+            A report dictionary with metadata, violations, and summary stats.
+        """
         logger.info("Running dependency graph validation...")
 
         violations = []
@@ -446,7 +527,11 @@ class GraphValidator:
         return report
 
     def _save_outputs(self, report: Dict[str, Any]) -> None:
-        """Save validation outputs to files."""
+        """Save validation outputs to files.
+
+        Args:
+            report: Completed validation report to persist.
+        """
         catalog_dir = Path("catalog")
 
         # Save dependency graph YAML

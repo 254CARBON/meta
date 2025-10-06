@@ -2,10 +2,20 @@
 """
 254Carbon Meta Repository - Catalog Building Script
 
-Builds the unified service catalog from collected manifests.
+Builds the unified service catalog from collected manifests and validates the
+result against the JSON Schemas.
 
 Usage:
     python scripts/build_catalog.py [--validate-only] [--force]
+
+Overview:
+- Loads YAML manifests from `manifests/collected/`, strips collection metadata,
+  validates each manifest, checks required fields and duplicates, and assembles
+  a deterministic, sorted catalog document.
+
+Outputs:
+- `catalog/service-index.yaml` (primary), JSON mirror, and a small summary JSON
+  for fast UI/report consumption. Validation logs stored under `catalog/`.
 """
 
 import os

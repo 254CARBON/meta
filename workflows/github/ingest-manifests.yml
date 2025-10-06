@@ -1,3 +1,8 @@
+#
+# GitHub Actions workflow: Ingest Service Manifests
+# Purpose: Collects service-manifest.yaml files from source repositories on schedule or demand.
+# Triggers: scheduled, manual dispatch, and targeted pushes for testing.
+#
 name: Ingest Service Manifests
 
 on:

@@ -2,10 +2,18 @@
 """
 254Carbon Meta Repository - Catalog Validation Script
 
-Validates the service catalog for integrity and consistency.
+Validates the service catalog for integrity and consistency beyond schema
+checks, enforcing basic invariants and offering helpful warnings.
 
 Usage:
     python scripts/validate_catalog.py [--catalog-file FILE] [--strict]
+
+Checks performed:
+- JSON Schema validation for catalog and service manifests.
+- Metadata sanity (types, presence, simple semver string check).
+- Service-level fields, uniqueness, dependency structure and formats.
+- Cross-service dependency presence and basic domain/maturity value rules.
+- Completeness hints for recommended but optional fields.
 """
 
 import os
@@ -61,7 +69,18 @@ class CatalogValidator:
         self.catalog = self._load_catalog()
 
     def _load_schema(self, schema_file: str) -> Dict[str, Any]:
-        """Load JSON schema from file."""
+        """Load JSON schema from file.
+
+        Args:
+            schema_file: Filename relative to `schemas/` directory.
+
+        Returns:
+            Parsed JSON schema dictionary.
+
+        Raises:
+            FileNotFoundError: When the schema file is missing.
+            json.JSONDecodeError: On invalid JSON schema content.
+        """
         schema_path = self.schemas_dir / schema_file
         if not schema_path.exists():
             raise FileNotFoundError(f"Schema file not found: {schema_path}")
@@ -70,7 +89,11 @@ class CatalogValidator:
             return json.load(f)
 
     def _load_catalog(self) -> Dict[str, Any]:
-        """Load catalog from file."""
+        """Load catalog from file.
+
+        Returns:
+            Parsed catalog object from YAML or JSON.
+        """
         logger.info(f"Loading catalog from {self.catalog_path}")
 
         with open(self.catalog_path) as f:
@@ -80,7 +103,11 @@ class CatalogValidator:
                 return json.load(f)
 
     def validate_schema(self) -> bool:
-        """Validate catalog against JSON schema."""
+        """Validate catalog against JSON schema.
+
+        Returns:
+            True when the catalog conforms to the schema; False on validation errors.
+        """
         logger.info("Validating catalog against schema...")
 
         try:
@@ -97,7 +124,11 @@ class CatalogValidator:
             raise
 
     def validate_metadata(self) -> bool:
-        """Validate catalog metadata."""
+        """Validate catalog metadata.
+
+        Returns:
+            True if required metadata fields are present with plausible types; otherwise False.
+        """
         logger.info("Validating metadata...")
 
         metadata = self.catalog.get('metadata', {})
@@ -134,7 +165,11 @@ class CatalogValidator:
         return True
 
     def validate_services(self) -> bool:
-        """Validate individual services in catalog."""
+        """Validate individual services in catalog.
+
+        Returns:
+            True if all service entries satisfy basic invariants; otherwise False.
+        """
         logger.info("Validating services...")
 
         services = self.catalog.get('services', [])
@@ -202,7 +237,11 @@ class CatalogValidator:
         return True
 
     def validate_dependencies(self) -> bool:
-        """Validate dependency relationships."""
+        """Validate dependency relationships.
+
+        Returns:
+            True if internal/external dependency references look valid; otherwise False.
+        """
         logger.info("Validating dependency relationships...")
 
         services = self.catalog.get('services', [])
@@ -236,7 +275,11 @@ class CatalogValidator:
         return True
 
     def validate_domains(self) -> bool:
-        """Validate domain consistency."""
+        """Validate domain consistency.
+
+        Returns:
+            True if domain distribution passes basic sanity checks.
+        """
         logger.info("Validating domain consistency...")
 
         services = self.catalog.get('services', [])
@@ -266,7 +309,11 @@ class CatalogValidator:
         return False
 
     def validate_completeness(self) -> bool:
-        """Validate catalog completeness."""
+        """Validate catalog completeness.
+
+        Returns:
+            True after emitting warnings for recommended-but-optional fields.
+        """
         logger.info("Validating catalog completeness...")
 
         services = self.catalog.get('services', [])
@@ -293,7 +340,11 @@ class CatalogValidator:
         return True
 
     def generate_report(self) -> Dict[str, Any]:
-        """Generate validation report."""
+        """Generate validation report.
+
+        Returns:
+            A dictionary with timestamp, file, totals, per-check results, and overall status.
+        """
         report = {
             "timestamp": self.catalog.get('metadata', {}).get('generated_at'),
             "catalog_file": str(self.catalog_path),
@@ -314,7 +365,11 @@ class CatalogValidator:
         return report
 
     def run_all_validations(self) -> bool:
-        """Run all validation checks."""
+        """Run all validation checks.
+
+        Returns:
+            True if all validations pass; otherwise False. May raise in strict mode.
+        """
         logger.info("Running comprehensive catalog validation...")
 
         validations = [

@@ -1,4 +1,13 @@
 # 254Carbon Meta Repository Makefile
+#
+# Purpose
+# - Provide a single point to run common operations locally and in CI.
+# - Targets are thin wrappers around scripts under `scripts/`.
+#
+# Notes for maintainers
+# - Keep target names stable; workflows and docs may reference them.
+# - Prefer adding new targets that call existing scripts to avoid duplication.
+# - Ensure any new targets are safe to run idempotently in CI.
 
 .PHONY: help install validate build-catalog quality drift agent-context all clean test
 

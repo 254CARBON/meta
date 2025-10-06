@@ -2,10 +2,19 @@
 """
 254Carbon Meta Repository - Spec Version Check Script
 
-Checks for specification version updates and generates upgrade recommendations.
+Checks for specification version updates across services and generates upgrade
+recommendations categorized by type and priority; can optionally propose PRs.
 
 Usage:
     python scripts/spec_version_check.py [--dry-run] [--auto-upgrade] [--upgrade-policies FILE]
+
+Design:
+- Reads API contract pins from the catalog, compares to a registry snapshot, and
+  assigns upgrade types (patch/minor/major) along with effort/priority hints.
+- Policies from `config/upgrade-policies.yaml` control eligibility and review.
+
+Outputs:
+- Writes `catalog/spec-version-report.json` summarizing opportunities and policy context.
 """
 
 import os

@@ -1,3 +1,21 @@
+{#
+  Template: dependency-violations.md.j2
+  Purpose: Render validation results for the dependency graph, including violation
+           breakdowns and recommended actions.
+
+  Inputs (context):
+  - generated_at: ISO timestamp
+  - report: object with keys
+      metadata: { catalog_services, graph_nodes, graph_edges, external_edges?, total_violations }
+      summary:  { passed, errors, warnings }
+  - violations: list of violation objects
+
+  Expected filters/macros:
+  - format_date, format_number, severity_icon
+
+  Output: GitHub-flavored Markdown (GFM)
+  Rendered by: scripts/render_report.py
+#}
 # 🔗 Dependency Graph Validation Report
 
 **Generated:** {{ generated_at | format_date }}

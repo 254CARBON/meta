@@ -3,6 +3,7 @@
   "$id": "https://254carbon.com/schemas/quality-metrics.json",
   "title": "254Carbon Quality Metrics Schema",
   "description": "Schema for quality metrics and scoring data",
+  "$comment": "Quality snapshot (draft-07) used by reporting and risk analysis. Service keys are validated via patternProperties; scores and grades align with thresholds in config/thresholds.yaml. $comment is informational only (ignored by validators).",
   "type": "object",
   "properties": {
     "generated_at": {

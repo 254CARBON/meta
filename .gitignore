@@ -1,3 +1,12 @@
+#
+# 254Carbon Meta Repository .gitignore
+#
+# Purpose
+# - Ignore build artifacts, caches, virtual envs, generated reports, and
+#   repository-specific outputs so that the working tree remains clean.
+# - Sections below follow standard Python conventions with a final project
+#   specific section.
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

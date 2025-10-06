@@ -1,0 +1,109 @@
+# 254Carbon Meta Repository - Release Train Definitions
+#
+# Defines coordinated multi-service release trains for the platform.
+
+trains:
+  - name: Q4-curve-upgrade
+    description: "Upgrade curve service and related components to v2.0.0"
+    target_version: "curve-service:2.0.0"
+    participants:
+      - curve
+      - backtesting
+      - scenario
+      - enrichment
+    dependencies:
+      - spec: curves-api >=2.0.0
+      - spec: pricing-api >=1.1.0
+    gates:
+      - name: quality_threshold
+        type: quality_score
+        description: "All participants must have quality score >= 80"
+        threshold: 80
+        required: true
+      - name: no_critical_vulns
+        type: vulnerabilities
+        description: "No critical vulnerabilities in participants"
+        max_vulns: 0
+        required: true
+      - name: tests_passing
+        type: ci_status
+        description: "All CI tests must be passing"
+        required: true
+    status: planning
+    created_by: platform-team
+    estimated_duration: "2 hours"
+
+  - name: Q1-security-patches
+    description: "Apply security patches across all services"
+    target_version: "security-patch:2025-Q1"
+    participants:
+      - gateway
+      - auth
+      - metrics
+      - aggregation
+      - projection
+    dependencies:
+      - spec: gateway-core >=1.2.0
+      - spec: auth-spec >=3.0.0
+    gates:
+      - name: security_scan
+        type: security_scan
+        description: "All services must pass security scan"
+        required: true
+      - name: dependency_check
+        type: dependency_scan
+        description: "No high-severity dependency vulnerabilities"
+        required: true
+    status: planning
+    created_by: security-team
+    estimated_duration: "1 hour"
+
+  - name: Q2-performance-improvements
+    description: "Performance optimizations across data processing services"
+    target_version: "performance:v2.1.0"
+    participants:
+      - normalization
+      - enrichment
+      - aggregation
+      - projection
+    dependencies:
+      - spec: data-processing-api >=1.5.0
+    gates:
+      - name: performance_benchmarks
+        type: performance_test
+        description: "Performance improvements must meet benchmarks"
+        required: true
+      - name: load_test
+        type: load_test
+        description: "Load testing must pass"
+        required: true
+    status: planning
+    created_by: performance-team
+    estimated_duration: "3 hours"
+
+  - name: Q3-new-features
+    description: "New feature rollout across access and data domains"
+    target_version: "features:v3.0.0"
+    participants:
+      - gateway
+      - streaming
+      - auth
+      - entitlements
+      - normalization
+    dependencies:
+      - spec: gateway-core >=1.3.0
+      - spec: auth-spec >=3.1.0
+      - spec: data-processing-api >=1.6.0
+    gates:
+      - name: feature_quality
+        type: quality_score
+        description: "All participants must maintain quality >= 75"
+        threshold: 75
+        required: true
+      - name: integration_tests
+        type: integration_test
+        description: "All integration tests must pass"
+        required: true
+    status: planning
+    created_by: product-team
+    estimated_duration: "4 hours"

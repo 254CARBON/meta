@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Test Suite: Catalog Workflow (Integration)
+# Purpose: Exercise the end-to-end wiring for manifest -> catalog -> validation
+# Maintenance tips: Keep environment scaffolding simple; avoid real network calls
 """
 Integration tests for the catalog workflow.
 """

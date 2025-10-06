@@ -2,10 +2,28 @@
 """
 254Carbon Meta Repository - Drift Detection Script
 
-Detects drift between declared and actual states.
+Detects drift between declared and actual platform states to surface
+actionable gaps and hygiene issues.
 
 Usage:
     python scripts/detect_drift.py [--catalog-file FILE] [--specs-repo REPO]
+
+Overview:
+- Loads the unified catalog and a lightweight spec registry snapshot to
+  compare pinned API contracts against latest available versions.
+- Emits issues for: spec version lag, missing lock files, stale service
+  versions, shared dependency hotspots, and unknown event schemas.
+- Classifies issues by severity for downstream reporting and triage.
+
+Outputs:
+- JSON report written under `analysis/reports/drift/` and a stable pointer
+  at `analysis/reports/drift/latest_drift_report.json`.
+- Designed to feed report rendering (Markdown) and risk/context generators.
+
+Notes:
+- Placeholders are used where external systems would normally be queried
+  (schema registry, real lock files). Replace with integrations as they
+  become available.
 """
 
 import os
@@ -68,47 +86,106 @@ class DriftIssue:
     remediation: str
 
 
+class _SpecRegistryBackend:
+    """Interface for spec registry backends."""
+
+    def fetch_index(self, specs_repo: str) -> Dict[str, Any]:  # pragma: no cover - interface
+        raise NotImplementedError
+
+
+class _StaticSpecBackend(_SpecRegistryBackend):
+    """Static in-memory backend used by default for offline operation."""
+
+    def fetch_index(self, specs_repo: str) -> Dict[str, Any]:
+        return {
+            "gateway-core": {"latest_version": "1.2.0", "description": "Core gateway API"},
+            "curves-api": {"latest_version": "2.1.0", "description": "Curves data API"},
+            "pricing-api": {"latest_version": "1.0.0", "description": "Pricing service API"},
+            "auth-spec": {"latest_version": "3.0.0", "description": "Authentication spec"}
+        }
+
+
+class _LocalFileSpecBackend(_SpecRegistryBackend):
+    """Local file backend for specs index (JSON).
+
+    The path can be provided via `path` or environment variable `SPECS_INDEX_FILE`.
+    File format: { "spec-name": { "latest_version": "x.y.z", ... }, ... }
+    """
+
+    def __init__(self, path: Optional[str] = None):
+        self.path = path or os.getenv("SPECS_INDEX_FILE")
+
+    def fetch_index(self, specs_repo: str) -> Dict[str, Any]:
+        if not self.path:
+            logger.warning("Local specs index path not provided; falling back to empty index")
+            return {}
+        try:
+            with open(self.path) as f:
+                return json.load(f)
+        except FileNotFoundError:
+            logger.warning(f"Specs index file not found: {self.path}; returning empty index")
+            return {}
+        except Exception as e:
+            logger.warning(f"Failed to read specs index file '{self.path}': {e}")
+            return {}
+
+
 class SpecRegistry:
     """Manages specification registry and version information."""
 
-    def __init__(self, specs_repo: str = "254carbon/254carbon-specs"):
+    def __init__(self, specs_repo: str = "254carbon/254carbon-specs", backend: Optional[Any] = None,
+                 backend_config: Optional[Dict[str, Any]] = None):
         self.specs_repo = specs_repo
+        self._backend = self._init_backend(backend, backend_config or {})
         self.specs_index = self._fetch_specs_index()
 
+    def _init_backend(self, backend: Optional[Any], cfg: Dict[str, Any]) -> _SpecRegistryBackend:
+        if backend is None:
+            backend_name = os.getenv("SPECS_BACKEND", "static").lower()
+            if backend_name == "file":
+                return _LocalFileSpecBackend(cfg.get("path"))
+            return _StaticSpecBackend()
+        if isinstance(backend, str):
+            if backend.lower() == "file":
+                return _LocalFileSpecBackend(cfg.get("path"))
+            return _StaticSpecBackend()
+        if hasattr(backend, "fetch_index"):
+            return backend  # type: ignore[return-value]
+        return _StaticSpecBackend()
+
     def _fetch_specs_index(self) -> Dict[str, Any]:
-        """Fetch latest specs index from repository."""
+        """Fetch latest specs index from selected backend.
+
+        Returns:
+            A mapping of spec name -> metadata.
+        """
         try:
-            # This would typically fetch from GitHub API or a specs service
-            # For now, we'll use a placeholder implementation
-            logger.info(f"Fetching specs index from {self.specs_repo}")
-
-            # Placeholder: in a real implementation, this would fetch from:
-            # - GitHub API to get latest specs index file
-            # - A specs service endpoint
-            # - Local cache of specs
-
-            # For demonstration, we'll create a sample specs index
-            sample_specs = {
-                "gateway-core": {"latest_version": "1.2.0", "description": "Core gateway API"},
-                "curves-api": {"latest_version": "2.1.0", "description": "Curves data API"},
-                "pricing-api": {"latest_version": "1.0.0", "description": "Pricing service API"},
-                "auth-spec": {"latest_version": "3.0.0", "description": "Authentication spec"}
-            }
-
-            logger.info(f"Loaded specs index with {len(sample_specs)} specifications")
-            return sample_specs
-
+            logger.info(f"Fetching specs index via backend: {self._backend.__class__.__name__}")
+            index = self._backend.fetch_index(self.specs_repo)
+            logger.info(f"Loaded specs index with {len(index)} specifications")
+            return index
         except Exception as e:
             logger.error(f"Failed to fetch specs index: {e}")
             return {}
 
     def get_latest_version(self, spec_name: str) -> Optional[str]:
-        """Get latest version of a specification."""
+        """Get latest version of a specification.
+
+        Args:
+            spec_name: Specification identifier.
+
+        Returns:
+            Latest version string if known, otherwise None.
+        """
         spec_info = self.specs_index.get(spec_name)
         return spec_info.get('latest_version') if spec_info else None
 
     def get_all_specs(self) -> List[str]:
-        """Get all available specification names."""
+        """Get all available specification names.
+
+        Returns:
+            List of spec names present in the index.
+        """
         return list(self.specs_index.keys())
 
 
@@ -153,7 +230,14 @@ class DriftDetector:
                 return json.load(f)
 
     def detect_spec_lag(self) -> List[DriftIssue]:
-        """Detect specification version lag."""
+        """Detect specification version lag.
+
+        Compares pinned API contracts in the catalog to the latest known
+        versions and emits drift issues with severity based on major/minor lag.
+
+        Returns:
+            List of DriftIssue entries describing spec lag per service/contract.
+        """
         logger.info("Detecting specification version lag...")
         issues = []
 
@@ -215,7 +299,14 @@ class DriftDetector:
         return issues
 
     def detect_missing_locks(self) -> List[DriftIssue]:
-        """Detect missing specs.lock.json files."""
+        """Detect missing specs.lock.json files.
+
+        Heuristic detection of services declaring API contracts but lacking a
+        lockfile indicator.
+
+        Returns:
+            List of DriftIssue entries for missing lockfiles.
+        """
         logger.info("Detecting missing lock files...")
         issues = []
 
@@ -247,7 +338,13 @@ class DriftDetector:
         return issues
 
     def detect_version_staleness(self) -> List[DriftIssue]:
-        """Detect stale service versions."""
+        """Detect stale service versions.
+
+        Flags services with last_update timestamps older than defined thresholds.
+
+        Returns:
+            List of DriftIssue entries with severity by age window.
+        """
         logger.info("Detecting version staleness...")
         issues = []
 
@@ -298,7 +395,13 @@ class DriftDetector:
         return issues
 
     def detect_dependency_drift(self) -> List[DriftIssue]:
-        """Detect dependency version drift."""
+        """Detect dependency version drift.
+
+        Identifies shared external dependencies as potential drift hotspots.
+
+        Returns:
+            List of DriftIssue entries for shared dependency clusters.
+        """
         logger.info("Detecting dependency version drift...")
         issues = []
 
@@ -337,7 +440,13 @@ class DriftDetector:
         return issues
 
     def detect_event_schema_unknown(self) -> List[DriftIssue]:
-        """Detect unknown event schemas."""
+        """Detect unknown event schemas.
+
+        Placeholder that flags events as unknown without a registry lookup.
+
+        Returns:
+            List of DriftIssue entries marking unverified events.
+        """
         logger.info("Detecting unknown event schemas...")
         issues = []
 
@@ -369,7 +478,14 @@ class DriftDetector:
         return issues
 
     def generate_drift_report(self) -> Dict[str, Any]:
-        """Generate comprehensive drift report."""
+        """Generate comprehensive drift report.
+
+        Runs all detectors, aggregates results into severities/types, and
+        returns a normalized report structure.
+
+        Returns:
+            A dictionary suitable for downstream rendering and persistence.
+        """
         logger.info("Generating drift report...")
 
         # Run all drift detection checks
@@ -435,7 +551,14 @@ class DriftDetector:
         return report
 
     def _generate_recommendations(self, issues: List[DriftIssue]) -> List[str]:
-        """Generate actionable recommendations."""
+        """Generate actionable recommendations.
+
+        Args:
+            issues: Collected drift issues.
+
+        Returns:
+            A list of human-readable recommendation strings.
+        """
         recommendations = []
 
         high_issues = [i for i in issues if i.severity in ["high", "error"]]
@@ -459,7 +582,13 @@ class DriftDetector:
         return recommendations
 
     def save_report(self, report: Dict[str, Any]) -> None:
-        """Save drift report to file."""
+        """Save drift report to file.
+
+        Persists a timestamped report and a stable `latest_drift_report.json`.
+
+        Args:
+            report: The drift report dictionary to write.
+        """
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         report_file = self.reports_dir / f"{timestamp}_drift_report.json"
 

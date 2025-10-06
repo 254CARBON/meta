@@ -1,3 +1,9 @@
+#
+# GitHub Actions workflow: Build Service Catalog
+# Purpose: Builds the aggregated service catalog from collected manifests, validates it,
+#          and persists outputs to the repository and artifacts.
+# Triggers: on workflow_run (post-ingest), manual dispatch, and relevant pushes.
+#
 name: Build Service Catalog
 
 on:

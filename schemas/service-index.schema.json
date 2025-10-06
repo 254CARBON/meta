@@ -3,6 +3,7 @@
   "$id": "https://254carbon.com/schemas/service-index.json",
   "title": "254Carbon Service Index Schema",
   "description": "Schema for the aggregated service catalog",
+  "$comment": "Top-level catalog (draft-07) produced by build_catalog.py. Combines per-service manifests into a single index with metadata. $comment documents intent for maintainers and is ignored by validators. Keep required fields synchronized with validator logic and reporting templates.",
   "type": "object",
   "properties": {
     "metadata": {

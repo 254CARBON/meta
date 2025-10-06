@@ -1,3 +1,7 @@
+##
+## Test-only dependencies for validating meta repository code and schemas.
+## Keep aligned with `pytest.ini` and CI workflows.
+##
 pytest>=7.2.0
 pytest-cov>=4.0.0
 pytest-mock>=3.10.0

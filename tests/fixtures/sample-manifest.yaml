@@ -1,3 +1,8 @@
+## Sample service manifest used in tests and documentation.
+## This file demonstrates the expected shape validated by
+## `schemas/service-manifest.schema.json` and consumed by
+## catalog/validation scripts. Values are representative only.
+##
 name: gateway
 repo: https://github.com/254carbon/254carbon-access
 path: service-gateway

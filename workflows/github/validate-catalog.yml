@@ -1,3 +1,8 @@
+#
+# GitHub Actions workflow: Validate Service Catalog
+# Purpose: Performs schema and consistency validation on catalog changes in PRs and main.
+# Triggers: push to catalog paths, PRs touching catalog/schemas or validator script, and manual.
+#
 name: Validate Service Catalog
 
 on:

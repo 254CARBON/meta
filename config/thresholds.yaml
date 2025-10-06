@@ -2,6 +2,12 @@
 #
 # This file defines scoring weights and thresholds for quality metrics,
 # drift detection, and overall platform health assessment.
+#
+# Maintenance tips:
+# - Keep weights normalized: quality.weights should sum to 1.0.
+# - Align grade thresholds with dashboard expectations and tests.
+# - Any change here impacts scripts/compute_quality.py outputs; verify locally.
+# - Prefer incremental adjustments and record rationale in PR descriptions.
 
 # Quality scoring configuration
 quality:

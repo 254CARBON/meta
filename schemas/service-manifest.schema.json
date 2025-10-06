@@ -3,6 +3,7 @@
   "$id": "https://254carbon.com/schemas/service-manifest.json",
   "title": "254Carbon Service Manifest Schema",
   "description": "Schema for individual service manifest files",
+  "$comment": "This JSON Schema (draft-07) defines the contract for per-service manifests used to build and validate the platform catalog. It enforces naming conventions, domain assignments, dependency structure, and quality/security fields. Validators treat $comment as an annotation; it does not affect validation. Keep patterns aligned with config/rules.yaml and scripts consuming these manifests.",
   "type": "object",
   "properties": {
     "name": {

@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Test Suite: Report Rendering
+# Purpose: Validate Jinja environment, filters, and basic template rendering
+# Maintenance tips: Keep templates inline and minimal to avoid brittle tests
 """
 Unit tests for report rendering functionality.
 """

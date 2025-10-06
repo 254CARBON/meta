@@ -3,6 +3,7 @@
   "$id": "https://254carbon.com/schemas/agent-context.json",
   "title": "254Carbon Agent Context Schema",
   "description": "Schema for AI agent global context data",
+  "$comment": "Agent context bundle (draft-07) consolidates catalog, domains, drift, and operation policies for AI assistants. This schema evolves alongside agent capabilities; prefer additive changes and keep $comment updated for maintainers.",
   "type": "object",
   "properties": {
     "metadata": {

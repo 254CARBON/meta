@@ -1,0 +1,4 @@
+{
+  "gateway-core": { "latest_version": "1.2.0", "description": "Core gateway API" },
+  "auth-spec": { "latest_version": "3.0.0", "description": "Authentication spec" }
+}

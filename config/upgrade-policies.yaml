@@ -2,6 +2,12 @@
 #
 # This file defines policies for automated upgrades, PR generation,
 # and upgrade approval workflows.
+#
+# Maintenance tips:
+# - Be conservative with major upgrades: require reviews and limit batch sizes.
+# - Align scheduling windows with change freeze periods and business hours.
+# - Keep PR templates succinct and informative; avoid noisy checklists.
+# - Update service_policies alongside risk_cues in agent context if applicable.
 
 # Auto-upgrade policies by upgrade type
 auto_upgrade:

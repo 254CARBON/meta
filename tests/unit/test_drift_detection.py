@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Test Suite: Drift Detection
+# Purpose: Ensure detectors flag version lag, staleness, and missing locks
+# Maintenance tips: Use small in-memory registries; avoid external network calls
 """
 Unit tests for drift detection functionality.
 """

@@ -2,15 +2,20 @@
 """
 254Carbon Meta Repository - Manifest Collection Script
 
-Collects service-manifest.yaml files from all configured repositories
-and stores them in the manifests/collected/ directory.
+Collects service-manifest.yaml files from configured repositories and places
+validated copies in `manifests/collected/` for catalog building.
 
 Usage:
     python scripts/collect_manifests.py [--dry-run] [--repo-filter PATTERN]
 
 Environment Variables:
     GITHUB_TOKEN - GitHub personal access token for API access
-    GITHUB_ORG - GitHub organization name (default: 254carbon)
+    GITHUB_ORG   - GitHub organization name (default: 254carbon)
+
+Notes:
+- Implements basic GitHub API pagination/retry and optional filtering.
+- Validates YAML structure at a high level; full schema validation occurs in
+  subsequent build/validate steps.
 """
 
 import os

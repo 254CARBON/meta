@@ -1,0 +1,197 @@
+# 254Carbon Meta Repository - Validation Rules Configuration
+#
+# This file defines the rules and policies for validating the service catalog,
+# dependency graph, and overall platform health.
+
+# Dependency validation rules
+dependency:
+  # Enforce directional cohesion (lower layers don't depend on higher layers)
+  enforce_directionality: true
+
+  # Forbid circular dependencies
+  forbid_cycles: true
+
+  # Allowed external dependencies (whitelist)
+  allowed_external:
+    - redis
+    - clickhouse
+    - postgresql
+    - mongodb
+    - elasticsearch
+    - kafka
+    - rabbitmq
+    - nginx
+    - envoy
+    - istio
+    - cert-manager
+
+  # Domain layer definitions (for directional validation)
+  # Lower numbers = lower layers (infrastructure)
+  domain_layers:
+    infrastructure: 1
+    shared: 2
+    access: 3
+    data-processing: 4
+    ml: 5
+
+# Forbidden dependency patterns (reverse edges)
+forbidden_reverse_edges:
+  - pattern: "access -> data-processing"
+    description: "Access layer should not depend on data processing"
+    severity: "error"
+
+  - pattern: "shared -> domain-specific"
+    description: "Shared libraries should not depend on domain-specific code"
+    severity: "error"
+
+  - pattern: "infrastructure -> application"
+    description: "Infrastructure should not depend on application logic"
+    severity: "warning"
+
+# Quality validation rules
+quality:
+  # Minimum acceptable quality score (0-100)
+  min_score: 70
+
+  # Score below this requires immediate attention
+  fail_under: 60
+
+  # Quality dimension weights (should sum to 1.0)
+  weights:
+    coverage: 0.25
+    security: 0.35
+    policy: 0.15
+    stability: 0.10
+    drift: 0.15
+
+  # Coverage thresholds by service maturity
+  coverage_thresholds:
+    experimental: 0.50
+    beta: 0.70
+    stable: 0.80
+    deprecated: 0.60
+
+  # Security requirements by maturity
+  security_requirements:
+    experimental:
+      signed_images: false
+      policy_pass: false
+    beta:
+      signed_images: true
+      policy_pass: true
+    stable:
+      signed_images: true
+      policy_pass: true
+    deprecated:
+      signed_images: false
+      policy_pass: false
+
+# Drift detection rules
+drift:
+  # Block operations when missing lock files
+  block_on_missing_lock: true
+
+  # Warn on minor spec version lag
+  warn_on_minor_spec_lag: true
+
+  # Days before considering version stale
+  staleness_thresholds:
+    warning: 90    # days
+    critical: 180  # days
+
+  # Auto-upgrade policies (referenced by scripts)
+  auto_upgrade:
+    patch_versions: true
+    minor_versions: true
+    major_versions: false
+
+# Service manifest validation
+manifest:
+  # Required fields that must be present
+  required_fields:
+    - name
+    - repo
+    - domain
+    - version
+    - maturity
+    - dependencies
+
+  # Optional but recommended fields
+  recommended_fields:
+    - runtime
+    - api_contracts
+    - events_in
+    - events_out
+    - quality
+    - security
+
+  # Field validation patterns
+  validation_patterns:
+    name: "^[a-z][a-z0-9-]*[a-z0-9]$"
+    version: "^\\d+\\.\\d+\\.\\d+$"
+    domain: "^(access|data-processing|ml|infrastructure|shared)$"
+    maturity: "^(experimental|beta|stable|deprecated)$"
+    runtime: "^(python|nodejs|go|java|docker)$"
+
+# Release coordination rules (for future use)
+release:
+  # Enable release train coordination
+  enable_release_trains: false
+
+  # Maximum services per release train
+  max_train_size: 5
+
+  # Quality gate requirements for releases
+  quality_gates:
+    min_score: 80
+    max_critical_vulns: 0
+    all_tests_passing: true
+
+# Notification and alerting
+notifications:
+  # Channels for different types of alerts
+  channels:
+    critical_issues: ["platform-team", "security-team"]
+    drift_warnings: ["platform-team"]
+    quality_degradation: ["service-owners"]
+    dependency_violations: ["architecture-team"]
+
+  # Alert thresholds
+  thresholds:
+    max_critical_drift_issues: 3
+    max_quality_failures: 2
+    max_dependency_violations: 5
+
+# AI agent guidance (for future use)
+ai_agent:
+  # Safe operations that agents can perform automatically
+  allowed_operations:
+    - upgrade_spec_minor
+    - upgrade_spec_patch
+    - add_missing_coverage
+    - fix_lint_issues
+    - update_readme_docs
+
+  # Operations requiring human oversight
+  forbidden_operations:
+    - schema_breaking_changes
+    - major_version_bumps
+    - domain_boundary_changes
+    - dependency_direction_changes
+    - security_policy_changes
+
+  # Risk cues for agent decision making
+  risk_factors:
+    high_risk_services:
+      - aggregation
+      - projection
+      - gateway
+
+    high_drift_domains:
+      - data-processing
+      - ml
+
+    critical_path_services:
+      - auth
+      - gateway
+      - metrics

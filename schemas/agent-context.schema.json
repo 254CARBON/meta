@@ -1,0 +1,142 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://254carbon.com/schemas/agent-context.json",
+  "title": "254Carbon Agent Context Schema",
+  "description": "Schema for AI agent global context data",
+  "type": "object",
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "description": "Context metadata",
+      "properties": {
+        "generated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "source_commit": {
+          "type": "string"
+        }
+      },
+      "required": ["generated_at", "version"],
+      "additionalProperties": false
+    },
+    "services": {
+      "type": "object",
+      "description": "Service catalog summary",
+      "patternProperties": {
+        "^[a-z][a-z0-9-]*[a-z0-9]$": {
+          "type": "object",
+          "properties": {
+            "domain": { "type": "string" },
+            "maturity": { "type": "string" },
+            "version": { "type": "string" },
+            "dependencies": {
+              "type": "object",
+              "properties": {
+                "internal": { "type": "array", "items": { "type": "string" } },
+                "external": { "type": "array", "items": { "type": "string" } }
+              }
+            },
+            "quality_score": { "type": "number" }
+          },
+          "required": ["domain", "maturity", "version"],
+          "additionalProperties": false
+        }
+      }
+    },
+    "domains": {
+      "type": "object",
+      "description": "Domain architecture map",
+      "patternProperties": {
+        "^[a-z-]+$": {
+          "type": "object",
+          "properties": {
+            "services": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "description": { "type": "string" },
+            "dependencies": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "drift": {
+      "type": "object",
+      "description": "Current drift status",
+      "properties": {
+        "high_risk": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "spec_lag": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "missing_locks": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "risk_cues": {
+      "type": "object",
+      "description": "Risk assessment hints",
+      "patternProperties": {
+        "^[a-z_]+$": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "allowed_operations": {
+      "type": "array",
+      "description": "Safe automated task types",
+      "items": {
+        "type": "string",
+        "enum": [
+          "upgrade_spec_minor",
+          "upgrade_spec_patch",
+          "add_coverage_harness",
+          "fix_lint_issues",
+          "update_dependencies_patch",
+          "add_missing_lock"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "forbidden_operations": {
+      "type": "array",
+      "description": "Operations requiring human oversight",
+      "items": {
+        "type": "string",
+        "enum": [
+          "schema_structural_change",
+          "breaking_api_change",
+          "major_version_bump",
+          "domain_boundary_change",
+          "dependency_direction_change"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "policy_reminders": {
+      "type": "array",
+      "description": "Key policy reminders for agents",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": ["metadata", "services", "domains", "drift"],
+  "additionalProperties": false
+}

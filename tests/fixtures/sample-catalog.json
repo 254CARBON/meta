@@ -1,0 +1,122 @@
+{
+  "metadata": {
+    "generated_at": "2025-10-05T22:30:12Z",
+    "version": "1.0.0",
+    "total_services": 3
+  },
+  "services": [
+    {
+      "name": "gateway",
+      "repo": "https://github.com/254carbon/254carbon-access",
+      "path": "service-gateway",
+      "domain": "access",
+      "version": "1.1.0",
+      "maturity": "stable",
+      "runtime": "python",
+      "api_contracts": [
+        "gateway-core@1.1.0"
+      ],
+      "events_in": [
+        "pricing.curve.updates.v1"
+      ],
+      "events_out": [
+        "metrics.request.count.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "auth",
+          "entitlements",
+          "metrics"
+        ],
+        "external": [
+          "redis",
+          "postgresql"
+        ]
+      },
+      "quality": {
+        "coverage": 0.78,
+        "lint_pass": true,
+        "open_critical_vulns": 0
+      },
+      "security": {
+        "signed_images": true,
+        "policy_pass": true
+      },
+      "last_update": "2025-10-05T22:11:04Z",
+      "status": "active"
+    },
+    {
+      "name": "auth",
+      "repo": "https://github.com/254carbon/254carbon-access",
+      "path": "service-auth",
+      "domain": "access",
+      "version": "2.0.1",
+      "maturity": "stable",
+      "runtime": "go",
+      "api_contracts": [
+        "auth-spec@2.0.0"
+      ],
+      "events_in": [
+        "user.registration.v1"
+      ],
+      "events_out": [
+        "user.auth.events.v1"
+      ],
+      "dependencies": {
+        "internal": [],
+        "external": [
+          "redis",
+          "postgresql"
+        ]
+      },
+      "quality": {
+        "coverage": 0.85,
+        "lint_pass": true,
+        "open_critical_vulns": 0
+      },
+      "security": {
+        "signed_images": true,
+        "policy_pass": true
+      },
+      "last_update": "2025-10-05T21:45:00Z",
+      "status": "active"
+    },
+    {
+      "name": "streaming",
+      "repo": "https://github.com/254carbon/254carbon-data-processing",
+      "path": "service-streaming",
+      "domain": "data-processing",
+      "version": "1.0.0",
+      "maturity": "beta",
+      "runtime": "python",
+      "api_contracts": [],
+      "events_in": [
+        "data.raw.events.v1"
+      ],
+      "events_out": [
+        "data.processed.events.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "normalization",
+          "auth"
+        ],
+        "external": [
+          "kafka",
+          "clickhouse"
+        ]
+      },
+      "quality": {
+        "coverage": 0.65,
+        "lint_pass": true,
+        "open_critical_vulns": 1
+      },
+      "security": {
+        "signed_images": false,
+        "policy_pass": true
+      },
+      "last_update": "2025-10-05T20:30:00Z",
+      "status": "active"
+    }
+  ]
+}

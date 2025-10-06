@@ -1,0 +1,144 @@
+# 🔗 Dependency Graph Validation Report
+
+**Generated:** {{ generated_at | format_date }}
+**Catalog:** {{ report.metadata.catalog_services }} services analyzed
+**Graph:** {{ report.metadata.graph_nodes }} nodes, {{ report.metadata.graph_edges }} edges
+
+## 📊 Executive Summary
+
+| Metric | Value | Status |
+|--------|-------|--------|
+| **Validation Status** | {% if report.summary.passed %}✅ Passed{% else %}❌ Failed{% endif %} | {% if report.summary.passed %}🟢{% else %}🔴{% endif %} |
+| **Total Violations** | {{ report.metadata.total_violations }} | {% if report.metadata.total_violations == 0 %}🟢{% elif report.metadata.total_violations <= 3 %}🟡{% else %}🔴{% endif %} |
+| **Error Violations** | {{ report.summary.errors | default(0) }} | {% if report.summary.errors == 0 %}🟢{% else %}🔴{% endif %} |
+| **Warning Violations** | {{ report.summary.warnings | default(0) }} | {% if report.summary.warnings == 0 %}🟢{% elif report.summary.warnings <= 2 %}🟡{% else %}🟠{% endif %} |
+
+## 🚨 Violation Summary
+
+### By Severity
+- **🔴 Critical Errors:** {{ report.summary.errors | default(0) }}
+- **🟡 Warnings:** {{ report.summary.warnings | default(0) }}
+
+### By Category
+{% set cycle_count = 0 %}
+{% set direction_count = 0 %}
+{% set external_count = 0 %}
+{% set forbidden_count = 0 %}
+
+{% for violation in violations %}
+{% if violation.type == 'cycle_detected' %}{% set cycle_count = cycle_count + 1 %}{% endif %}
+{% if violation.type == 'directional_violation' %}{% set direction_count = direction_count + 1 %}{% endif %}
+{% if violation.type == 'unauthorized_external_dependency' %}{% set external_count = external_count + 1 %}{% endif %}
+{% if violation.type == 'forbidden_pattern' %}{% set forbidden_count = forbidden_count + 1 %}{% endif %}
+{% endfor %}
+
+| Category | Count | Impact |
+|----------|-------|--------|
+| **Circular Dependencies** | {{ cycle_count }} | 🔴 Critical |
+| **Directional Violations** | {{ direction_count }} | 🔴 Critical |
+| **Unauthorized External** | {{ external_count }} | 🟡 Moderate |
+| **Forbidden Patterns** | {{ forbidden_count }} | 🔴 Critical |
+
+## 🔍 Detailed Violations
+
+{% for violation in violations %}
+### {{ violation.type | replace('_', ' ') | title }}
+
+{{ violation.severity | severity_icon }} **{{ violation.severity | title }}**
+
+**Description:** {{ violation.description }}
+
+{% if violation.details %}
+**Details:**
+{% for key, value in violation.details.items() %}
+- **{{ key | replace('_', ' ') | title }}:** {{ value }}
+{% endfor %}
+{% endif %}
+
+**Impact:** {% if violation.severity == 'error' %}🚨 Blocks deployment{% elif violation.severity == 'warning' %}⚠️ Requires review{% else %}ℹ️ Informational{% endif %}
+
+---
+
+{% endfor %}
+
+{% if violations | length == 0 %}
+## ✅ Perfect Score!
+
+No dependency violations detected. The service dependency graph is healthy and follows all architectural constraints.
+
+### Architecture Compliance
+- ✅ No circular dependencies
+- ✅ Directional cohesion maintained
+- ✅ External dependencies authorized
+- ✅ Forbidden patterns avoided
+
+*🎉 Excellent dependency management practices!*
+{% endif %}
+
+## 📊 Graph Statistics
+
+- **Total Services:** {{ report.metadata.graph_nodes }}
+- **Internal Dependencies:** {{ report.metadata.graph_edges }}
+- **External Dependencies:** {{ report.metadata.external_edges | default(0) }}
+- **Connectivity:** {% if report.metadata.graph_nodes > 0 %}{{ (report.metadata.graph_edges / report.metadata.graph_nodes) | format_number(2) }} avg deps per service{% else %}N/A{% endif %}
+
+## 🎯 Architectural Insights
+
+### Domain Layer Compliance
+{% if direction_count == 0 %}
+✅ All services respect domain boundaries and directional constraints.
+{% else %}
+⚠️ {{ direction_count }} services violate domain layering rules.
+{% endif %}
+
+### External Dependency Management
+{% if external_count == 0 %}
+✅ All external dependencies are properly authorized.
+{% else %}
+⚠️ {{ external_count }} unauthorized external dependencies detected.
+{% endif %}
+
+### Dependency Health Score
+{% set health_score = 100 %}
+{% if cycle_count > 0 %}{% set health_score = health_score - 30 %}{% endif %}
+{% if direction_count > 0 %}{% set health_score = health_score - 25 %}{% endif %}
+{% if forbidden_count > 0 %}{% set health_score = health_score - 20 %}{% endif %}
+{% if external_count > 0 %}{% set health_score = health_score - 10 %}{% endif %}
+
+**Score:** {{ health_score }}/100
+{% if health_score >= 90 %}🟢 Excellent{% elif health_score >= 75 %}🟡 Good{% elif health_score >= 60 %}🟠 Fair{% else %}🔴 Needs Improvement{% endif %}
+
+## 🔧 Recommended Actions
+
+{% if cycle_count > 0 %}
+### 🚨 Critical: Resolve Circular Dependencies
+1. **Identify the cycle:** Review the services involved in circular dependencies
+2. **Refactor architecture:** Introduce intermediate abstractions or event-driven communication
+3. **Review domain boundaries:** Ensure proper separation of concerns
+{% endif %}
+
+{% if direction_count > 0 %}
+### 🔴 High: Fix Directional Violations
+1. **Audit dependencies:** Check which lower-layer services depend on higher-layer services
+2. **Move dependencies:** Relocate shared code to appropriate layers
+3. **Update imports:** Refactor to use proper abstraction layers
+{% endif %}
+
+{% if external_count > 0 %}
+### 🟡 Medium: Review External Dependencies
+1. **Verify authorization:** Ensure all external dependencies are in the allowed list
+2. **Update allowlist:** Add missing dependencies to `config/rules.yaml` if legitimate
+3. **Find alternatives:** Consider internal alternatives for unauthorized dependencies
+{% endif %}
+
+## 📈 Monitoring Recommendations
+
+- **Weekly Review:** Monitor dependency violations in CI/CD pipeline
+- **Architecture Reviews:** Regular reviews of dependency graph changes
+- **Alert Thresholds:** Set up alerts for new violation types
+- **Trend Analysis:** Track violation counts over time
+
+---
+
+*🤖 Generated by 254Carbon Meta Repository*
+*Report ID: {{ generated_at[:19] }}*

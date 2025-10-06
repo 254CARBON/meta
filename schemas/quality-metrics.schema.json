@@ -1,0 +1,156 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://254carbon.com/schemas/quality-metrics.json",
+  "title": "254Carbon Quality Metrics Schema",
+  "description": "Schema for quality metrics and scoring data",
+  "type": "object",
+  "properties": {
+    "generated_at": {
+      "type": "string",
+      "description": "ISO timestamp when metrics were computed",
+      "format": "date-time"
+    },
+    "services": {
+      "type": "object",
+      "description": "Per-service quality metrics",
+      "patternProperties": {
+        "^[a-z][a-z0-9-]*[a-z0-9]$": {
+          "type": "object",
+          "properties": {
+            "coverage": {
+              "type": "number",
+              "description": "Test coverage percentage",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "lint_pass": {
+              "type": "boolean",
+              "description": "Lint check status"
+            },
+            "open_critical_vulns": {
+              "type": "integer",
+              "description": "Number of critical vulnerabilities",
+              "minimum": 0
+            },
+            "open_high_vulns": {
+              "type": "integer",
+              "description": "Number of high severity vulnerabilities",
+              "minimum": 0
+            },
+            "policy_failures": {
+              "type": "integer",
+              "description": "Number of policy failures",
+              "minimum": 0
+            },
+            "policy_warnings": {
+              "type": "integer",
+              "description": "Number of policy warnings",
+              "minimum": 0
+            },
+            "build_success_rate": {
+              "type": "number",
+              "description": "Build success rate percentage",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "signed_images": {
+              "type": "boolean",
+              "description": "Container images are signed"
+            },
+            "sbom_present": {
+              "type": "boolean",
+              "description": "SBOM is present"
+            },
+            "deployment_freshness_days": {
+              "type": "integer",
+              "description": "Days since last deployment",
+              "minimum": 0
+            },
+            "score": {
+              "type": "number",
+              "description": "Composite quality score (0-100)",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "grade": {
+              "type": "string",
+              "description": "Quality grade",
+              "enum": ["A", "B", "C", "D", "F"]
+            },
+            "status": {
+              "type": "string",
+              "description": "Quality status",
+              "enum": ["passing", "warning", "failing"]
+            }
+          },
+          "required": ["score", "grade", "status"],
+          "additionalProperties": false
+        }
+      },
+      "minProperties": 1
+    },
+    "global": {
+      "type": "object",
+      "description": "Global quality metrics",
+      "properties": {
+        "avg_score": {
+          "type": "number",
+          "description": "Average quality score across all services",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "median_score": {
+          "type": "number",
+          "description": "Median quality score",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "min_score": {
+          "type": "number",
+          "description": "Minimum quality score",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "max_score": {
+          "type": "number",
+          "description": "Maximum quality score",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "services_below_threshold": {
+          "type": "array",
+          "description": "Services below quality threshold",
+          "items": {
+            "type": "string"
+          }
+        },
+        "total_critical_vulns": {
+          "type": "integer",
+          "description": "Total critical vulnerabilities across all services",
+          "minimum": 0
+        },
+        "services_with_failures": {
+          "type": "integer",
+          "description": "Number of services with failing quality",
+          "minimum": 0
+        },
+        "quality_distribution": {
+          "type": "object",
+          "description": "Distribution of quality grades",
+          "properties": {
+            "A": { "type": "integer", "minimum": 0 },
+            "B": { "type": "integer", "minimum": 0 },
+            "C": { "type": "integer", "minimum": 0 },
+            "D": { "type": "integer", "minimum": 0 },
+            "F": { "type": "integer", "minimum": 0 }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": ["avg_score", "services_below_threshold"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["generated_at", "services", "global"],
+  "additionalProperties": false
+}

@@ -1,0 +1,156 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://254carbon.com/schemas/service-index.json",
+  "title": "254Carbon Service Index Schema",
+  "description": "Schema for the aggregated service catalog",
+  "type": "object",
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "description": "Catalog metadata",
+      "properties": {
+        "generated_at": {
+          "type": "string",
+          "description": "ISO timestamp when catalog was generated",
+          "format": "date-time"
+        },
+        "version": {
+          "type": "string",
+          "description": "Catalog schema version",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "total_services": {
+          "type": "integer",
+          "description": "Total number of services in catalog",
+          "minimum": 0
+        }
+      },
+      "required": ["generated_at", "version", "total_services"],
+      "additionalProperties": false
+    },
+    "services": {
+      "type": "array",
+      "description": "List of all services",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Unique service identifier",
+            "pattern": "^[a-z][a-z0-9-]*[a-z0-9]$"
+          },
+          "repo": {
+            "type": "string",
+            "description": "GitHub repository URL",
+            "format": "uri"
+          },
+          "path": {
+            "type": "string",
+            "description": "Path within the repository"
+          },
+          "domain": {
+            "type": "string",
+            "description": "Business domain"
+          },
+          "version": {
+            "type": "string",
+            "description": "Current version"
+          },
+          "maturity": {
+            "type": "string",
+            "description": "Service maturity level"
+          },
+          "runtime": {
+            "type": "string",
+            "description": "Runtime environment"
+          },
+          "api_contracts": {
+            "type": "array",
+            "description": "API contracts",
+            "items": {
+              "type": "string"
+            }
+          },
+          "events_in": {
+            "type": "array",
+            "description": "Consumed events",
+            "items": {
+              "type": "string"
+            }
+          },
+          "events_out": {
+            "type": "array",
+            "description": "Produced events",
+            "items": {
+              "type": "string"
+            }
+          },
+          "dependencies": {
+            "type": "object",
+            "description": "Service dependencies",
+            "properties": {
+              "internal": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "external": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "quality": {
+            "type": "object",
+            "description": "Quality metrics",
+            "properties": {
+              "coverage": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "lint_pass": {
+                "type": "boolean"
+              },
+              "open_critical_vulns": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          },
+          "security": {
+            "type": "object",
+            "description": "Security posture",
+            "properties": {
+              "signed_images": {
+                "type": "boolean"
+              },
+              "policy_pass": {
+                "type": "boolean"
+              }
+            }
+          },
+          "last_update": {
+            "type": "string",
+            "description": "Last update timestamp",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string",
+            "description": "Service status in catalog",
+            "enum": ["active", "unknown", "error"]
+          }
+        },
+        "required": ["name", "repo", "domain", "version", "maturity", "dependencies", "status"],
+        "additionalProperties": false
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    }
+  },
+  "required": ["metadata", "services"],
+  "additionalProperties": false
+}

@@ -1,0 +1,134 @@
+# 📋 Service Catalog Summary
+
+**Generated:** {{ generated_at | format_date }}
+**Total Services:** {{ total_services }}
+**Catalog Version:** {{ catalog.metadata.version | default('1.0.0') }}
+
+## 📊 Overview
+
+| Metric | Value | Trend |
+|--------|-------|-------|
+| **Total Services** | {{ total_services }} | {% if total_services > 0 %}📈 Growing{% else %}📊 Stable{% endif %} |
+| **Active Services** | {{ services | selectattr('status', 'equalto', 'active') | list | length }} | 🟢 Operational |
+| **Domains Covered** | {{ domains | length }} | 🌍 Comprehensive |
+| **Maturities** | {{ maturities | length }} levels | 📈 Evolving |
+
+## 🏗️ Architecture Overview
+
+### Services by Domain
+
+| Domain | Services | Percentage | Status |
+|--------|----------|------------|--------|
+{% for domain, count in domains.items() %}
+| **{{ domain | title }}** | {{ count }} | {{ (count / total_services * 100) | format_number(1) }}% | {% if domain in ['access', 'data-processing'] %}🔴 Critical{% elif domain == 'shared' %}🟡 Important{% else %}🟢 Supporting{% endif %} |
+{% endfor %}
+
+### Services by Maturity Level
+
+| Maturity | Services | Percentage | Description |
+|----------|----------|------------|-------------|
+{% for maturity, count in maturities.items() %}
+| **{{ maturity | title }}** | {{ count }} | {{ (count / total_services * 100) | format_number(1) }}% | {% if maturity == 'stable' %}✅ Production Ready{% elif maturity == 'beta' %}🟡 Testing Phase{% elif maturity == 'experimental' %}🔵 Innovation Phase{% else %}⚠️ Legacy/Maintenance{% endif %} |
+{% endfor %}
+
+### Runtime Distribution
+
+| Runtime | Services | Percentage |
+|---------|----------|------------|
+{% for runtime, count in runtimes.items() %}
+| **{{ runtime | title }}** | {{ count }} | {{ (count / total_services * 100) | format_number(1) }}% |
+{% endfor %}
+
+## 🔍 Service Details
+
+### Recently Updated Services
+
+| Service | Domain | Maturity | Version | Last Update |
+|---------|--------|----------|---------|-------------|
+{% for service in services[:10] %}
+| **{{ service.name }}** | {{ service.domain | title }} | {{ service.maturity | status_badge }} | `{{ service.version }}` | {{ service.last_update | format_date }} |
+{% endfor %}
+
+### Quality Overview
+
+{% set services_with_quality = services | selectattr('quality', 'defined') | list %}
+{% if services_with_quality %}
+| Service | Coverage | Lint | Critical Vulns | Quality Score |
+|---------|----------|------|----------------|---------------|
+{% for service in services[:10] %}
+{% if service.quality %}
+| **{{ service.name }}** | {{ service.quality.coverage | format_number(1) }} | {{ service.quality.lint_pass | upper }} | {{ service.quality.open_critical_vulns | default(0) }} | {% if service.quality.score %}{{ service.quality.score | format_number(0) }}/100{% else %}N/A{% endif %} |
+{% endif %}
+{% endfor %}
+{% endif %}
+
+## 📈 Platform Health Indicators
+
+### Dependency Analysis
+- **Total Internal Dependencies:** {{ catalog.services | map(attribute='dependencies.internal') | sum(attribute='length') | default(0) }}
+- **Total External Dependencies:** {{ catalog.services | map(attribute='dependencies.external') | sum(attribute='length') | default(0) }}
+
+### API Contract Coverage
+- **Services with API Contracts:** {{ services | selectattr('api_contracts', 'defined') | selectattr('api_contracts') | list | length }}
+- **Services with Event Definitions:** {{ services | selectattr('events_in', 'defined') | selectattr('events_in') | list | length }}
+
+### Security Posture
+- **Services with Signed Images:** {{ services | selectattr('security.signed_images', 'defined') | selectattr('security.signed_images', 'equalto', True) | list | length }}
+- **Services with Passing Security Policies:** {{ services | selectattr('security.policy_pass', 'defined') | selectattr('security.policy_pass', 'equalto', True) | list | length }}
+
+## 🎯 Key Insights
+
+### Strengths
+{% if maturities.get('stable', 0) / total_services > 0.5 %}
+✅ **Mature Platform:** Over 50% of services are stable and production-ready.
+{% endif %}
+
+{% if domains | length >= 4 %}
+✅ **Domain Coverage:** Platform covers multiple business domains effectively.
+{% endif %}
+
+{% if runtimes.get('python', 0) > 0 and runtimes.get('go', 0) > 0 %}
+✅ **Runtime Diversity:** Multiple runtime environments supported.
+{% endif %}
+
+### Areas for Attention
+{% if maturities.get('experimental', 0) / total_services > 0.3 %}
+⚠️ **High Experimentation:** {{ (maturities.get('experimental', 0) / total_services * 100) | format_number(1) }}% of services are experimental.
+{% endif %}
+
+{% if services | selectattr('quality', 'none') | list | length > 0 %}
+⚠️ **Missing Quality Data:** {{ services | selectattr('quality', 'none') | list | length }} services lack quality metrics.
+{% endif %}
+
+## 📋 Recent Activity
+
+*This section would contain recent changes, deployments, and updates across the platform.*
+
+## 🔮 Recommendations
+
+### Immediate Actions
+1. **Review Experimental Services:** Assess {{ maturities.get('experimental', 0) | default(0) }} experimental services for stability
+2. **Complete Quality Metrics:** Add quality data for services missing coverage information
+3. **Update Documentation:** Ensure all services have current documentation
+
+### Long-term Goals
+1. **Increase Stable Services:** Aim for 80%+ stable services
+2. **Enhance Security:** Achieve 100% signed images across all services
+3. **Improve Test Coverage:** Target 80%+ coverage for all stable services
+
+## 📊 Platform Evolution
+
+### Growth Metrics
+- **Services Added (30 days):** *TBD*
+- **Domains Expanded:** *TBD*
+- **API Contracts Added:** *TBD*
+
+### Quality Improvements
+- **Average Quality Score:** *TBD*
+- **Security Compliance:** *TBD*
+- **Dependency Health:** *TBD*
+
+---
+
+*🤖 Generated by 254Carbon Meta Repository*
+*Report ID: {{ generated_at[:19] }}*

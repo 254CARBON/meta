@@ -1,0 +1,145 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://254carbon.com/schemas/service-manifest.json",
+  "title": "254Carbon Service Manifest Schema",
+  "description": "Schema for individual service manifest files",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Unique service identifier",
+      "pattern": "^[a-z][a-z0-9-]*[a-z0-9]$",
+      "minLength": 2,
+      "maxLength": 50
+    },
+    "repo": {
+      "type": "string",
+      "description": "GitHub repository URL",
+      "format": "uri",
+      "pattern": "^https://github\\.com/254carbon/254carbon-"
+    },
+    "path": {
+      "type": "string",
+      "description": "Path within the repository to the service",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "domain": {
+      "type": "string",
+      "description": "Business domain this service belongs to",
+      "enum": ["access", "data-processing", "ml", "infrastructure", "shared"]
+    },
+    "version": {
+      "type": "string",
+      "description": "Current version following semver",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "maturity": {
+      "type": "string",
+      "description": "Service maturity level",
+      "enum": ["experimental", "beta", "stable", "deprecated"]
+    },
+    "runtime": {
+      "type": "string",
+      "description": "Runtime environment",
+      "enum": ["python", "nodejs", "go", "java", "docker"]
+    },
+    "api_contracts": {
+      "type": "array",
+      "description": "API contracts this service implements",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9-]+@[0-9]+\\.[0-9]+\\.[0-9]+$"
+      },
+      "uniqueItems": true
+    },
+    "events_in": {
+      "type": "array",
+      "description": "Events this service consumes",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9-]+\\.[a-z0-9-]+\\.[a-z0-9-]+\\.v[0-9]+$"
+      },
+      "uniqueItems": true
+    },
+    "events_out": {
+      "type": "array",
+      "description": "Events this service produces",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9-]+\\.[a-z0-9-]+\\.[a-z0-9-]+\\.v[0-9]+$"
+      },
+      "uniqueItems": true
+    },
+    "dependencies": {
+      "type": "object",
+      "description": "Service dependencies",
+      "properties": {
+        "internal": {
+          "type": "array",
+          "description": "Internal service dependencies",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*[a-z0-9]$"
+          },
+          "uniqueItems": true
+        },
+        "external": {
+          "type": "array",
+          "description": "External dependencies",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
+      },
+      "required": ["internal", "external"],
+      "additionalProperties": false
+    },
+    "quality": {
+      "type": "object",
+      "description": "Quality metrics",
+      "properties": {
+        "coverage": {
+          "type": "number",
+          "description": "Test coverage percentage",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "lint_pass": {
+          "type": "boolean",
+          "description": "Lint check status"
+        },
+        "open_critical_vulns": {
+          "type": "integer",
+          "description": "Number of critical vulnerabilities",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "security": {
+      "type": "object",
+      "description": "Security posture",
+      "properties": {
+        "signed_images": {
+          "type": "boolean",
+          "description": "Container images are signed"
+        },
+        "policy_pass": {
+          "type": "boolean",
+          "description": "Security policy compliance"
+        }
+      },
+      "additionalProperties": false
+    },
+    "last_update": {
+      "type": "string",
+      "description": "ISO timestamp of last update",
+      "format": "date-time"
+    }
+  },
+  "required": ["name", "repo", "domain", "version", "maturity", "dependencies"],
+  "additionalProperties": false
+}

@@ -1,0 +1,142 @@
+# 254Carbon Meta Repository - Thresholds Configuration
+#
+# This file defines scoring weights and thresholds for quality metrics,
+# drift detection, and overall platform health assessment.
+
+# Quality scoring configuration
+quality:
+  # Base score (starting point before applying metrics)
+  base_score: 50
+
+  # Dimension weights (must sum to 1.0)
+  weights:
+    coverage: 0.25
+    security: 0.35
+    policy: 0.15
+    stability: 0.10
+    drift: 0.15
+
+  # Coverage scoring
+  coverage:
+    target: 0.75          # Target coverage percentage
+    weight: 0.25          # Weight in overall score
+    excellent_threshold: 0.90
+    good_threshold: 0.80
+    acceptable_threshold: 0.70
+    poor_threshold: 0.50
+
+  # Security scoring
+  security:
+    weight: 0.35          # Weight in overall score
+    max_critical_vulns: 0    # Maximum acceptable critical vulnerabilities
+    max_high_vulns: 2        # Maximum acceptable high vulnerabilities
+    signed_images_bonus: 10  # Bonus points for signed images
+    sbom_bonus: 5           # Bonus points for SBOM presence
+
+  # Policy scoring
+  policy:
+    weight: 0.15          # Weight in overall score
+    full_compliance_bonus: 15  # Bonus for full policy compliance
+    partial_compliance_threshold: 0.80  # Threshold for partial credit
+
+  # Stability scoring
+  stability:
+    weight: 0.10          # Weight in overall score
+    deployment_frequency_bonus: 5  # Bonus for recent deployments
+    staleness_penalty: 10    # Penalty for stale versions
+
+  # Drift penalty
+  drift:
+    weight: 0.15          # Weight in overall score
+    penalty_per_issue: 5     # Points deducted per drift issue
+    max_penalty: 20         # Maximum drift penalty
+
+# Drift severity thresholds
+drift_severity:
+  # Spec version lag thresholds (days)
+  spec_lag:
+    minor_warning: 30      # Warn if minor version > 30 days old
+    minor_critical: 90     # Critical if minor version > 90 days old
+    major_warning: 60      # Warn if major version > 60 days old
+    major_critical: 180    # Critical if major version > 180 days old
+
+  # Version staleness thresholds (days)
+  staleness:
+    warning: 90           # Warn if service > 90 days old
+    critical: 180         # Critical if service > 180 days old
+
+  # Dependency issues
+  dependency:
+    unauthorized_external: "warning"
+    directional_violation: "error"
+    cycle_detected: "error"
+
+# Service maturity adjustments
+maturity_multipliers:
+  experimental:
+    coverage_weight: 0.8   # Reduce coverage importance for experimental
+    security_weight: 0.6   # Reduce security importance for experimental
+    stability_weight: 0.5  # Reduce stability importance for experimental
+
+  beta:
+    coverage_weight: 0.9   # Slightly reduce for beta
+    security_weight: 0.8
+    stability_weight: 0.7
+
+  stable:
+    coverage_weight: 1.0   # Full weight for stable services
+    security_weight: 1.0
+    stability_weight: 1.0
+
+  deprecated:
+    coverage_weight: 0.6   # Reduce for deprecated services
+    security_weight: 0.4
+    stability_weight: 0.3
+
+# Quality grades and thresholds
+quality_grades:
+  A: { min_score: 90, description: "Excellent" }
+  B: { min_score: 80, description: "Good" }
+  C: { min_score: 70, description: "Acceptable" }
+  D: { min_score: 60, description: "Needs Improvement" }
+  F: { min_score: 0, description: "Failing" }
+
+# Platform health thresholds
+platform_health:
+  # Overall platform score thresholds
+  excellent: 85
+  good: 75
+  acceptable: 65
+  concerning: 55
+
+  # Service distribution requirements
+  min_healthy_services: 0.80    # At least 80% of services should be healthy
+  max_failing_services: 0.10    # No more than 10% should be failing
+
+  # Critical path requirements
+  critical_services_min_score: 85  # Critical services must score at least 85
+
+# Alerting thresholds
+alerting:
+  # Quality degradation alerts
+  quality_drop_threshold: 10       # Alert if score drops by 10+ points
+  quality_drop_window: 7          # Within 7 days
+
+  # Drift issue alerts
+  max_drift_issues: 5             # Alert if more than 5 drift issues
+  max_critical_drift: 2           # Alert if more than 2 critical drift issues
+
+  # Dependency alerts
+  max_dependency_violations: 3    # Alert if more than 3 dependency violations
+
+# Performance benchmarks (for future use)
+performance:
+  # Catalog build performance
+  max_build_time: 300             # 5 minutes max for catalog build
+  max_validation_time: 60         # 1 minute max for validation
+
+  # Manifest collection performance
+  max_collection_time: 600        # 10 minutes max for manifest collection
+
+  # Memory usage limits
+  max_memory_mb: 512              # 512MB max memory usage

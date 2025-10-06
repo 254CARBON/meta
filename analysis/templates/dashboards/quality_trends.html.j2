@@ -1,0 +1,428 @@
+<!--
+  Template: dashboards/quality_trends.html.j2
+  Purpose: Visualize quality score trends, grade distribution, and hotspots
+           using Plotly and Bootstrap for a given time window.
+
+  Inputs (context):
+  - data: object with keys
+      metadata: { title, generated_at, window }
+      timeseries: { labels: [], scores: { service_name: [..] }, global_avg: [] }
+      distribution: { grades: { A,B,C,D,F } }
+
+  Rendered by: scripts/generate_dashboard.py
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ data.metadata.title }}</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .grade-badge {
+            font-size: 1.2rem;
+            font-weight: bold;
+            padding: 8px 12px;
+            border-radius: 50%;
+            color: white;
+            display: inline-block;
+            min-width: 40px;
+            text-align: center;
+        }
+        .grade-A { background-color: #28a745; }
+        .grade-B { background-color: #20c997; }
+        .grade-C { background-color: #ffc107; color: #000; }
+        .grade-D { background-color: #fd7e14; }
+        .grade-F { background-color: #dc3545; }
+        
+        .quality-card {
+            transition: transform 0.2s;
+            border-left: 4px solid;
+        }
+        .quality-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .quality-card.grade-A { border-left-color: #28a745; }
+        .quality-card.grade-B { border-left-color: #20c997; }
+        .quality-card.grade-C { border-left-color: #ffc107; }
+        .quality-card.grade-D { border-left-color: #fd7e14; }
+        .quality-card.grade-F { border-left-color: #dc3545; }
+        
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .metric-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .progress-custom {
+            height: 20px;
+            border-radius: 10px;
+        }
+        
+        .trend-indicator {
+            font-size: 0.8rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 8px;
+        }
+        .trend-up { background-color: #d4edda; color: #155724; }
+        .trend-down { background-color: #f8d7da; color: #721c24; }
+        .trend-stable { background-color: #d1ecf1; color: #0c5460; }
+        
+        .vulnerability-badge {
+            font-size: 0.8rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin: 2px;
+        }
+        .vuln-critical { background-color: #dc3545; color: white; }
+        .vuln-high { background-color: #fd7e14; color: white; }
+        .vuln-medium { background-color: #ffc107; color: #000; }
+        .vuln-low { background-color: #17a2b8; color: white; }
+    </style>
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1">
+                <i class="fas fa-chart-line"></i> 254Carbon Quality Trends
+            </span>
+            <div class="d-flex">
+                <button class="btn btn-outline-light me-2" id="refresh-dashboard">
+                    <i class="fas fa-sync-alt" id="refresh-icon"></i> Refresh
+                </button>
+                <button class="btn btn-outline-light" id="export-dashboard">
+                    <i class="fas fa-download"></i> Export
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <!-- Quality Summary -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="metric-card">
+                    <div class="metric-value">{{ data.quality_summary.average_score }}</div>
+                    <div class="metric-label">Average Quality Score</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                        <div class="metric-value">{{ data.quality_summary.grade_distribution.A|default(0) }}</div>
+                        <div class="metric-label">Grade A Services</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body text-center">
+                        <div class="metric-value">{{ data.quality_summary.failing_services }}</div>
+                        <div class="metric-label">Failing Services</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body text-center">
+                        <div class="metric-value">{{ data.quality_summary.total_services }}</div>
+                        <div class="metric-label">Total Services</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-chart-line"></i> Quality Score Trends</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="quality-trends"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-chart-pie"></i> Grade Distribution</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="grade-distribution"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quality vs Coverage Scatter Plot -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-chart-scatter"></i> Quality Score vs Test Coverage</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="quality-scatter"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Service Quality Details -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5><i class="fas fa-list"></i> Service Quality Details</h5>
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="filterServices('all')">All</button>
+                            <button type="button" class="btn btn-sm btn-outline-success" onclick="filterServices('A')">Grade A</button>
+                            <button type="button" class="btn btn-sm btn-outline-info" onclick="filterServices('B')">Grade B</button>
+                            <button type="button" class="btn btn-sm btn-outline-warning" onclick="filterServices('C')">Grade C</button>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="filterServices('D')">Grade D</button>
+                            <button type="button" class="btn btn-sm btn-outline-dark" onclick="filterServices('F')">Grade F</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row" id="service-quality-grid">
+                            {% for service_name, service_data in data.service_quality.items() %}
+                            <div class="col-md-6 mb-3 quality-card grade-{{ service_data.grade }}" data-grade="{{ service_data.grade }}">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h6 class="card-title mb-0">{{ service_name }}</h6>
+                                            <span class="grade-badge grade-{{ service_data.grade }}">{{ service_data.grade }}</span>
+                                        </div>
+                                        
+                                        <!-- Quality Score -->
+                                        <div class="mb-3">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span>Quality Score</span>
+                                                <span class="fw-bold">{{ service_data.score }}/100</span>
+                                            </div>
+                                            <div class="progress progress-custom">
+                                                <div class="progress-bar 
+                                                    {% if service_data.score >= 80 %}bg-success
+                                                    {% elif service_data.score >= 60 %}bg-warning
+                                                    {% else %}bg-danger{% endif %}" 
+                                                    style="width: {{ service_data.score }}%"></div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Test Coverage -->
+                                        <div class="mb-3">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span>Test Coverage</span>
+                                                <span class="fw-bold">{{ (service_data.coverage * 100)|round(1) }}%</span>
+                                            </div>
+                                            <div class="progress progress-custom">
+                                                <div class="progress-bar bg-info" style="width: {{ service_data.coverage * 100 }}%"></div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Metrics Row -->
+                                        <div class="row text-center">
+                                            <div class="col-4">
+                                                <div class="text-muted small">Lint</div>
+                                                <div class="fw-bold">
+                                                    {% if service_data.lint_pass %}
+                                                        <i class="fas fa-check text-success"></i>
+                                                    {% else %}
+                                                        <i class="fas fa-times text-danger"></i>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="text-muted small">Critical Vulns</div>
+                                                <div class="fw-bold">
+                                                    {% if service_data.critical_vulns > 0 %}
+                                                        <span class="vulnerability-badge vuln-critical">{{ service_data.critical_vulns }}</span>
+                                                    {% else %}
+                                                        <span class="text-success">0</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="text-muted small">Policy</div>
+                                                <div class="fw-bold">
+                                                    {% if service_data.policy_failures > 0 %}
+                                                        <span class="text-danger">{{ service_data.policy_failures }}</span>
+                                                    {% else %}
+                                                        <span class="text-success">0</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Status -->
+                                        <div class="mt-3">
+                                            <span class="badge bg-{{ 'success' if service_data.status == 'passing' else 'danger' if service_data.status == 'failing' else 'warning' }}">
+                                                {{ service_data.status }}
+                                            </span>
+                                            <small class="text-muted float-end">{{ service_data.last_updated }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quality Trends Table -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-table"></i> Quality Trends History</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Average Score</th>
+                                        <th>Services Count</th>
+                                        <th>Grade Distribution</th>
+                                        <th>Trend</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for trend in data.quality_trends %}
+                                    <tr>
+                                        <td>{{ trend.date }}</td>
+                                        <td>
+                                            <span class="fw-bold">{{ trend.average_score }}</span>
+                                        </td>
+                                        <td>{{ trend.services_count }}</td>
+                                        <td>
+                                            {% for grade, count in trend.grade_distribution.items() %}
+                                                {% if count > 0 %}
+                                                    <span class="grade-badge grade-{{ grade }} me-1">{{ grade }}: {{ count }}</span>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </td>
+                                        <td>
+                                            {% if loop.index > 1 %}
+                                                {% set prev_score = data.quality_trends[loop.index - 2].average_score %}
+                                                {% if trend.average_score > prev_score %}
+                                                    <span class="trend-indicator trend-up">
+                                                        <i class="fas fa-arrow-up"></i> +{{ (trend.average_score - prev_score)|round(1) }}
+                                                    </span>
+                                                {% elif trend.average_score < prev_score %}
+                                                    <span class="trend-indicator trend-down">
+                                                        <i class="fas fa-arrow-down"></i> {{ (trend.average_score - prev_score)|round(1) }}
+                                                    </span>
+                                                {% else %}
+                                                    <span class="trend-indicator trend-stable">
+                                                        <i class="fas fa-minus"></i> 0
+                                                    </span>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="text-muted">Baseline</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="text-center text-muted">
+                    <small>
+                        Last updated: {{ data.metadata.generated_at }} | 
+                        Generated by 254Carbon Meta Repository
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Render charts
+        {% if data.charts.quality_trends %}
+        document.getElementById('quality-trends').innerHTML = {{ data.charts.quality_trends|safe }};
+        {% endif %}
+        
+        {% if data.charts.grade_distribution %}
+        document.getElementById('grade-distribution').innerHTML = {{ data.charts.grade_distribution|safe }};
+        {% endif %}
+        
+        {% if data.charts.quality_scatter %}
+        document.getElementById('quality-scatter').innerHTML = {{ data.charts.quality_scatter|safe }};
+        {% endif %}
+
+        // Service filtering
+        function filterServices(grade) {
+            const serviceCards = document.querySelectorAll('.quality-card');
+            const buttons = document.querySelectorAll('.btn-group .btn');
+            
+            // Update button states
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Filter services
+            serviceCards.forEach(card => {
+                if (grade === 'all' || card.dataset.grade === grade) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // Refresh functionality
+        document.getElementById('refresh-dashboard').addEventListener('click', function() {
+            const icon = document.getElementById('refresh-icon');
+            icon.classList.add('fa-spin');
+            
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        });
+
+        // Export functionality
+        document.getElementById('export-dashboard').addEventListener('click', function() {
+            window.print();
+        });
+
+        // Auto-refresh every 10 minutes
+        setInterval(() => {
+            location.reload();
+        }, 600000);
+
+        // Initialize with all services visible
+        document.querySelector('.btn-group .btn:first-child').classList.add('active');
+    </script>
+</body>
+</html>

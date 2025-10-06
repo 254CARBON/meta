@@ -32,6 +32,8 @@ from typing import Dict, List, Any, Optional, Tuple
 from dataclasses import dataclass
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
+from scripts.utils import monitor_execution, audit_logger, redis_client
+
 
 # Configure logging
 logging.basicConfig(
@@ -57,10 +59,11 @@ class QualityMetrics:
     policy_warnings: int
     build_success_rate: float
     signed_images: bool
-    sbom_present: bool
-    deployment_freshness_days: int
+    deployment_days: int
     drift_issues: int
     maturity: str
+    sbom_present: bool
+    deployment_freshness_days: int
 
     def compute_score(self, thresholds: Dict[str, Any]) -> int:
         """Compute composite quality score (0-100)."""
@@ -316,13 +319,24 @@ class QualityComputer:
 
         return result
 
+    @monitor_execution("quality-computation")
     def compute_all_quality_scores_parallel(self) -> Dict[str, Any]:
         """Compute quality scores for all services using parallel processing."""
         logger.info("Computing quality scores for all services using parallel processing...")
 
+        # Try to load cached quality scores first
+        cached_scores = redis_client.get("quality_scores", fallback_to_file=True)
+        if cached_scores:
+            logger.info("Using cached quality scores")
+            return cached_scores
+
         services_data = self.catalog.get('services', [])
         if not services_data:
             logger.warning("No services found in catalog")
+            # Return cached scores if available
+            if cached_scores:
+                logger.info("Returning cached quality scores as fallback")
+                return cached_scores
             return {}
 
         # Load drift data for penalty calculation
@@ -428,6 +442,10 @@ class QualityComputer:
         }
 
         logger.info(f"Quality computation complete: {len(service_scores)} services scored, avg: {avg_score:.1f}")
+        
+        # Cache the quality scores
+        redis_client.set("quality_scores", quality_snapshot, ttl=1800, fallback_to_file=True)
+        
         return quality_snapshot
 
     def _generate_insights(self, service_scores: Dict[str, Any], all_scores: List[int]) -> List[str]:
@@ -488,6 +506,22 @@ class QualityComputer:
             json.dump(quality_snapshot, f, indent=2)
 
         logger.info(f"Updated latest quality snapshot: {latest_file}")
+
+        # Log quality computation completion
+        audit_logger.log_action(
+            user="system",
+            action="quality_computation",
+            resource="quality_scores",
+            resource_type="quality_data",
+            details={
+                "total_services": quality_snapshot["metadata"]["total_services"],
+                "computed_at": quality_snapshot["metadata"]["computed_at"],
+                "avg_quality_score": quality_snapshot["summary"]["avg_quality_score"],
+                "grade_distribution": quality_snapshot["summary"]["grade_distribution"],
+                "snapshot_file": str(snapshot_file)
+            },
+            category=audit_logger.AuditCategory.QUALITY
+        )
 
 
 def main():

@@ -1,0 +1,474 @@
+<!--
+  Template: dashboards/release_calendar.html.j2
+  Purpose: Calendar/roadmap view of release trains and service deployments.
+
+  Inputs (context):
+  - data: object with keys
+      metadata: { title, generated_at }
+      releases: [ { name, window: { start, end }, services: [], status } ]
+
+  Rendered by: scripts/generate_dashboard.py
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ data.metadata.title }}</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .status-badge {
+            font-size: 0.8rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .status-planned { background-color: #ffc107; color: #000; }
+        .status-completed { background-color: #28a745; color: white; }
+        .status-failed { background-color: #dc3545; color: white; }
+        .status-in-progress { background-color: #17a2b8; color: white; }
+        
+        .release-card {
+            transition: transform 0.2s;
+            border-left: 4px solid;
+        }
+        .release-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .release-card.planned { border-left-color: #ffc107; }
+        .release-card.completed { border-left-color: #28a745; }
+        .release-card.failed { border-left-color: #dc3545; }
+        .release-card.in-progress { border-left-color: #17a2b8; }
+        
+        .train-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .train-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .train-status {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .participant-badge {
+            background-color: rgba(255,255,255,0.2);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin: 2px;
+            display: inline-block;
+        }
+        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background-color: #e9ecef;
+            border: 1px solid #e9ecef;
+        }
+        
+        .calendar-day {
+            background-color: white;
+            padding: 10px;
+            min-height: 80px;
+            position: relative;
+        }
+        
+        .calendar-day.has-release {
+            background-color: #f8f9fa;
+            border: 2px solid #007bff;
+        }
+        
+        .calendar-day.today {
+            background-color: #e3f2fd;
+        }
+        
+        .day-number {
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        
+        .release-indicator {
+            position: absolute;
+            bottom: 5px;
+            left: 5px;
+            right: 5px;
+            font-size: 0.7rem;
+            background-color: #007bff;
+            color: white;
+            padding: 2px 4px;
+            border-radius: 3px;
+            text-align: center;
+        }
+        
+        .timeline-item {
+            position: relative;
+            padding-left: 30px;
+            margin-bottom: 20px;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #007bff;
+        }
+        
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 12px;
+            width: 2px;
+            height: calc(100% + 8px);
+            background-color: #e9ecef;
+        }
+        
+        .timeline-item:last-child::after {
+            display: none;
+        }
+        
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .metric-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1">
+                <i class="fas fa-calendar-alt"></i> 254Carbon Release Calendar
+            </span>
+            <div class="d-flex">
+                <button class="btn btn-outline-light me-2" id="refresh-dashboard">
+                    <i class="fas fa-sync-alt" id="refresh-icon"></i> Refresh
+                </button>
+                <button class="btn btn-outline-light" id="export-dashboard">
+                    <i class="fas fa-download"></i> Export
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <!-- Release Summary -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="metric-card">
+                    <div class="metric-value">{{ data.upcoming_releases|length }}</div>
+                    <div class="metric-label">Upcoming Releases</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                        <div class="metric-value">{{ data.release_history|length }}</div>
+                        <div class="metric-label">Completed Releases</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body text-center">
+                        <div class="metric-value">{{ data.release_trains|length }}</div>
+                        <div class="metric-label">Release Trains</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body text-center">
+                        <div class="metric-value">{{ data.release_trains|selectattr('status', 'equalto', 'planning')|list|length }}</div>
+                        <div class="metric-label">Active Trains</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Release Trains -->
+        {% if data.release_trains %}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-train"></i> Release Trains</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            {% for train in data.release_trains %}
+                            <div class="col-md-6 mb-3">
+                                <div class="train-card">
+                                    <div class="train-title">{{ train.name }}</div>
+                                    <div class="train-status">
+                                        Status: <span class="status-badge status-{{ train.status }}">{{ train.status }}</span>
+                                    </div>
+                                    {% if train.participants %}
+                                    <div class="mt-2">
+                                        <strong>Participants:</strong><br>
+                                        {% for participant in train.participants %}
+                                        <span class="participant-badge">{{ participant }}</span>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                    {% if train.target_version %}
+                                    <div class="mt-2">
+                                        <strong>Target Version:</strong> {{ train.target_version }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Charts Row -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-chart-line"></i> Release Timeline</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="release-timeline"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-chart-bar"></i> Release Frequency</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="release-frequency"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Release Calendar -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-calendar"></i> Release Calendar - January 2025</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="calendar-grid">
+                            <!-- Calendar header -->
+                            <div class="calendar-day bg-light text-center fw-bold">Sun</div>
+                            <div class="calendar-day bg-light text-center fw-bold">Mon</div>
+                            <div class="calendar-day bg-light text-center fw-bold">Tue</div>
+                            <div class="calendar-day bg-light text-center fw-bold">Wed</div>
+                            <div class="calendar-day bg-light text-center fw-bold">Thu</div>
+                            <div class="calendar-day bg-light text-center fw-bold">Fri</div>
+                            <div class="calendar-day bg-light text-center fw-bold">Sat</div>
+                            
+                            <!-- Calendar days -->
+                            {% for day in range(1, 32) %}
+                            {% set day_str = "2025-01-" + day|string.rjust(2, '0') %}
+                            {% set has_release = data.upcoming_releases|selectattr('release_date', 'equalto', day_str)|list|length > 0 %}
+                            {% set is_today = day == 6 %}
+                            <div class="calendar-day {% if has_release %}has-release{% endif %} {% if is_today %}today{% endif %}">
+                                <div class="day-number">{{ day }}</div>
+                                {% if has_release %}
+                                {% for release in data.upcoming_releases %}
+                                {% if release.release_date == day_str %}
+                                <div class="release-indicator">{{ release.service }} v{{ release.version }}</div>
+                                {% endif %}
+                                {% endfor %}
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upcoming Releases -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-clock"></i> Upcoming Releases ({{ data.upcoming_releases|length }})</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if data.upcoming_releases %}
+                            {% for release in data.upcoming_releases %}
+                            <div class="timeline-item">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <strong>{{ release.service }} v{{ release.version }}</strong>
+                                        <div class="text-muted">{{ release.description }}</div>
+                                        <small class="text-muted">{{ release.release_date }}</small>
+                                    </div>
+                                    <span class="status-badge status-{{ release.status }}">
+                                        {{ release.status }}
+                                    </span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center text-muted">
+                                <i class="fas fa-check-circle fa-2x mb-2"></i>
+                                <div>No upcoming releases scheduled</div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-history"></i> Recent Releases ({{ data.release_history|length }})</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if data.release_history %}
+                            {% for release in data.release_history %}
+                            <div class="timeline-item">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <strong>{{ release.service }} v{{ release.version }}</strong>
+                                        <div class="text-muted">{{ release.description }}</div>
+                                        <small class="text-muted">{{ release.release_date }}</small>
+                                    </div>
+                                    <span class="status-badge status-{{ release.status }}">
+                                        {{ release.status }}
+                                    </span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center text-muted">
+                                <i class="fas fa-info-circle fa-2x mb-2"></i>
+                                <div>No recent releases</div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Release Details Table -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-table"></i> All Releases</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Service</th>
+                                        <th>Version</th>
+                                        <th>Release Date</th>
+                                        <th>Status</th>
+                                        <th>Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for release in data.upcoming_releases + data.release_history %}
+                                    <tr>
+                                        <td><strong>{{ release.service }}</strong></td>
+                                        <td><code>{{ release.version }}</code></td>
+                                        <td>{{ release.release_date }}</td>
+                                        <td>
+                                            <span class="status-badge status-{{ release.status }}">
+                                                {{ release.status }}
+                                            </span>
+                                        </td>
+                                        <td>{{ release.description }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="text-center text-muted">
+                    <small>
+                        Last updated: {{ data.metadata.generated_at }} | 
+                        Generated by 254Carbon Meta Repository
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Render charts
+        {% if data.charts.release_timeline %}
+        document.getElementById('release-timeline').innerHTML = {{ data.charts.release_timeline|safe }};
+        {% endif %}
+        
+        {% if data.charts.release_frequency %}
+        document.getElementById('release-frequency').innerHTML = {{ data.charts.release_frequency|safe }};
+        {% endif %}
+
+        // Refresh functionality
+        document.getElementById('refresh-dashboard').addEventListener('click', function() {
+            const icon = document.getElementById('refresh-icon');
+            icon.classList.add('fa-spin');
+            
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        });
+
+        // Export functionality
+        document.getElementById('export-dashboard').addEventListener('click', function() {
+            window.print();
+        });
+
+        // Auto-refresh every 15 minutes
+        setInterval(() => {
+            location.reload();
+        }, 900000);
+    </script>
+</body>
+</html>

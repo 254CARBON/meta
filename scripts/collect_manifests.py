@@ -36,6 +36,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # Import our utilities
 from scripts.utils.circuit_breaker import github_api_circuit_breaker
+from scripts.utils import monitor_execution, audit_logger
 
 
 # Configure logging
@@ -210,6 +211,7 @@ class ManifestCollector:
             logger.error(f"Failed to collect manifest from {repo_name}: {e}")
             return None
 
+    @monitor_execution("manifest-collection")
     def collect_all_manifests(self, repo_filter: Optional[str] = None) -> Dict[str, Any]:
         """Collect manifests from all repositories using parallel processing."""
         logger.info("Starting parallel manifest collection...")
@@ -268,6 +270,22 @@ class ManifestCollector:
             summary_file = self.manifests_dir / "collection-summary.json"
             with open(summary_file, 'w') as f:
                 json.dump(results, f, indent=2)
+
+        # Log manifest collection completion
+        audit_logger.log_action(
+            user="system",
+            action="manifest_collection",
+            resource="service_manifests",
+            resource_type="manifest_data",
+            details={
+                "successful_collections": results['successful'],
+                "failed_collections": results['failed'],
+                "total_repositories": results['total'],
+                "collection_time": results.get('collection_time', 0),
+                "summary_file": str(summary_file) if not self.dry_run else None
+            },
+            category=audit_logger.AuditCategory.DATA_MODIFICATION
+        )
 
         logger.info(f"Collection complete: {results['successful']} successful, {results['failed']} failed")
         return results

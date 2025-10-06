@@ -24,6 +24,8 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
+from scripts.utils import monitor_execution, audit_logger
+
 
 # Configure logging
 logging.basicConfig(
@@ -335,6 +337,7 @@ class ReleaseTrainExecutor:
         logger.warning(f"Workflow {run_id} timed out after {timeout_minutes} minutes")
         return False  # Timeout
 
+    @monitor_execution("release-train-execution")
     def execute_release_train(self) -> ReleaseExecution:
         """Execute the complete release train."""
         logger.info(f"Starting release train execution: {self.train_name}")
@@ -465,6 +468,26 @@ class ReleaseTrainExecutor:
             json.dump(report, f, indent=2)
 
         logger.info(f"Saved execution report to {report_file}")
+
+        # Log release train execution completion
+        audit_logger.log_action(
+            user="system",
+            action="release_train_execution",
+            resource=execution.train_name,
+            resource_type="release_train",
+            details={
+                "train_name": execution.train_name,
+                "overall_status": execution.overall_status.value,
+                "total_steps": len(execution.steps),
+                "successful_steps": len([s for s in execution.steps if s.status == ReleaseStatus.SUCCESS]),
+                "failed_steps": len([s for s in execution.steps if s.status == ReleaseStatus.FAILED]),
+                "rollback_triggered": execution.rollback_triggered,
+                "execution_time_seconds": execution.execution_time.total_seconds() if execution.execution_time else 0,
+                "dry_run": self.dry_run,
+                "report_file": str(report_file)
+            },
+            category=audit_logger.AuditCategory.RELEASE
+        )
 
 
 def main():

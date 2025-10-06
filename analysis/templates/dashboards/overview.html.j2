@@ -1,65 +1,463 @@
+<!--
+  Template: dashboards/overview.html.j2
+  Purpose: High-level platform overview dashboard summarizing catalog size,
+           service health, quality distribution, and drift signals.
+
+  Inputs (context):
+  - data (optional): summary object produced by scripts/generate_dashboard.py
+    expected keys: { metadata: { title }, stats: { ... } }
+    Note: This template can render with minimal context for static previews.
+
+  Rendered by: scripts/generate_dashboard.py
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ metadata.title }} - 254Carbon Platform Overview</title>
-    <link rel="stylesheet" href="assets/dashboard.css">
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <title>254Carbon Meta - Platform Overview Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8fafc;
+            color: #334155;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            font-size: 1.2rem;
+        }
+        
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .metric-label {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+        
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .status-healthy {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+        
+        .status-warning {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status-critical {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .status-unknown {
+            background-color: #f1f5f9;
+            color: #475569;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+            transition: width 0.3s ease;
+        }
+        
+        .chart-container {
+            height: 200px;
+            margin-top: 1rem;
+            background-color: #f8fafc;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            font-style: italic;
+        }
+        
+        .service-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .service-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .service-item:last-child {
+            border-bottom: none;
+        }
+        
+        .service-name {
+            font-weight: 500;
+            color: #1e293b;
+        }
+        
+        .service-domain {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+        }
+        
+        .service-status {
+            font-size: 0.8rem;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: #64748b;
+            border-top: 1px solid #e2e8f0;
+            margin-top: 2rem;
+        }
+        
+        .refresh-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-left: 1rem;
+        }
+        
+        .refresh-btn:hover {
+            background: #2563eb;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="dashboard-header">
-        <h1>🏗️ {{ metadata.title }}</h1>
-        <p class="timestamp">Generated: {{ metadata.generated_at }}</p>
-        <p class="version">Version: {{ metadata.version }}</p>
+    <div class="header">
+        <h1>254Carbon Meta Platform</h1>
+        <p>Platform Overview Dashboard</p>
+        <button class="refresh-btn" onclick="location.reload()">Refresh</button>
     </div>
-
-    <div class="metrics-grid">
-        <div class="metric-card">
-            <div class="metric-label">Total Services</div>
-            <div class="metric-value">{{ platform_summary.total_services }}</div>
-        </div>
-
-        <div class="metric-card">
-            <div class="metric-label">Platform Health</div>
-            <div class="metric-value {% if quality_overview.average_score >= 80 %}status-good{% elif quality_overview.average_score >= 70 %}status-warning{% else %}status-danger{% endif %}">
-                {{ quality_overview.average_score|round(1) }}/100
+    
+    <div class="container">
+        <div class="dashboard-grid">
+            <!-- Platform Health Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon" style="background-color: #dcfce7; color: #166534;">🏥</div>
+                    <div class="card-title">Platform Health</div>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Overall Status</span>
+                    <span class="status-badge status-healthy">Healthy</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Services Online</span>
+                    <span class="metric-value">{{ platform_health.services_online }}/{{ platform_health.total_services }}</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Uptime</span>
+                    <span class="metric-value">{{ platform_health.uptime_percentage }}%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ platform_health.uptime_percentage }}%"></div>
+                </div>
+            </div>
+            
+            <!-- Service Catalog Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon" style="background-color: #dbeafe; color: #1e40af;">📋</div>
+                    <div class="card-title">Service Catalog</div>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Total Services</span>
+                    <span class="metric-value">{{ catalog_stats.total_services }}</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Active Services</span>
+                    <span class="metric-value">{{ catalog_stats.active_services }}</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Last Updated</span>
+                    <span class="metric-value">{{ catalog_stats.last_updated }}</span>
+                </div>
+                <div class="service-list">
+                    {% for service in catalog_stats.recent_services %}
+                    <div class="service-item">
+                        <div>
+                            <div class="service-name">{{ service.name }}</div>
+                            <div class="service-domain">{{ service.domain }}</div>
+                        </div>
+                        <span class="status-badge status-healthy">{{ service.status }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Quality Metrics Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon" style="background-color: #fef3c7; color: #92400e;">⭐</div>
+                    <div class="card-title">Quality Metrics</div>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Average Quality Score</span>
+                    <span class="metric-value">{{ quality_metrics.average_score }}/100</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Services Above Threshold</span>
+                    <span class="metric-value">{{ quality_metrics.above_threshold }}/{{ quality_metrics.total_services }}</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Coverage Average</span>
+                    <span class="metric-value">{{ quality_metrics.coverage_average }}%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ quality_metrics.average_score }}%"></div>
+                </div>
+            </div>
+            
+            <!-- Drift Detection Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon" style="background-color: #fee2e2; color: #991b1b;">⚠️</div>
+                    <div class="card-title">Drift Detection</div>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Total Issues</span>
+                    <span class="metric-value">{{ drift_status.total_issues }}</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">High Severity</span>
+                    <span class="metric-value">{{ drift_status.high_severity }}</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Last Check</span>
+                    <span class="metric-value">{{ drift_status.last_check }}</span>
+                </div>
+                {% if drift_status.total_issues > 0 %}
+                <div class="chart-container">
+                    <div>Drift issues detected - Check details in drift report</div>
+                </div>
+                {% else %}
+                <div class="chart-container">
+                    <div>No drift issues detected ✅</div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Release Trains Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon" style="background-color: #e0e7ff; color: #3730a3;">🚂</div>
+                    <div class="card-title">Release Trains</div>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Active Trains</span>
+                    <span class="metric-value">{{ release_trains.active_trains }}</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Completed This Week</span>
+                    <span class="metric-value">{{ release_trains.completed_this_week }}</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Success Rate</span>
+                    <span class="metric-value">{{ release_trains.success_rate }}%</span>
+                </div>
+                <div class="service-list">
+                    {% for train in release_trains.recent_trains %}
+                    <div class="service-item">
+                        <div>
+                            <div class="service-name">{{ train.name }}</div>
+                            <div class="service-domain">{{ train.status }} - {{ train.participants|length }} services</div>
+                        </div>
+                        <span class="status-badge {% if train.status == 'completed' %}status-healthy{% elif train.status == 'failed' %}status-critical{% else %}status-warning{% endif %}">{{ train.status }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Performance Metrics Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon" style="background-color: #f3e8ff; color: #7c3aed;">📊</div>
+                    <div class="card-title">Performance Metrics</div>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Average Response Time</span>
+                    <span class="metric-value">{{ performance_metrics.avg_response_time }}ms</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Error Rate</span>
+                    <span class="metric-value">{{ performance_metrics.error_rate }}%</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Throughput</span>
+                    <span class="metric-value">{{ performance_metrics.throughput }}/min</span>
+                </div>
+                <div class="chart-container">
+                    <div>Performance trends over time</div>
+                </div>
             </div>
         </div>
-
-        <div class="metric-card">
-            <div class="metric-label">Drift Issues</div>
-            <div class="metric-value {% if drift_overview.total_issues == 0 %}status-good{% elif drift_overview.total_issues <= 5 %}status-warning{% else %}status-danger{% endif %}">
-                {{ drift_overview.total_issues }}
+        
+        <!-- Recent Activity Section -->
+        <div class="card" style="margin-top: 2rem;">
+            <div class="card-header">
+                <div class="card-icon" style="background-color: #f1f5f9; color: #475569;">📈</div>
+                <div class="card-title">Recent Activity</div>
+            </div>
+            <div class="service-list">
+                {% for activity in recent_activity %}
+                <div class="service-item">
+                    <div>
+                        <div class="service-name">{{ activity.action }}</div>
+                        <div class="service-domain">{{ activity.timestamp }} - {{ activity.resource }}</div>
+                    </div>
+                    <span class="status-badge {% if activity.status == 'success' %}status-healthy{% elif activity.status == 'warning' %}status-warning{% else %}status-critical{% endif %}">{{ activity.status }}</span>
+                </div>
+                {% endfor %}
             </div>
         </div>
-
-        <div class="metric-card">
-            <div class="metric-label">Domains</div>
-            <div class="metric-value">{{ platform_summary.total_domains }}</div>
-        </div>
     </div>
-
-    <div class="chart-container">
-        <h2>📊 Quality Score Distribution</h2>
-        {{ charts.quality_distribution|safe }}
-    </div>
-
-    <div class="chart-container">
-        <h2>🏗️ Services by Domain</h2>
-        {{ charts.domain_distribution|safe }}
-    </div>
-
-    <div class="chart-container">
-        <h2>🔍 Drift Issues by Severity</h2>
-        {{ charts.drift_issues|safe }}
-    </div>
-
+    
     <div class="footer">
-        <p>🤖 Generated by 254Carbon Meta Repository</p>
-        <p><a href="https://github.com/254carbon/254carbon-meta">View Source</a></p>
+        <p>Generated on {{ generated_at }} | 254Carbon Meta Platform Dashboard</p>
     </div>
-
-    <script src="assets/dashboard.js"></script>
+    
+    <script>
+        // Auto-refresh every 5 minutes
+        setTimeout(() => {
+            location.reload();
+        }, 300000);
+        
+        // Add some interactivity
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add click handlers for service items
+            const serviceItems = document.querySelectorAll('.service-item');
+            serviceItems.forEach(item => {
+                item.style.cursor = 'pointer';
+                item.addEventListener('click', function() {
+                    const serviceName = this.querySelector('.service-name').textContent;
+                    console.log('Clicked service:', serviceName);
+                    // Could navigate to service detail page
+                });
+            });
+        });
+    </script>
 </body>
 </html>

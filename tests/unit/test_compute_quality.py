@@ -36,14 +36,18 @@ class TestQualityMetrics(unittest.TestCase):
         metrics = QualityMetrics(
             service_name=self.service_name,
             coverage=0.85,
+            lint_pass=True,
             critical_vulns=0,
             high_vulns=1,
             policy_failures=2,
+            policy_warnings=0,
+            build_success_rate=0.95,
+            signed_images=True,
             deployment_days=5,
             drift_issues=1,
             maturity="stable",
-            signed_images=True,
-            sbom_present=True
+            sbom_present=True,
+            deployment_freshness_days=3
         )
 
         self.assertEqual(metrics.service_name, self.service_name)

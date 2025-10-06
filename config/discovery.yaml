@@ -1,0 +1,452 @@
+# 254Carbon Meta Repository - Service Discovery Configuration
+#
+# This configuration file defines how the service discovery crawler identifies
+# and classifies services across the 254carbon organization.
+
+# GitHub Organization Settings
+github:
+  organization: "254carbon"
+  api_base_url: "https://api.github.com"
+  rate_limit_buffer: 10  # Stop when this many requests remain
+  max_concurrent_repos: 10
+  timeout_seconds: 30
+
+# Repository Filtering
+repositories:
+  # Patterns to exclude from discovery
+  exclude_patterns:
+    - "\.github$"
+    - "docs?$"
+    - "documentation$"
+    - "website$"
+    - "blog$"
+    - "example"
+    - "demo"
+    - "test"
+    - "sandbox"
+    - "playground"
+    - "archive"
+    - "deprecated"
+    - "legacy"
+    - "template"
+    - "boilerplate"
+    - "starter"
+    - "sample"
+  
+  # Patterns to include (overrides exclusions)
+  include_patterns:
+    - ".*-service$"
+    - ".*-api$"
+    - ".*-gateway$"
+    - ".*-worker$"
+    - ".*-scheduler$"
+  
+  # Minimum repository criteria
+  minimum_criteria:
+    stars: 0
+    forks: 0
+    last_updated_days: 365  # Skip repos not updated in a year
+    has_readme: false
+    has_license: false
+
+# Service Detection Patterns
+detection:
+  # File patterns that indicate a service
+  service_indicators:
+    service_manifest:
+      patterns: ["service-manifest\.ya?ml"]
+      confidence: 1.0
+      required: false
+    
+    dockerfile:
+      patterns: ["Dockerfile(?:\.\w+)?"]
+      confidence: 0.9
+      required: false
+    
+    docker_compose:
+      patterns: ["docker-compose\.ya?ml"]
+      confidence: 0.8
+      required: false
+    
+    kubernetes:
+      patterns: 
+        - "k8s/.*\.ya?ml"
+        - "kubernetes/.*\.ya?ml"
+        - "deployment\.ya?ml"
+        - "service\.ya?ml"
+      confidence: 0.8
+      required: false
+    
+    package_json:
+      patterns: ["package\.json"]
+      confidence: 0.7
+      required: false
+    
+    requirements:
+      patterns: 
+        - "requirements\.txt"
+        - "pyproject\.toml"
+        - "Pipfile"
+        - "poetry\.lock"
+      confidence: 0.7
+      required: false
+    
+    go_mod:
+      patterns: ["go\.mod"]
+      confidence: 0.7
+      required: false
+    
+    cargo_toml:
+      patterns: ["Cargo\.toml"]
+      confidence: 0.7
+      required: false
+    
+    pom_xml:
+      patterns: ["pom\.xml"]
+      confidence: 0.7
+      required: false
+    
+    build_gradle:
+      patterns: ["build\.gradle"]
+      confidence: 0.7
+      required: false
+    
+    helm_chart:
+      patterns: ["Chart\.ya?ml"]
+      confidence: 0.8
+      required: false
+    
+    terraform:
+      patterns: ["\.tf$"]
+      confidence: 0.6
+      required: false
+    
+    ansible:
+      patterns: 
+        - "playbook\.ya?ml"
+        - "ansible/.*\.ya?ml"
+      confidence: 0.6
+      required: false
+    
+    ci_config:
+      patterns: 
+        - "\.github/workflows/.*\.ya?ml"
+        - "\.gitlab-ci\.ya?ml"
+        - "Jenkinsfile"
+        - "\.circleci/config\.ya?ml"
+      confidence: 0.5
+      required: false
+    
+    env_config:
+      patterns: 
+        - "\.env(?:\.\w+)?"
+        - "config\.ya?ml"
+        - "settings\.ya?ml"
+        - "application\.ya?ml"
+      confidence: 0.4
+      required: false
+
+  # Directories to skip during scanning
+  skip_directories:
+    - ".git"
+    - "node_modules"
+    - "vendor"
+    - "__pycache__"
+    - ".pytest_cache"
+    - "target"
+    - "build"
+    - "dist"
+    - ".idea"
+    - ".vscode"
+    - "coverage"
+    - "logs"
+    - "tmp"
+    - "temp"
+    - ".env"
+    - "venv"
+    - "env"
+    - ".venv"
+
+# Domain Classification
+domains:
+  access:
+    patterns: 
+      - "access"
+      - "auth"
+      - "gateway"
+      - "proxy"
+      - "api-gateway"
+      - "identity"
+      - "permission"
+      - "authorization"
+    description: "Access control and authentication services"
+  
+  data:
+    patterns:
+      - "data"
+      - "database"
+      - "storage"
+      - "warehouse"
+      - "etl"
+      - "pipeline"
+      - "ingestion"
+      - "processing"
+    description: "Data processing and storage services"
+  
+  ml:
+    patterns:
+      - "ml"
+      - "machine-learning"
+      - "ai"
+      - "model"
+      - "training"
+      - "inference"
+      - "prediction"
+      - "analytics"
+    description: "Machine learning and AI services"
+  
+  infrastructure:
+    patterns:
+      - "infra"
+      - "infrastructure"
+      - "platform"
+      - "core"
+      - "base"
+      - "common"
+      - "shared"
+    description: "Infrastructure and platform services"
+  
+  security:
+    patterns:
+      - "security"
+      - "vault"
+      - "secrets"
+      - "encryption"
+      - "compliance"
+      - "audit"
+    description: "Security and compliance services"
+  
+  observability:
+    patterns:
+      - "observability"
+      - "monitoring"
+      - "logging"
+      - "metrics"
+      - "tracing"
+      - "alerting"
+      - "dashboard"
+    description: "Observability and monitoring services"
+
+# Service Type Classification
+service_types:
+  web_service:
+    patterns:
+      - "web"
+      - "frontend"
+      - "ui"
+      - "dashboard"
+      - "portal"
+    description: "Web-based user interfaces"
+  
+  api_service:
+    patterns:
+      - "api"
+      - "service"
+      - "backend"
+      - "server"
+      - "endpoint"
+    description: "API and backend services"
+  
+  microservice:
+    patterns:
+      - "microservice"
+      - "service-"
+      - "-service"
+    description: "Microservice architecture components"
+  
+  worker:
+    patterns:
+      - "worker"
+      - "processor"
+      - "consumer"
+      - "handler"
+      - "task"
+    description: "Background processing workers"
+  
+  scheduler:
+    patterns:
+      - "scheduler"
+      - "cron"
+      - "job"
+      - "batch"
+    description: "Scheduled job processors"
+  
+  database:
+    patterns:
+      - "database"
+      - "db"
+      - "postgres"
+      - "mysql"
+      - "mongo"
+      - "redis"
+      - "cassandra"
+    description: "Database and storage services"
+  
+  cache:
+    patterns:
+      - "cache"
+      - "memcache"
+      - "redis"
+    description: "Caching services"
+  
+  queue:
+    patterns:
+      - "queue"
+      - "message"
+      - "broker"
+      - "rabbitmq"
+      - "kafka"
+    description: "Message queue and broker services"
+  
+  gateway:
+    patterns:
+      - "gateway"
+      - "proxy"
+      - "router"
+      - "load-balancer"
+      - "ingress"
+    description: "Gateway and routing services"
+
+# Confidence Scoring
+confidence:
+  # Base confidence scores for different indicators
+  base_scores:
+    service_manifest: 1.0
+    dockerfile: 0.9
+    docker_compose: 0.8
+    kubernetes: 0.8
+    package_json: 0.7
+    requirements: 0.7
+    go_mod: 0.7
+    cargo_toml: 0.7
+    pom_xml: 0.7
+    build_gradle: 0.7
+    helm_chart: 0.8
+    terraform: 0.6
+    ansible: 0.6
+    ci_config: 0.5
+    env_config: 0.4
+  
+  # Bonuses for additional indicators
+  bonuses:
+    multiple_indicators: 0.1
+    has_tests: 0.1
+    has_ci: 0.1
+    has_docs: 0.05
+    has_license: 0.05
+    active_repo: 0.1  # Recently updated
+  
+  # Penalties for negative indicators
+  penalties:
+    no_tests: -0.1
+    no_ci: -0.05
+    no_docs: -0.05
+    inactive_repo: -0.2  # Not updated recently
+  
+  # Minimum confidence threshold
+  minimum_threshold: 0.3
+
+# Metadata Extraction
+metadata:
+  # Languages to detect
+  languages:
+    python: [".py"]
+    javascript: [".js", ".ts", ".jsx", ".tsx"]
+    go: [".go"]
+    rust: [".rs"]
+    java: [".java"]
+    csharp: [".cs"]
+    php: [".php"]
+    ruby: [".rb"]
+    scala: [".scala"]
+    kotlin: [".kt"]
+    swift: [".swift"]
+    cpp: [".cpp", ".cc", ".cxx"]
+    c: [".c"]
+  
+  # Frameworks to detect
+  frameworks:
+    django: ["django", "djangorestframework"]
+    flask: ["flask"]
+    fastapi: ["fastapi"]
+    express: ["express"]
+    react: ["react"]
+    vue: ["vue"]
+    angular: ["angular"]
+    spring: ["spring"]
+    rails: ["rails"]
+    laravel: ["laravel"]
+    gin: ["gin"]
+    fiber: ["fiber"]
+    actix: ["actix"]
+    rocket: ["rocket"]
+  
+  # Test frameworks to detect
+  test_frameworks:
+    pytest: ["pytest"]
+    unittest: ["unittest"]
+    jest: ["jest"]
+    mocha: ["mocha"]
+    jasmine: ["jasmine"]
+    testng: ["testng"]
+    junit: ["junit"]
+    rspec: ["rspec"]
+    phpunit: ["phpunit"]
+    go_test: ["testing"]
+    cargo_test: ["cargo test"]
+
+# Output Configuration
+output:
+  # Default output file
+  default_file: "analysis/reports/discovered-services.json"
+  
+  # Additional output formats
+  formats:
+    json: true
+    yaml: false
+    csv: false
+    markdown: false
+  
+  # Include detailed information
+  include_details:
+    indicators: true
+    metadata: true
+    confidence_breakdown: true
+    classification_reasoning: true
+  
+  # Summary statistics
+  summary:
+    enabled: true
+    include_domain_breakdown: true
+    include_type_breakdown: true
+    include_confidence_distribution: true
+
+# Integration Settings
+integration:
+  # Catalog integration
+  catalog:
+    auto_update: false
+    create_prs: false
+    pr_template: "templates/service-discovery-pr.md"
+  
+  # Notification settings
+  notifications:
+    enabled: false
+    channels: []
+    threshold: 0.8  # Only notify for high-confidence discoveries
+  
+  # Validation settings
+  validation:
+    enabled: true
+    schema_path: "schemas/discovered-service.schema.json"
+    strict_mode: false

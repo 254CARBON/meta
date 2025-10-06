@@ -1,0 +1,298 @@
+metadata:
+  generated_at: '2025-10-06T14:00:00Z'
+  total_nodes: 152
+  total_edges: 0
+nodes:
+  access:
+  - service-000
+  - service-005
+  - service-010
+  - service-015
+  - service-020
+  - service-025
+  - service-030
+  - service-035
+  - service-040
+  - service-045
+  - service-050
+  - service-055
+  - service-060
+  - service-065
+  - service-070
+  - service-075
+  - service-080
+  - service-085
+  - service-090
+  - service-095
+  - service-100
+  - service-105
+  - service-110
+  - service-115
+  - service-120
+  - service-125
+  - service-130
+  - service-135
+  - service-140
+  - service-145
+  data-processing:
+  - service-001
+  - service-006
+  - service-011
+  - service-016
+  - service-021
+  - service-026
+  - service-031
+  - service-036
+  - service-041
+  - service-046
+  - service-051
+  - service-056
+  - service-061
+  - service-066
+  - service-071
+  - service-076
+  - service-081
+  - service-086
+  - service-091
+  - service-096
+  - service-101
+  - service-106
+  - service-111
+  - service-116
+  - service-121
+  - service-126
+  - service-131
+  - service-136
+  - service-141
+  - service-146
+  ml:
+  - service-002
+  - service-007
+  - service-012
+  - service-017
+  - service-022
+  - service-027
+  - service-032
+  - service-037
+  - service-042
+  - service-047
+  - service-052
+  - service-057
+  - service-062
+  - service-067
+  - service-072
+  - service-077
+  - service-082
+  - service-087
+  - service-092
+  - service-097
+  - service-102
+  - service-107
+  - service-112
+  - service-117
+  - service-122
+  - service-127
+  - service-132
+  - service-137
+  - service-142
+  - service-147
+  infrastructure:
+  - service-003
+  - service-008
+  - service-013
+  - service-018
+  - service-023
+  - service-028
+  - service-033
+  - service-038
+  - service-043
+  - service-048
+  - service-053
+  - service-058
+  - service-063
+  - service-068
+  - service-073
+  - service-078
+  - service-083
+  - service-088
+  - service-093
+  - service-098
+  - service-103
+  - service-108
+  - service-113
+  - service-118
+  - service-123
+  - service-128
+  - service-133
+  - service-138
+  - service-143
+  - service-148
+  shared:
+  - service-004
+  - service-009
+  - service-014
+  - service-019
+  - service-024
+  - service-029
+  - service-034
+  - service-039
+  - service-044
+  - service-049
+  - service-054
+  - service-059
+  - service-064
+  - service-069
+  - service-074
+  - service-079
+  - service-084
+  - service-089
+  - service-094
+  - service-099
+  - service-104
+  - service-109
+  - service-114
+  - service-119
+  - service-124
+  - service-129
+  - service-134
+  - service-139
+  - service-144
+  - service-149
+edges: []
+rules:
+  dependency:
+    enforce_directionality: true
+    forbid_cycles: true
+    allowed_external:
+    - redis
+    - clickhouse
+    - postgresql
+    - mongodb
+    - elasticsearch
+    - kafka
+    - rabbitmq
+    - nginx
+    - envoy
+    - istio
+    - cert-manager
+    domain_layers:
+      infrastructure: 1
+      shared: 2
+      access: 3
+      data-processing: 4
+      ml: 5
+  forbidden_reverse_edges:
+  - pattern: access -> data-processing
+    description: Access layer should not depend on data processing
+    severity: error
+  - pattern: shared -> domain-specific
+    description: Shared libraries should not depend on domain-specific code
+    severity: error
+  - pattern: infrastructure -> application
+    description: Infrastructure should not depend on application logic
+    severity: warning
+  quality:
+    min_score: 70
+    fail_under: 60
+    weights:
+      coverage: 0.25
+      security: 0.35
+      policy: 0.15
+      stability: 0.1
+      drift: 0.15
+    coverage_thresholds:
+      experimental: 0.5
+      beta: 0.7
+      stable: 0.8
+      deprecated: 0.6
+    security_requirements:
+      experimental:
+        signed_images: false
+        policy_pass: false
+      beta:
+        signed_images: true
+        policy_pass: true
+      stable:
+        signed_images: true
+        policy_pass: true
+      deprecated:
+        signed_images: false
+        policy_pass: false
+  drift:
+    block_on_missing_lock: true
+    warn_on_minor_spec_lag: true
+    staleness_thresholds:
+      warning: 90
+      critical: 180
+    auto_upgrade:
+      patch_versions: true
+      minor_versions: true
+      major_versions: false
+  manifest:
+    required_fields:
+    - name
+    - repo
+    - domain
+    - version
+    - maturity
+    - dependencies
+    recommended_fields:
+    - runtime
+    - api_contracts
+    - events_in
+    - events_out
+    - quality
+    - security
+    validation_patterns:
+      name: ^[a-z][a-z0-9-]*[a-z0-9]$
+      version: ^\d+\.\d+\.\d+$
+      domain: ^(access|data-processing|ml|infrastructure|shared)$
+      maturity: ^(experimental|beta|stable|deprecated)$
+      runtime: ^(python|nodejs|go|java|docker)$
+  release:
+    enable_release_trains: false
+    max_train_size: 5
+    quality_gates:
+      min_score: 80
+      max_critical_vulns: 0
+      all_tests_passing: true
+  notifications:
+    channels:
+      critical_issues:
+      - platform-team
+      - security-team
+      drift_warnings:
+      - platform-team
+      quality_degradation:
+      - service-owners
+      dependency_violations:
+      - architecture-team
+    thresholds:
+      max_critical_drift_issues: 3
+      max_quality_failures: 2
+      max_dependency_violations: 5
+  ai_agent:
+    allowed_operations:
+    - upgrade_spec_minor
+    - upgrade_spec_patch
+    - add_missing_coverage
+    - fix_lint_issues
+    - update_readme_docs
+    forbidden_operations:
+    - schema_breaking_changes
+    - major_version_bumps
+    - domain_boundary_changes
+    - dependency_direction_changes
+    - security_policy_changes
+    risk_factors:
+      high_risk_services:
+      - aggregation
+      - projection
+      - gateway
+      high_drift_domains:
+      - data-processing
+      - ml
+      critical_path_services:
+      - auth
+      - gateway
+      - metrics

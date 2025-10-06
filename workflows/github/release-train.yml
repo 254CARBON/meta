@@ -1,3 +1,9 @@
+#
+# GitHub Actions workflow: Release Train Orchestration
+# Purpose: Runs coordinated release trains for selected cohorts of services,
+#          honoring quality gates and dry-run validation.
+# Triggers: manual dispatch with explicit train selection.
+#
 name: Release Train Orchestration
 
 on:

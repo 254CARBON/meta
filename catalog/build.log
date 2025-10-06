@@ -1,0 +1,9 @@
+2025-10-06 14:07:37,161 - INFO - Execution monitor initialized
+2025-10-06 14:07:37,161 - INFO - Starting catalog build process...
+2025-10-06 14:07:37,162 - INFO - Loaded 0 manifests
+2025-10-06 14:07:37,162 - WARNING - No manifests found to build catalog
+2025-10-06 14:07:37,162 - INFO - Catalog build completed successfully
+2025-10-06 14:09:53,367 - INFO - Execution monitor initialized
+2025-10-06 14:09:53,367 - INFO - Starting catalog build process...
+2025-10-06 14:09:53,367 - INFO - Loaded 0 manifests
+2025-10-06 14:09:53,367 - WARNING - No manifests found to build catalog

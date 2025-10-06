@@ -1,0 +1,90 @@
+{
+  "metadata": {
+    "generated_at": "2025-10-06T14:07:00Z",
+    "version": "1.0.0",
+    "total_services": 3
+  },
+  "services": [
+    {
+      "name": "gateway",
+      "repo": "https://github.com/254carbon/254carbon-access",
+      "path": "service-gateway",
+      "domain": "access",
+      "version": "1.1.0",
+      "maturity": "stable",
+      "runtime": "python",
+      "api_contracts": [
+        "gateway-core@1.1.0"
+      ],
+      "events_in": [
+        "pricing.curve.updates.v1"
+      ],
+      "events_out": [
+        "gateway.request.processed.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "auth-service@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-05T22:30:12Z"
+    },
+    {
+      "name": "auth-service",
+      "repo": "https://github.com/254carbon/254carbon-access",
+      "path": "service-auth",
+      "domain": "access",
+      "version": "1.0.0",
+      "maturity": "stable",
+      "runtime": "python",
+      "api_contracts": [
+        "auth-core@1.0.0"
+      ],
+      "events_in": [
+        "user.login.attempt.v1"
+      ],
+      "events_out": [
+        "auth.token.issued.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "user-service@1.0.0"
+        ],
+        "external": [
+          "postgresql@15",
+          "redis@7.0"
+        ]
+      },
+      "last_update": "2025-10-05T22:30:12Z"
+    },
+    {
+      "name": "user-service",
+      "repo": "https://github.com/254carbon/254carbon-data",
+      "path": "service-user",
+      "domain": "data",
+      "version": "1.0.0",
+      "maturity": "stable",
+      "runtime": "python",
+      "api_contracts": [
+        "user-core@1.0.0"
+      ],
+      "events_in": [
+        "user.profile.updated.v1"
+      ],
+      "events_out": [
+        "user.created.v1"
+      ],
+      "dependencies": {
+        "external": [
+          "postgresql@15",
+          "redis@7.0"
+        ]
+      },
+      "last_update": "2025-10-05T22:30:12Z"
+    }
+  ]
+}

@@ -99,10 +99,11 @@ class SpecVersionChecker:
     """Checks for specification version updates."""
 
     def __init__(self, catalog_file: str = None, specs_repo: str = "254carbon/254carbon-specs",
-                 upgrade_policies: str = None, dry_run: bool = False):
+                 upgrade_policies_file: str = None, dry_run: bool = False):
         self.catalog_path = self._find_catalog_file(catalog_file)
+        self.catalog_file = catalog_file
         self.specs_repo = specs_repo
-        self.upgrade_policies_file = upgrade_policies or "config/upgrade-policies.yaml"
+        self.upgrade_policies_file = upgrade_policies_file or "config/upgrade-policies.yaml"
         self.dry_run = dry_run
 
         # Initialize circuit breaker for GitHub API protection

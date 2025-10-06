@@ -1,77 +1,628 @@
+<!--
+  Template: dashboards/team.html.j2
+  Purpose: Team‑focused dashboard aggregating services owned by a team,
+           with quality, drift, and operational status summaries.
+
+  Inputs (context):
+  - team: object with name and members/ownership metadata
+  - services: list of catalog service objects attributed to the team
+
+  Rendered by: scripts/generate_dashboard.py
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ metadata.title }} - {{ team_summary.domain }} Team</title>
-    <link rel="stylesheet" href="assets/dashboard.css">
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <title>254Carbon Meta - Team Dashboard: {{ team.name }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8fafc;
+            color: #334155;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .team-header {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+        }
+        
+        .team-title {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .team-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1.5rem;
+            font-size: 2rem;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+        
+        .team-info h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+        
+        .team-meta {
+            display: flex;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+        
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .meta-label {
+            font-size: 0.8rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+        }
+        
+        .meta-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            font-size: 1.2rem;
+        }
+        
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .metric-label {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+        
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .status-healthy {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+        
+        .status-warning {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status-critical {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .status-unknown {
+            background-color: #f1f5f9;
+            color: #475569;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+            transition: width 0.3s ease;
+        }
+        
+        .chart-container {
+            height: 200px;
+            margin-top: 1rem;
+            background-color: #f8fafc;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            font-style: italic;
+        }
+        
+        .service-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .service-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .service-item:last-child {
+            border-bottom: none;
+        }
+        
+        .service-name {
+            font-weight: 500;
+            color: #1e293b;
+        }
+        
+        .service-meta {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+        }
+        
+        .service-status {
+            font-size: 0.8rem;
+        }
+        
+        .member-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .member-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .member-item:last-child {
+            border-bottom: none;
+        }
+        
+        .member-name {
+            font-weight: 500;
+            color: #1e293b;
+        }
+        
+        .member-role {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+        }
+        
+        .member-status {
+            font-size: 0.8rem;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: #64748b;
+            border-top: 1px solid #e2e8f0;
+            margin-top: 2rem;
+        }
+        
+        .refresh-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-left: 1rem;
+        }
+        
+        .refresh-btn:hover {
+            background: #2563eb;
+        }
+        
+        .back-btn {
+            background: #6b7280;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-right: 1rem;
+        }
+        
+        .back-btn:hover {
+            background: #4b5563;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .team-meta {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="dashboard-header">
-        <h1>👥 {{ team_summary.domain|title }} Team Dashboard</h1>
-        <p class="timestamp">Generated: {{ metadata.generated_at }}</p>
+    <div class="header">
+        <h1>Team Dashboard</h1>
+        <p>{{ team.name }} - {{ team.domain }} Team</p>
+        <button class="back-btn" onclick="history.back()">← Back</button>
+        <button class="refresh-btn" onclick="location.reload()">Refresh</button>
     </div>
-
-    <div class="metrics-grid">
-        <div class="metric-card">
-            <div class="metric-label">Team Services</div>
-            <div class="metric-value">{{ team_summary.total_services }}</div>
-        </div>
-
-        <div class="metric-card">
-            <div class="metric-label">Average Quality</div>
-            <div class="metric-value {% if team_summary.average_quality >= 80 %}status-good{% elif team_summary.average_quality >= 70 %}status-warning{% else %}status-danger{% endif %}">
-                {{ team_summary.average_quality|round(1) }}
+    
+    <div class="container">
+        <!-- Team Header -->
+        <div class="team-header">
+            <div class="team-title">
+                <div class="team-icon">👥</div>
+                <div class="team-info">
+                    <h2>{{ team.name }}</h2>
+                    <div class="team-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">Domain</span>
+                            <span class="meta-value">{{ team.domain }}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Members</span>
+                            <span class="meta-value">{{ team.members|length }}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Services</span>
+                            <span class="meta-value">{{ team.services|length }}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Lead</span>
+                            <span class="meta-value">{{ team.lead }}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">SLA</span>
+                            <span class="meta-value">{{ team.sla }}%</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-
-        <div class="metric-card">
-            <div class="metric-label">Maturity Levels</div>
-            <div class="metric-value">{{ team_summary.maturity_distribution|length }}</div>
+        
+        <div class="dashboard-grid">
+            <!-- Team Health Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon" style="background-color: #dcfce7; color: #166534;">🏥</div>
+                    <div class="card-title">Team Health</div>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Overall Status</span>
+                    <span class="status-badge status-healthy">Healthy</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Services Online</span>
+                    <span class="metric-value">{{ team_health.services_online }}/{{ team_health.total_services }}</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">SLA Compliance</span>
+                    <span class="metric-value">{{ team_health.sla_compliance }}%</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Incident Count</span>
+                    <span class="metric-value">{{ team_health.incident_count }}</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ team_health.sla_compliance }}%"></div>
+                </div>
+            </div>
+            
+            <!-- Quality Metrics Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon" style="background-color: #fef3c7; color: #92400e;">⭐</div>
+                    <div class="card-title">Quality Metrics</div>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Average Quality Score</span>
+                    <span class="metric-value">{{ team_quality.average_score }}/100</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Test Coverage</span>
+                    <span class="metric-value">{{ team_quality.coverage }}%</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Lint Pass Rate</span>
+                    <span class="metric-value">{{ team_quality.lint_pass_rate }}%</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Vulnerabilities</span>
+                    <span class="metric-value">{{ team_quality.vulnerabilities }}</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ team_quality.average_score }}%"></div>
+                </div>
+            </div>
+            
+            <!-- Services Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon" style="background-color: #dbeafe; color: #1e40af;">🔧</div>
+                    <div class="card-title">Services</div>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Total Services</span>
+                    <span class="metric-value">{{ team.services|length }}</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Active Services</span>
+                    <span class="metric-value">{{ team_services.active_count }}</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Stable Services</span>
+                    <span class="metric-value">{{ team_services.stable_count }}</span>
+                </div>
+                <div class="service-list">
+                    {% for service in team.services %}
+                    <div class="service-item">
+                        <div>
+                            <div class="service-name">{{ service.name }}</div>
+                            <div class="service-meta">{{ service.maturity }} - {{ service.version }}</div>
+                        </div>
+                        <span class="status-badge {% if service.status == 'healthy' %}status-healthy{% elif service.status == 'warning' %}status-warning{% else %}status-critical{% endif %}">{{ service.status }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Team Members Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon" style="background-color: #e0e7ff; color: #3730a3;">👥</div>
+                    <div class="card-title">Team Members</div>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Total Members</span>
+                    <span class="metric-value">{{ team.members|length }}</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Active Members</span>
+                    <span class="metric-value">{{ team_members.active_count }}</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">On Call</span>
+                    <span class="metric-value">{{ team_members.on_call_count }}</span>
+                </div>
+                <div class="member-list">
+                    {% for member in team.members %}
+                    <div class="member-item">
+                        <div>
+                            <div class="member-name">{{ member.name }}</div>
+                            <div class="member-role">{{ member.role }} - {{ member.specialization }}</div>
+                        </div>
+                        <span class="status-badge {% if member.status == 'active' %}status-healthy{% elif member.status == 'away' %}status-warning{% else %}status-unknown{% endif %}">{{ member.status }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Performance Metrics Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon" style="background-color: #f3e8ff; color: #7c3aed;">📊</div>
+                    <div class="card-title">Performance</div>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Average Response Time</span>
+                    <span class="metric-value">{{ team_performance.avg_response_time }}ms</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Error Rate</span>
+                    <span class="metric-value">{{ team_performance.error_rate }}%</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Throughput</span>
+                    <span class="metric-value">{{ team_performance.throughput }}/min</span>
+                </div>
+                <div class="chart-container">
+                    <div>Team performance trends</div>
+                </div>
+            </div>
+            
+            <!-- Release Activity Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon" style="background-color: #fef3c7; color: #92400e;">🚀</div>
+                    <div class="card-title">Release Activity</div>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Releases This Month</span>
+                    <span class="metric-value">{{ release_activity.this_month }}</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Success Rate</span>
+                    <span class="metric-value">{{ release_activity.success_rate }}%</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Rollback Rate</span>
+                    <span class="metric-value">{{ release_activity.rollback_rate }}%</span>
+                </div>
+                <div class="service-list">
+                    {% for release in release_activity.recent_releases %}
+                    <div class="service-item">
+                        <div>
+                            <div class="service-name">{{ release.service }}</div>
+                            <div class="service-meta">{{ release.version }} - {{ release.date }}</div>
+                        </div>
+                        <span class="status-badge {% if release.status == 'success' %}status-healthy{% elif release.status == 'failed' %}status-critical{% else %}status-warning{% endif %}">{{ release.status }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Activity Section -->
+        <div class="card" style="margin-top: 2rem;">
+            <div class="card-header">
+                <div class="card-icon" style="background-color: #f1f5f9; color: #475569;">📈</div>
+                <div class="card-title">Recent Activity</div>
+            </div>
+            <div class="service-list">
+                {% for activity in recent_activity %}
+                <div class="service-item">
+                    <div>
+                        <div class="service-name">{{ activity.action }}</div>
+                        <div class="service-meta">{{ activity.timestamp }} - {{ activity.resource }} by {{ activity.user }}</div>
+                    </div>
+                    <span class="status-badge {% if activity.status == 'success' %}status-healthy{% elif activity.status == 'warning' %}status-warning{% else %}status-critical{% endif %}">{{ activity.status }}</span>
+                </div>
+                {% endfor %}
+            </div>
         </div>
     </div>
-
-    <div class="chart-container">
-        <h2>📊 Quality Distribution</h2>
-        {{ charts.quality_distribution|safe }}
-    </div>
-
-    <div class="services-section">
-        <h2>🔧 Team Services</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Service</th>
-                    <th>Maturity</th>
-                    <th>Version</th>
-                    <th>Quality Score</th>
-                    <th>Grade</th>
-                    <th>Dependencies</th>
-                </tr>
-            </thead>
-            <tbody>
-            {% for service in services %}
-                <tr>
-                    <td><a href="service-{{ service.name }}.html">{{ service.name }}</a></td>
-                    <td>{{ service.maturity|title }}</td>
-                    <td>{{ service.version }}</td>
-                    <td class="{% if service.quality_score >= 80 %}status-good{% elif service.quality_score >= 70 %}status-warning{% else %}status-danger{% endif %}">
-                        {{ service.quality_score|round(1) }}
-                    </td>
-                    <td>{{ service.quality_grade }}</td>
-                    <td>{{ service.dependencies.internal|length }} internal, {{ service.dependencies.external|length }} external</td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-    </div>
-
+    
     <div class="footer">
-        <p>🤖 Generated by 254Carbon Meta Repository</p>
-        <p><a href="index.html">Back to Platform Overview</a></p>
+        <p>Generated on {{ generated_at }} | Team: {{ team.name }} | 254Carbon Meta Platform</p>
     </div>
-
-    <script src="assets/dashboard.js"></script>
+    
+    <script>
+        // Auto-refresh every 5 minutes
+        setTimeout(() => {
+            location.reload();
+        }, 300000);
+        
+        // Add some interactivity
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add click handlers for service items
+            const serviceItems = document.querySelectorAll('.service-item');
+            serviceItems.forEach(item => {
+                item.style.cursor = 'pointer';
+                item.addEventListener('click', function() {
+                    const serviceName = this.querySelector('.service-name').textContent;
+                    console.log('Clicked service:', serviceName);
+                    // Could navigate to service detail page
+                });
+            });
+            
+            // Add click handlers for member items
+            const memberItems = document.querySelectorAll('.member-item');
+            memberItems.forEach(item => {
+                item.style.cursor = 'pointer';
+                item.addEventListener('click', function() {
+                    const memberName = this.querySelector('.member-name').textContent;
+                    console.log('Clicked member:', memberName);
+                    // Could navigate to member profile page
+                });
+            });
+        });
+    </script>
 </body>
 </html>

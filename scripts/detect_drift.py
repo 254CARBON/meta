@@ -39,6 +39,8 @@ import requests
 from dataclasses import dataclass
 from packaging import version
 
+from scripts.utils import monitor_execution, audit_logger, redis_client
+
 
 # Configure logging
 logging.basicConfig(
@@ -477,6 +479,7 @@ class DriftDetector:
         logger.info(f"Found {len(issues)} unknown event schema issues")
         return issues
 
+    @monitor_execution("drift-detection")
     def generate_drift_report(self) -> Dict[str, Any]:
         """Generate comprehensive drift report.
 
@@ -487,6 +490,12 @@ class DriftDetector:
             A dictionary suitable for downstream rendering and persistence.
         """
         logger.info("Generating drift report...")
+
+        # Try to load cached drift state first
+        cached_drift = redis_client.get("drift_state", fallback_to_file=True)
+        if cached_drift:
+            logger.info("Using cached drift state")
+            return cached_drift
 
         # Run all drift detection checks
         drift_issues = []
@@ -548,6 +557,9 @@ class DriftDetector:
                 report["summary"]["issues_by_type"][issue_type] = 0
             report["summary"]["issues_by_type"][issue_type] += 1
 
+        # Cache the drift state
+        redis_client.set("drift_state", report, ttl=1800, fallback_to_file=True)
+
         return report
 
     def _generate_recommendations(self, issues: List[DriftIssue]) -> List[str]:
@@ -603,6 +615,24 @@ class DriftDetector:
             json.dump(report, f, indent=2, default=str)
 
         logger.info(f"Updated latest drift report: {latest_file}")
+
+        # Log drift detection completion
+        audit_logger.log_action(
+            user="system",
+            action="drift_detection",
+            resource="drift_report",
+            resource_type="drift_data",
+            details={
+                "total_issues": report["summary"]["total_issues"],
+                "critical_issues": report["summary"]["critical_issues"],
+                "high_issues": report["summary"]["high_issues"],
+                "medium_issues": report["summary"]["medium_issues"],
+                "low_issues": report["summary"]["low_issues"],
+                "generated_at": report["metadata"]["generated_at"],
+                "report_file": str(report_file)
+            },
+            category=audit_logger.AuditCategory.DRIFT
+        )
 
 
 def main():

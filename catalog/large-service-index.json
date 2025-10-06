@@ -1,0 +1,4207 @@
+{
+  "metadata": {
+    "generated_at": "2025-10-06T14:00:00Z",
+    "version": "1.0.0",
+    "total_services": 150
+  },
+  "services": [
+    {
+      "name": "service-000",
+      "repo": "https://github.com/254carbon/service-000",
+      "path": "service-000",
+      "domain": "access",
+      "version": "1.0.0",
+      "maturity": "experimental",
+      "runtime": "python",
+      "api_contracts": [
+        "api-0@1.0.0"
+      ],
+      "events_in": [
+        "event.in.0.v1"
+      ],
+      "events_out": [
+        "event.out.0.v1"
+      ],
+      "dependencies": {
+        "internal": [],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-001",
+      "repo": "https://github.com/254carbon/service-001",
+      "path": "service-001",
+      "domain": "data-processing",
+      "version": "1.1.0",
+      "maturity": "beta",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-1@1.0.0"
+      ],
+      "events_in": [
+        "event.in.1.v1"
+      ],
+      "events_out": [
+        "event.out.1.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-000@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-002",
+      "repo": "https://github.com/254carbon/service-002",
+      "path": "service-002",
+      "domain": "ml",
+      "version": "1.2.0",
+      "maturity": "stable",
+      "runtime": "python",
+      "api_contracts": [
+        "api-2@1.0.0"
+      ],
+      "events_in": [
+        "event.in.2.v1"
+      ],
+      "events_out": [
+        "event.out.2.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-001@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-003",
+      "repo": "https://github.com/254carbon/service-003",
+      "path": "service-003",
+      "domain": "infrastructure",
+      "version": "1.3.0",
+      "maturity": "deprecated",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-3@1.0.0"
+      ],
+      "events_in": [
+        "event.in.3.v1"
+      ],
+      "events_out": [
+        "event.out.3.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-002@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-004",
+      "repo": "https://github.com/254carbon/service-004",
+      "path": "service-004",
+      "domain": "shared",
+      "version": "1.4.0",
+      "maturity": "experimental",
+      "runtime": "python",
+      "api_contracts": [
+        "api-4@1.0.0"
+      ],
+      "events_in": [
+        "event.in.4.v1"
+      ],
+      "events_out": [
+        "event.out.4.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-003@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-005",
+      "repo": "https://github.com/254carbon/service-005",
+      "path": "service-005",
+      "domain": "access",
+      "version": "1.5.0",
+      "maturity": "beta",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-5@1.0.0"
+      ],
+      "events_in": [
+        "event.in.5.v1"
+      ],
+      "events_out": [
+        "event.out.5.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-004@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-006",
+      "repo": "https://github.com/254carbon/service-006",
+      "path": "service-006",
+      "domain": "data-processing",
+      "version": "1.6.0",
+      "maturity": "stable",
+      "runtime": "python",
+      "api_contracts": [
+        "api-6@1.0.0"
+      ],
+      "events_in": [
+        "event.in.6.v1"
+      ],
+      "events_out": [
+        "event.out.6.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-005@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-007",
+      "repo": "https://github.com/254carbon/service-007",
+      "path": "service-007",
+      "domain": "ml",
+      "version": "1.7.0",
+      "maturity": "deprecated",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-7@1.0.0"
+      ],
+      "events_in": [
+        "event.in.7.v1"
+      ],
+      "events_out": [
+        "event.out.7.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-006@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-008",
+      "repo": "https://github.com/254carbon/service-008",
+      "path": "service-008",
+      "domain": "infrastructure",
+      "version": "1.8.0",
+      "maturity": "experimental",
+      "runtime": "python",
+      "api_contracts": [
+        "api-8@1.0.0"
+      ],
+      "events_in": [
+        "event.in.8.v1"
+      ],
+      "events_out": [
+        "event.out.8.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-007@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-009",
+      "repo": "https://github.com/254carbon/service-009",
+      "path": "service-009",
+      "domain": "shared",
+      "version": "1.9.0",
+      "maturity": "beta",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-9@1.0.0"
+      ],
+      "events_in": [
+        "event.in.9.v1"
+      ],
+      "events_out": [
+        "event.out.9.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-008@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-010",
+      "repo": "https://github.com/254carbon/service-010",
+      "path": "service-010",
+      "domain": "access",
+      "version": "1.0.0",
+      "maturity": "stable",
+      "runtime": "python",
+      "api_contracts": [
+        "api-10@1.0.0"
+      ],
+      "events_in": [
+        "event.in.10.v1"
+      ],
+      "events_out": [
+        "event.out.10.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-009@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-011",
+      "repo": "https://github.com/254carbon/service-011",
+      "path": "service-011",
+      "domain": "data-processing",
+      "version": "1.1.0",
+      "maturity": "deprecated",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-11@1.0.0"
+      ],
+      "events_in": [
+        "event.in.11.v1"
+      ],
+      "events_out": [
+        "event.out.11.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-010@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-012",
+      "repo": "https://github.com/254carbon/service-012",
+      "path": "service-012",
+      "domain": "ml",
+      "version": "1.2.0",
+      "maturity": "experimental",
+      "runtime": "python",
+      "api_contracts": [
+        "api-12@1.0.0"
+      ],
+      "events_in": [
+        "event.in.12.v1"
+      ],
+      "events_out": [
+        "event.out.12.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-011@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-013",
+      "repo": "https://github.com/254carbon/service-013",
+      "path": "service-013",
+      "domain": "infrastructure",
+      "version": "1.3.0",
+      "maturity": "beta",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-13@1.0.0"
+      ],
+      "events_in": [
+        "event.in.13.v1"
+      ],
+      "events_out": [
+        "event.out.13.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-012@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-014",
+      "repo": "https://github.com/254carbon/service-014",
+      "path": "service-014",
+      "domain": "shared",
+      "version": "1.4.0",
+      "maturity": "stable",
+      "runtime": "python",
+      "api_contracts": [
+        "api-14@1.0.0"
+      ],
+      "events_in": [
+        "event.in.14.v1"
+      ],
+      "events_out": [
+        "event.out.14.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-013@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-015",
+      "repo": "https://github.com/254carbon/service-015",
+      "path": "service-015",
+      "domain": "access",
+      "version": "1.5.0",
+      "maturity": "deprecated",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-15@1.0.0"
+      ],
+      "events_in": [
+        "event.in.15.v1"
+      ],
+      "events_out": [
+        "event.out.15.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-014@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-016",
+      "repo": "https://github.com/254carbon/service-016",
+      "path": "service-016",
+      "domain": "data-processing",
+      "version": "1.6.0",
+      "maturity": "experimental",
+      "runtime": "python",
+      "api_contracts": [
+        "api-16@1.0.0"
+      ],
+      "events_in": [
+        "event.in.16.v1"
+      ],
+      "events_out": [
+        "event.out.16.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-015@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-017",
+      "repo": "https://github.com/254carbon/service-017",
+      "path": "service-017",
+      "domain": "ml",
+      "version": "1.7.0",
+      "maturity": "beta",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-17@1.0.0"
+      ],
+      "events_in": [
+        "event.in.17.v1"
+      ],
+      "events_out": [
+        "event.out.17.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-016@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-018",
+      "repo": "https://github.com/254carbon/service-018",
+      "path": "service-018",
+      "domain": "infrastructure",
+      "version": "1.8.0",
+      "maturity": "stable",
+      "runtime": "python",
+      "api_contracts": [
+        "api-18@1.0.0"
+      ],
+      "events_in": [
+        "event.in.18.v1"
+      ],
+      "events_out": [
+        "event.out.18.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-017@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-019",
+      "repo": "https://github.com/254carbon/service-019",
+      "path": "service-019",
+      "domain": "shared",
+      "version": "1.9.0",
+      "maturity": "deprecated",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-19@1.0.0"
+      ],
+      "events_in": [
+        "event.in.19.v1"
+      ],
+      "events_out": [
+        "event.out.19.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-018@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-020",
+      "repo": "https://github.com/254carbon/service-020",
+      "path": "service-020",
+      "domain": "access",
+      "version": "1.0.0",
+      "maturity": "experimental",
+      "runtime": "python",
+      "api_contracts": [
+        "api-20@1.0.0"
+      ],
+      "events_in": [
+        "event.in.20.v1"
+      ],
+      "events_out": [
+        "event.out.20.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-019@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-021",
+      "repo": "https://github.com/254carbon/service-021",
+      "path": "service-021",
+      "domain": "data-processing",
+      "version": "1.1.0",
+      "maturity": "beta",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-21@1.0.0"
+      ],
+      "events_in": [
+        "event.in.21.v1"
+      ],
+      "events_out": [
+        "event.out.21.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-020@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-022",
+      "repo": "https://github.com/254carbon/service-022",
+      "path": "service-022",
+      "domain": "ml",
+      "version": "1.2.0",
+      "maturity": "stable",
+      "runtime": "python",
+      "api_contracts": [
+        "api-22@1.0.0"
+      ],
+      "events_in": [
+        "event.in.22.v1"
+      ],
+      "events_out": [
+        "event.out.22.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-021@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-023",
+      "repo": "https://github.com/254carbon/service-023",
+      "path": "service-023",
+      "domain": "infrastructure",
+      "version": "1.3.0",
+      "maturity": "deprecated",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-23@1.0.0"
+      ],
+      "events_in": [
+        "event.in.23.v1"
+      ],
+      "events_out": [
+        "event.out.23.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-022@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-024",
+      "repo": "https://github.com/254carbon/service-024",
+      "path": "service-024",
+      "domain": "shared",
+      "version": "1.4.0",
+      "maturity": "experimental",
+      "runtime": "python",
+      "api_contracts": [
+        "api-24@1.0.0"
+      ],
+      "events_in": [
+        "event.in.24.v1"
+      ],
+      "events_out": [
+        "event.out.24.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-023@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-025",
+      "repo": "https://github.com/254carbon/service-025",
+      "path": "service-025",
+      "domain": "access",
+      "version": "1.5.0",
+      "maturity": "beta",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-25@1.0.0"
+      ],
+      "events_in": [
+        "event.in.25.v1"
+      ],
+      "events_out": [
+        "event.out.25.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-024@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-026",
+      "repo": "https://github.com/254carbon/service-026",
+      "path": "service-026",
+      "domain": "data-processing",
+      "version": "1.6.0",
+      "maturity": "stable",
+      "runtime": "python",
+      "api_contracts": [
+        "api-26@1.0.0"
+      ],
+      "events_in": [
+        "event.in.26.v1"
+      ],
+      "events_out": [
+        "event.out.26.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-025@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-027",
+      "repo": "https://github.com/254carbon/service-027",
+      "path": "service-027",
+      "domain": "ml",
+      "version": "1.7.0",
+      "maturity": "deprecated",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-27@1.0.0"
+      ],
+      "events_in": [
+        "event.in.27.v1"
+      ],
+      "events_out": [
+        "event.out.27.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-026@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-028",
+      "repo": "https://github.com/254carbon/service-028",
+      "path": "service-028",
+      "domain": "infrastructure",
+      "version": "1.8.0",
+      "maturity": "experimental",
+      "runtime": "python",
+      "api_contracts": [
+        "api-28@1.0.0"
+      ],
+      "events_in": [
+        "event.in.28.v1"
+      ],
+      "events_out": [
+        "event.out.28.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-027@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-029",
+      "repo": "https://github.com/254carbon/service-029",
+      "path": "service-029",
+      "domain": "shared",
+      "version": "1.9.0",
+      "maturity": "beta",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-29@1.0.0"
+      ],
+      "events_in": [
+        "event.in.29.v1"
+      ],
+      "events_out": [
+        "event.out.29.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-028@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-030",
+      "repo": "https://github.com/254carbon/service-030",
+      "path": "service-030",
+      "domain": "access",
+      "version": "1.0.0",
+      "maturity": "stable",
+      "runtime": "python",
+      "api_contracts": [
+        "api-30@1.0.0"
+      ],
+      "events_in": [
+        "event.in.30.v1"
+      ],
+      "events_out": [
+        "event.out.30.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-029@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-031",
+      "repo": "https://github.com/254carbon/service-031",
+      "path": "service-031",
+      "domain": "data-processing",
+      "version": "1.1.0",
+      "maturity": "deprecated",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-31@1.0.0"
+      ],
+      "events_in": [
+        "event.in.31.v1"
+      ],
+      "events_out": [
+        "event.out.31.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-030@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-032",
+      "repo": "https://github.com/254carbon/service-032",
+      "path": "service-032",
+      "domain": "ml",
+      "version": "1.2.0",
+      "maturity": "experimental",
+      "runtime": "python",
+      "api_contracts": [
+        "api-32@1.0.0"
+      ],
+      "events_in": [
+        "event.in.32.v1"
+      ],
+      "events_out": [
+        "event.out.32.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-031@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-033",
+      "repo": "https://github.com/254carbon/service-033",
+      "path": "service-033",
+      "domain": "infrastructure",
+      "version": "1.3.0",
+      "maturity": "beta",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-33@1.0.0"
+      ],
+      "events_in": [
+        "event.in.33.v1"
+      ],
+      "events_out": [
+        "event.out.33.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-032@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-034",
+      "repo": "https://github.com/254carbon/service-034",
+      "path": "service-034",
+      "domain": "shared",
+      "version": "1.4.0",
+      "maturity": "stable",
+      "runtime": "python",
+      "api_contracts": [
+        "api-34@1.0.0"
+      ],
+      "events_in": [
+        "event.in.34.v1"
+      ],
+      "events_out": [
+        "event.out.34.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-033@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-035",
+      "repo": "https://github.com/254carbon/service-035",
+      "path": "service-035",
+      "domain": "access",
+      "version": "1.5.0",
+      "maturity": "deprecated",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-35@1.0.0"
+      ],
+      "events_in": [
+        "event.in.35.v1"
+      ],
+      "events_out": [
+        "event.out.35.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-034@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-036",
+      "repo": "https://github.com/254carbon/service-036",
+      "path": "service-036",
+      "domain": "data-processing",
+      "version": "1.6.0",
+      "maturity": "experimental",
+      "runtime": "python",
+      "api_contracts": [
+        "api-36@1.0.0"
+      ],
+      "events_in": [
+        "event.in.36.v1"
+      ],
+      "events_out": [
+        "event.out.36.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-035@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-037",
+      "repo": "https://github.com/254carbon/service-037",
+      "path": "service-037",
+      "domain": "ml",
+      "version": "1.7.0",
+      "maturity": "beta",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-37@1.0.0"
+      ],
+      "events_in": [
+        "event.in.37.v1"
+      ],
+      "events_out": [
+        "event.out.37.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-036@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-038",
+      "repo": "https://github.com/254carbon/service-038",
+      "path": "service-038",
+      "domain": "infrastructure",
+      "version": "1.8.0",
+      "maturity": "stable",
+      "runtime": "python",
+      "api_contracts": [
+        "api-38@1.0.0"
+      ],
+      "events_in": [
+        "event.in.38.v1"
+      ],
+      "events_out": [
+        "event.out.38.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-037@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-039",
+      "repo": "https://github.com/254carbon/service-039",
+      "path": "service-039",
+      "domain": "shared",
+      "version": "1.9.0",
+      "maturity": "deprecated",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-39@1.0.0"
+      ],
+      "events_in": [
+        "event.in.39.v1"
+      ],
+      "events_out": [
+        "event.out.39.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-038@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-040",
+      "repo": "https://github.com/254carbon/service-040",
+      "path": "service-040",
+      "domain": "access",
+      "version": "1.0.0",
+      "maturity": "experimental",
+      "runtime": "python",
+      "api_contracts": [
+        "api-40@1.0.0"
+      ],
+      "events_in": [
+        "event.in.40.v1"
+      ],
+      "events_out": [
+        "event.out.40.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-039@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-041",
+      "repo": "https://github.com/254carbon/service-041",
+      "path": "service-041",
+      "domain": "data-processing",
+      "version": "1.1.0",
+      "maturity": "beta",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-41@1.0.0"
+      ],
+      "events_in": [
+        "event.in.41.v1"
+      ],
+      "events_out": [
+        "event.out.41.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-040@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-042",
+      "repo": "https://github.com/254carbon/service-042",
+      "path": "service-042",
+      "domain": "ml",
+      "version": "1.2.0",
+      "maturity": "stable",
+      "runtime": "python",
+      "api_contracts": [
+        "api-42@1.0.0"
+      ],
+      "events_in": [
+        "event.in.42.v1"
+      ],
+      "events_out": [
+        "event.out.42.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-041@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-043",
+      "repo": "https://github.com/254carbon/service-043",
+      "path": "service-043",
+      "domain": "infrastructure",
+      "version": "1.3.0",
+      "maturity": "deprecated",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-43@1.0.0"
+      ],
+      "events_in": [
+        "event.in.43.v1"
+      ],
+      "events_out": [
+        "event.out.43.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-042@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-044",
+      "repo": "https://github.com/254carbon/service-044",
+      "path": "service-044",
+      "domain": "shared",
+      "version": "1.4.0",
+      "maturity": "experimental",
+      "runtime": "python",
+      "api_contracts": [
+        "api-44@1.0.0"
+      ],
+      "events_in": [
+        "event.in.44.v1"
+      ],
+      "events_out": [
+        "event.out.44.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-043@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-045",
+      "repo": "https://github.com/254carbon/service-045",
+      "path": "service-045",
+      "domain": "access",
+      "version": "1.5.0",
+      "maturity": "beta",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-45@1.0.0"
+      ],
+      "events_in": [
+        "event.in.45.v1"
+      ],
+      "events_out": [
+        "event.out.45.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-044@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-046",
+      "repo": "https://github.com/254carbon/service-046",
+      "path": "service-046",
+      "domain": "data-processing",
+      "version": "1.6.0",
+      "maturity": "stable",
+      "runtime": "python",
+      "api_contracts": [
+        "api-46@1.0.0"
+      ],
+      "events_in": [
+        "event.in.46.v1"
+      ],
+      "events_out": [
+        "event.out.46.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-045@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-047",
+      "repo": "https://github.com/254carbon/service-047",
+      "path": "service-047",
+      "domain": "ml",
+      "version": "1.7.0",
+      "maturity": "deprecated",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-47@1.0.0"
+      ],
+      "events_in": [
+        "event.in.47.v1"
+      ],
+      "events_out": [
+        "event.out.47.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-046@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-048",
+      "repo": "https://github.com/254carbon/service-048",
+      "path": "service-048",
+      "domain": "infrastructure",
+      "version": "1.8.0",
+      "maturity": "experimental",
+      "runtime": "python",
+      "api_contracts": [
+        "api-48@1.0.0"
+      ],
+      "events_in": [
+        "event.in.48.v1"
+      ],
+      "events_out": [
+        "event.out.48.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-047@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-049",
+      "repo": "https://github.com/254carbon/service-049",
+      "path": "service-049",
+      "domain": "shared",
+      "version": "1.9.0",
+      "maturity": "beta",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-49@1.0.0"
+      ],
+      "events_in": [
+        "event.in.49.v1"
+      ],
+      "events_out": [
+        "event.out.49.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-048@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-050",
+      "repo": "https://github.com/254carbon/service-050",
+      "path": "service-050",
+      "domain": "access",
+      "version": "1.0.0",
+      "maturity": "stable",
+      "runtime": "python",
+      "api_contracts": [
+        "api-50@1.0.0"
+      ],
+      "events_in": [
+        "event.in.50.v1"
+      ],
+      "events_out": [
+        "event.out.50.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-049@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-051",
+      "repo": "https://github.com/254carbon/service-051",
+      "path": "service-051",
+      "domain": "data-processing",
+      "version": "1.1.0",
+      "maturity": "deprecated",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-51@1.0.0"
+      ],
+      "events_in": [
+        "event.in.51.v1"
+      ],
+      "events_out": [
+        "event.out.51.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-050@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-052",
+      "repo": "https://github.com/254carbon/service-052",
+      "path": "service-052",
+      "domain": "ml",
+      "version": "1.2.0",
+      "maturity": "experimental",
+      "runtime": "python",
+      "api_contracts": [
+        "api-52@1.0.0"
+      ],
+      "events_in": [
+        "event.in.52.v1"
+      ],
+      "events_out": [
+        "event.out.52.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-051@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-053",
+      "repo": "https://github.com/254carbon/service-053",
+      "path": "service-053",
+      "domain": "infrastructure",
+      "version": "1.3.0",
+      "maturity": "beta",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-53@1.0.0"
+      ],
+      "events_in": [
+        "event.in.53.v1"
+      ],
+      "events_out": [
+        "event.out.53.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-052@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-054",
+      "repo": "https://github.com/254carbon/service-054",
+      "path": "service-054",
+      "domain": "shared",
+      "version": "1.4.0",
+      "maturity": "stable",
+      "runtime": "python",
+      "api_contracts": [
+        "api-54@1.0.0"
+      ],
+      "events_in": [
+        "event.in.54.v1"
+      ],
+      "events_out": [
+        "event.out.54.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-053@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-055",
+      "repo": "https://github.com/254carbon/service-055",
+      "path": "service-055",
+      "domain": "access",
+      "version": "1.5.0",
+      "maturity": "deprecated",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-55@1.0.0"
+      ],
+      "events_in": [
+        "event.in.55.v1"
+      ],
+      "events_out": [
+        "event.out.55.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-054@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-056",
+      "repo": "https://github.com/254carbon/service-056",
+      "path": "service-056",
+      "domain": "data-processing",
+      "version": "1.6.0",
+      "maturity": "experimental",
+      "runtime": "python",
+      "api_contracts": [
+        "api-56@1.0.0"
+      ],
+      "events_in": [
+        "event.in.56.v1"
+      ],
+      "events_out": [
+        "event.out.56.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-055@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-057",
+      "repo": "https://github.com/254carbon/service-057",
+      "path": "service-057",
+      "domain": "ml",
+      "version": "1.7.0",
+      "maturity": "beta",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-57@1.0.0"
+      ],
+      "events_in": [
+        "event.in.57.v1"
+      ],
+      "events_out": [
+        "event.out.57.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-056@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-058",
+      "repo": "https://github.com/254carbon/service-058",
+      "path": "service-058",
+      "domain": "infrastructure",
+      "version": "1.8.0",
+      "maturity": "stable",
+      "runtime": "python",
+      "api_contracts": [
+        "api-58@1.0.0"
+      ],
+      "events_in": [
+        "event.in.58.v1"
+      ],
+      "events_out": [
+        "event.out.58.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-057@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-059",
+      "repo": "https://github.com/254carbon/service-059",
+      "path": "service-059",
+      "domain": "shared",
+      "version": "1.9.0",
+      "maturity": "deprecated",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-59@1.0.0"
+      ],
+      "events_in": [
+        "event.in.59.v1"
+      ],
+      "events_out": [
+        "event.out.59.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-058@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-060",
+      "repo": "https://github.com/254carbon/service-060",
+      "path": "service-060",
+      "domain": "access",
+      "version": "1.0.0",
+      "maturity": "experimental",
+      "runtime": "python",
+      "api_contracts": [
+        "api-60@1.0.0"
+      ],
+      "events_in": [
+        "event.in.60.v1"
+      ],
+      "events_out": [
+        "event.out.60.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-059@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-061",
+      "repo": "https://github.com/254carbon/service-061",
+      "path": "service-061",
+      "domain": "data-processing",
+      "version": "1.1.0",
+      "maturity": "beta",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-61@1.0.0"
+      ],
+      "events_in": [
+        "event.in.61.v1"
+      ],
+      "events_out": [
+        "event.out.61.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-060@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-062",
+      "repo": "https://github.com/254carbon/service-062",
+      "path": "service-062",
+      "domain": "ml",
+      "version": "1.2.0",
+      "maturity": "stable",
+      "runtime": "python",
+      "api_contracts": [
+        "api-62@1.0.0"
+      ],
+      "events_in": [
+        "event.in.62.v1"
+      ],
+      "events_out": [
+        "event.out.62.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-061@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-063",
+      "repo": "https://github.com/254carbon/service-063",
+      "path": "service-063",
+      "domain": "infrastructure",
+      "version": "1.3.0",
+      "maturity": "deprecated",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-63@1.0.0"
+      ],
+      "events_in": [
+        "event.in.63.v1"
+      ],
+      "events_out": [
+        "event.out.63.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-062@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-064",
+      "repo": "https://github.com/254carbon/service-064",
+      "path": "service-064",
+      "domain": "shared",
+      "version": "1.4.0",
+      "maturity": "experimental",
+      "runtime": "python",
+      "api_contracts": [
+        "api-64@1.0.0"
+      ],
+      "events_in": [
+        "event.in.64.v1"
+      ],
+      "events_out": [
+        "event.out.64.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-063@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-065",
+      "repo": "https://github.com/254carbon/service-065",
+      "path": "service-065",
+      "domain": "access",
+      "version": "1.5.0",
+      "maturity": "beta",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-65@1.0.0"
+      ],
+      "events_in": [
+        "event.in.65.v1"
+      ],
+      "events_out": [
+        "event.out.65.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-064@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-066",
+      "repo": "https://github.com/254carbon/service-066",
+      "path": "service-066",
+      "domain": "data-processing",
+      "version": "1.6.0",
+      "maturity": "stable",
+      "runtime": "python",
+      "api_contracts": [
+        "api-66@1.0.0"
+      ],
+      "events_in": [
+        "event.in.66.v1"
+      ],
+      "events_out": [
+        "event.out.66.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-065@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-067",
+      "repo": "https://github.com/254carbon/service-067",
+      "path": "service-067",
+      "domain": "ml",
+      "version": "1.7.0",
+      "maturity": "deprecated",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-67@1.0.0"
+      ],
+      "events_in": [
+        "event.in.67.v1"
+      ],
+      "events_out": [
+        "event.out.67.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-066@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-068",
+      "repo": "https://github.com/254carbon/service-068",
+      "path": "service-068",
+      "domain": "infrastructure",
+      "version": "1.8.0",
+      "maturity": "experimental",
+      "runtime": "python",
+      "api_contracts": [
+        "api-68@1.0.0"
+      ],
+      "events_in": [
+        "event.in.68.v1"
+      ],
+      "events_out": [
+        "event.out.68.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-067@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-069",
+      "repo": "https://github.com/254carbon/service-069",
+      "path": "service-069",
+      "domain": "shared",
+      "version": "1.9.0",
+      "maturity": "beta",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-69@1.0.0"
+      ],
+      "events_in": [
+        "event.in.69.v1"
+      ],
+      "events_out": [
+        "event.out.69.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-068@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-070",
+      "repo": "https://github.com/254carbon/service-070",
+      "path": "service-070",
+      "domain": "access",
+      "version": "1.0.0",
+      "maturity": "stable",
+      "runtime": "python",
+      "api_contracts": [
+        "api-70@1.0.0"
+      ],
+      "events_in": [
+        "event.in.70.v1"
+      ],
+      "events_out": [
+        "event.out.70.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-069@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-071",
+      "repo": "https://github.com/254carbon/service-071",
+      "path": "service-071",
+      "domain": "data-processing",
+      "version": "1.1.0",
+      "maturity": "deprecated",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-71@1.0.0"
+      ],
+      "events_in": [
+        "event.in.71.v1"
+      ],
+      "events_out": [
+        "event.out.71.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-070@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-072",
+      "repo": "https://github.com/254carbon/service-072",
+      "path": "service-072",
+      "domain": "ml",
+      "version": "1.2.0",
+      "maturity": "experimental",
+      "runtime": "python",
+      "api_contracts": [
+        "api-72@1.0.0"
+      ],
+      "events_in": [
+        "event.in.72.v1"
+      ],
+      "events_out": [
+        "event.out.72.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-071@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-073",
+      "repo": "https://github.com/254carbon/service-073",
+      "path": "service-073",
+      "domain": "infrastructure",
+      "version": "1.3.0",
+      "maturity": "beta",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-73@1.0.0"
+      ],
+      "events_in": [
+        "event.in.73.v1"
+      ],
+      "events_out": [
+        "event.out.73.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-072@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-074",
+      "repo": "https://github.com/254carbon/service-074",
+      "path": "service-074",
+      "domain": "shared",
+      "version": "1.4.0",
+      "maturity": "stable",
+      "runtime": "python",
+      "api_contracts": [
+        "api-74@1.0.0"
+      ],
+      "events_in": [
+        "event.in.74.v1"
+      ],
+      "events_out": [
+        "event.out.74.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-073@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-075",
+      "repo": "https://github.com/254carbon/service-075",
+      "path": "service-075",
+      "domain": "access",
+      "version": "1.5.0",
+      "maturity": "deprecated",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-75@1.0.0"
+      ],
+      "events_in": [
+        "event.in.75.v1"
+      ],
+      "events_out": [
+        "event.out.75.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-074@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-076",
+      "repo": "https://github.com/254carbon/service-076",
+      "path": "service-076",
+      "domain": "data-processing",
+      "version": "1.6.0",
+      "maturity": "experimental",
+      "runtime": "python",
+      "api_contracts": [
+        "api-76@1.0.0"
+      ],
+      "events_in": [
+        "event.in.76.v1"
+      ],
+      "events_out": [
+        "event.out.76.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-075@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-077",
+      "repo": "https://github.com/254carbon/service-077",
+      "path": "service-077",
+      "domain": "ml",
+      "version": "1.7.0",
+      "maturity": "beta",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-77@1.0.0"
+      ],
+      "events_in": [
+        "event.in.77.v1"
+      ],
+      "events_out": [
+        "event.out.77.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-076@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-078",
+      "repo": "https://github.com/254carbon/service-078",
+      "path": "service-078",
+      "domain": "infrastructure",
+      "version": "1.8.0",
+      "maturity": "stable",
+      "runtime": "python",
+      "api_contracts": [
+        "api-78@1.0.0"
+      ],
+      "events_in": [
+        "event.in.78.v1"
+      ],
+      "events_out": [
+        "event.out.78.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-077@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-079",
+      "repo": "https://github.com/254carbon/service-079",
+      "path": "service-079",
+      "domain": "shared",
+      "version": "1.9.0",
+      "maturity": "deprecated",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-79@1.0.0"
+      ],
+      "events_in": [
+        "event.in.79.v1"
+      ],
+      "events_out": [
+        "event.out.79.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-078@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-080",
+      "repo": "https://github.com/254carbon/service-080",
+      "path": "service-080",
+      "domain": "access",
+      "version": "1.0.0",
+      "maturity": "experimental",
+      "runtime": "python",
+      "api_contracts": [
+        "api-80@1.0.0"
+      ],
+      "events_in": [
+        "event.in.80.v1"
+      ],
+      "events_out": [
+        "event.out.80.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-079@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-081",
+      "repo": "https://github.com/254carbon/service-081",
+      "path": "service-081",
+      "domain": "data-processing",
+      "version": "1.1.0",
+      "maturity": "beta",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-81@1.0.0"
+      ],
+      "events_in": [
+        "event.in.81.v1"
+      ],
+      "events_out": [
+        "event.out.81.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-080@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-082",
+      "repo": "https://github.com/254carbon/service-082",
+      "path": "service-082",
+      "domain": "ml",
+      "version": "1.2.0",
+      "maturity": "stable",
+      "runtime": "python",
+      "api_contracts": [
+        "api-82@1.0.0"
+      ],
+      "events_in": [
+        "event.in.82.v1"
+      ],
+      "events_out": [
+        "event.out.82.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-081@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-083",
+      "repo": "https://github.com/254carbon/service-083",
+      "path": "service-083",
+      "domain": "infrastructure",
+      "version": "1.3.0",
+      "maturity": "deprecated",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-83@1.0.0"
+      ],
+      "events_in": [
+        "event.in.83.v1"
+      ],
+      "events_out": [
+        "event.out.83.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-082@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-084",
+      "repo": "https://github.com/254carbon/service-084",
+      "path": "service-084",
+      "domain": "shared",
+      "version": "1.4.0",
+      "maturity": "experimental",
+      "runtime": "python",
+      "api_contracts": [
+        "api-84@1.0.0"
+      ],
+      "events_in": [
+        "event.in.84.v1"
+      ],
+      "events_out": [
+        "event.out.84.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-083@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-085",
+      "repo": "https://github.com/254carbon/service-085",
+      "path": "service-085",
+      "domain": "access",
+      "version": "1.5.0",
+      "maturity": "beta",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-85@1.0.0"
+      ],
+      "events_in": [
+        "event.in.85.v1"
+      ],
+      "events_out": [
+        "event.out.85.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-084@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-086",
+      "repo": "https://github.com/254carbon/service-086",
+      "path": "service-086",
+      "domain": "data-processing",
+      "version": "1.6.0",
+      "maturity": "stable",
+      "runtime": "python",
+      "api_contracts": [
+        "api-86@1.0.0"
+      ],
+      "events_in": [
+        "event.in.86.v1"
+      ],
+      "events_out": [
+        "event.out.86.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-085@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-087",
+      "repo": "https://github.com/254carbon/service-087",
+      "path": "service-087",
+      "domain": "ml",
+      "version": "1.7.0",
+      "maturity": "deprecated",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-87@1.0.0"
+      ],
+      "events_in": [
+        "event.in.87.v1"
+      ],
+      "events_out": [
+        "event.out.87.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-086@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-088",
+      "repo": "https://github.com/254carbon/service-088",
+      "path": "service-088",
+      "domain": "infrastructure",
+      "version": "1.8.0",
+      "maturity": "experimental",
+      "runtime": "python",
+      "api_contracts": [
+        "api-88@1.0.0"
+      ],
+      "events_in": [
+        "event.in.88.v1"
+      ],
+      "events_out": [
+        "event.out.88.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-087@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-089",
+      "repo": "https://github.com/254carbon/service-089",
+      "path": "service-089",
+      "domain": "shared",
+      "version": "1.9.0",
+      "maturity": "beta",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-89@1.0.0"
+      ],
+      "events_in": [
+        "event.in.89.v1"
+      ],
+      "events_out": [
+        "event.out.89.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-088@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-090",
+      "repo": "https://github.com/254carbon/service-090",
+      "path": "service-090",
+      "domain": "access",
+      "version": "1.0.0",
+      "maturity": "stable",
+      "runtime": "python",
+      "api_contracts": [
+        "api-90@1.0.0"
+      ],
+      "events_in": [
+        "event.in.90.v1"
+      ],
+      "events_out": [
+        "event.out.90.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-089@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-091",
+      "repo": "https://github.com/254carbon/service-091",
+      "path": "service-091",
+      "domain": "data-processing",
+      "version": "1.1.0",
+      "maturity": "deprecated",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-91@1.0.0"
+      ],
+      "events_in": [
+        "event.in.91.v1"
+      ],
+      "events_out": [
+        "event.out.91.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-090@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-092",
+      "repo": "https://github.com/254carbon/service-092",
+      "path": "service-092",
+      "domain": "ml",
+      "version": "1.2.0",
+      "maturity": "experimental",
+      "runtime": "python",
+      "api_contracts": [
+        "api-92@1.0.0"
+      ],
+      "events_in": [
+        "event.in.92.v1"
+      ],
+      "events_out": [
+        "event.out.92.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-091@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-093",
+      "repo": "https://github.com/254carbon/service-093",
+      "path": "service-093",
+      "domain": "infrastructure",
+      "version": "1.3.0",
+      "maturity": "beta",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-93@1.0.0"
+      ],
+      "events_in": [
+        "event.in.93.v1"
+      ],
+      "events_out": [
+        "event.out.93.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-092@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-094",
+      "repo": "https://github.com/254carbon/service-094",
+      "path": "service-094",
+      "domain": "shared",
+      "version": "1.4.0",
+      "maturity": "stable",
+      "runtime": "python",
+      "api_contracts": [
+        "api-94@1.0.0"
+      ],
+      "events_in": [
+        "event.in.94.v1"
+      ],
+      "events_out": [
+        "event.out.94.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-093@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-095",
+      "repo": "https://github.com/254carbon/service-095",
+      "path": "service-095",
+      "domain": "access",
+      "version": "1.5.0",
+      "maturity": "deprecated",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-95@1.0.0"
+      ],
+      "events_in": [
+        "event.in.95.v1"
+      ],
+      "events_out": [
+        "event.out.95.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-094@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-096",
+      "repo": "https://github.com/254carbon/service-096",
+      "path": "service-096",
+      "domain": "data-processing",
+      "version": "1.6.0",
+      "maturity": "experimental",
+      "runtime": "python",
+      "api_contracts": [
+        "api-96@1.0.0"
+      ],
+      "events_in": [
+        "event.in.96.v1"
+      ],
+      "events_out": [
+        "event.out.96.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-095@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-097",
+      "repo": "https://github.com/254carbon/service-097",
+      "path": "service-097",
+      "domain": "ml",
+      "version": "1.7.0",
+      "maturity": "beta",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-97@1.0.0"
+      ],
+      "events_in": [
+        "event.in.97.v1"
+      ],
+      "events_out": [
+        "event.out.97.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-096@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-098",
+      "repo": "https://github.com/254carbon/service-098",
+      "path": "service-098",
+      "domain": "infrastructure",
+      "version": "1.8.0",
+      "maturity": "stable",
+      "runtime": "python",
+      "api_contracts": [
+        "api-98@1.0.0"
+      ],
+      "events_in": [
+        "event.in.98.v1"
+      ],
+      "events_out": [
+        "event.out.98.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-097@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-099",
+      "repo": "https://github.com/254carbon/service-099",
+      "path": "service-099",
+      "domain": "shared",
+      "version": "1.9.0",
+      "maturity": "deprecated",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-99@1.0.0"
+      ],
+      "events_in": [
+        "event.in.99.v1"
+      ],
+      "events_out": [
+        "event.out.99.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-098@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-100",
+      "repo": "https://github.com/254carbon/service-100",
+      "path": "service-100",
+      "domain": "access",
+      "version": "1.0.0",
+      "maturity": "experimental",
+      "runtime": "python",
+      "api_contracts": [
+        "api-100@1.0.0"
+      ],
+      "events_in": [
+        "event.in.100.v1"
+      ],
+      "events_out": [
+        "event.out.100.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-099@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-101",
+      "repo": "https://github.com/254carbon/service-101",
+      "path": "service-101",
+      "domain": "data-processing",
+      "version": "1.1.0",
+      "maturity": "beta",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-101@1.0.0"
+      ],
+      "events_in": [
+        "event.in.101.v1"
+      ],
+      "events_out": [
+        "event.out.101.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-100@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-102",
+      "repo": "https://github.com/254carbon/service-102",
+      "path": "service-102",
+      "domain": "ml",
+      "version": "1.2.0",
+      "maturity": "stable",
+      "runtime": "python",
+      "api_contracts": [
+        "api-102@1.0.0"
+      ],
+      "events_in": [
+        "event.in.102.v1"
+      ],
+      "events_out": [
+        "event.out.102.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-101@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-103",
+      "repo": "https://github.com/254carbon/service-103",
+      "path": "service-103",
+      "domain": "infrastructure",
+      "version": "1.3.0",
+      "maturity": "deprecated",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-103@1.0.0"
+      ],
+      "events_in": [
+        "event.in.103.v1"
+      ],
+      "events_out": [
+        "event.out.103.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-102@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-104",
+      "repo": "https://github.com/254carbon/service-104",
+      "path": "service-104",
+      "domain": "shared",
+      "version": "1.4.0",
+      "maturity": "experimental",
+      "runtime": "python",
+      "api_contracts": [
+        "api-104@1.0.0"
+      ],
+      "events_in": [
+        "event.in.104.v1"
+      ],
+      "events_out": [
+        "event.out.104.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-103@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-105",
+      "repo": "https://github.com/254carbon/service-105",
+      "path": "service-105",
+      "domain": "access",
+      "version": "1.5.0",
+      "maturity": "beta",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-105@1.0.0"
+      ],
+      "events_in": [
+        "event.in.105.v1"
+      ],
+      "events_out": [
+        "event.out.105.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-104@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-106",
+      "repo": "https://github.com/254carbon/service-106",
+      "path": "service-106",
+      "domain": "data-processing",
+      "version": "1.6.0",
+      "maturity": "stable",
+      "runtime": "python",
+      "api_contracts": [
+        "api-106@1.0.0"
+      ],
+      "events_in": [
+        "event.in.106.v1"
+      ],
+      "events_out": [
+        "event.out.106.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-105@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-107",
+      "repo": "https://github.com/254carbon/service-107",
+      "path": "service-107",
+      "domain": "ml",
+      "version": "1.7.0",
+      "maturity": "deprecated",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-107@1.0.0"
+      ],
+      "events_in": [
+        "event.in.107.v1"
+      ],
+      "events_out": [
+        "event.out.107.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-106@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-108",
+      "repo": "https://github.com/254carbon/service-108",
+      "path": "service-108",
+      "domain": "infrastructure",
+      "version": "1.8.0",
+      "maturity": "experimental",
+      "runtime": "python",
+      "api_contracts": [
+        "api-108@1.0.0"
+      ],
+      "events_in": [
+        "event.in.108.v1"
+      ],
+      "events_out": [
+        "event.out.108.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-107@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-109",
+      "repo": "https://github.com/254carbon/service-109",
+      "path": "service-109",
+      "domain": "shared",
+      "version": "1.9.0",
+      "maturity": "beta",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-109@1.0.0"
+      ],
+      "events_in": [
+        "event.in.109.v1"
+      ],
+      "events_out": [
+        "event.out.109.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-108@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-110",
+      "repo": "https://github.com/254carbon/service-110",
+      "path": "service-110",
+      "domain": "access",
+      "version": "1.0.0",
+      "maturity": "stable",
+      "runtime": "python",
+      "api_contracts": [
+        "api-110@1.0.0"
+      ],
+      "events_in": [
+        "event.in.110.v1"
+      ],
+      "events_out": [
+        "event.out.110.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-109@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-111",
+      "repo": "https://github.com/254carbon/service-111",
+      "path": "service-111",
+      "domain": "data-processing",
+      "version": "1.1.0",
+      "maturity": "deprecated",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-111@1.0.0"
+      ],
+      "events_in": [
+        "event.in.111.v1"
+      ],
+      "events_out": [
+        "event.out.111.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-110@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-112",
+      "repo": "https://github.com/254carbon/service-112",
+      "path": "service-112",
+      "domain": "ml",
+      "version": "1.2.0",
+      "maturity": "experimental",
+      "runtime": "python",
+      "api_contracts": [
+        "api-112@1.0.0"
+      ],
+      "events_in": [
+        "event.in.112.v1"
+      ],
+      "events_out": [
+        "event.out.112.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-111@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-113",
+      "repo": "https://github.com/254carbon/service-113",
+      "path": "service-113",
+      "domain": "infrastructure",
+      "version": "1.3.0",
+      "maturity": "beta",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-113@1.0.0"
+      ],
+      "events_in": [
+        "event.in.113.v1"
+      ],
+      "events_out": [
+        "event.out.113.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-112@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-114",
+      "repo": "https://github.com/254carbon/service-114",
+      "path": "service-114",
+      "domain": "shared",
+      "version": "1.4.0",
+      "maturity": "stable",
+      "runtime": "python",
+      "api_contracts": [
+        "api-114@1.0.0"
+      ],
+      "events_in": [
+        "event.in.114.v1"
+      ],
+      "events_out": [
+        "event.out.114.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-113@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-115",
+      "repo": "https://github.com/254carbon/service-115",
+      "path": "service-115",
+      "domain": "access",
+      "version": "1.5.0",
+      "maturity": "deprecated",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-115@1.0.0"
+      ],
+      "events_in": [
+        "event.in.115.v1"
+      ],
+      "events_out": [
+        "event.out.115.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-114@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-116",
+      "repo": "https://github.com/254carbon/service-116",
+      "path": "service-116",
+      "domain": "data-processing",
+      "version": "1.6.0",
+      "maturity": "experimental",
+      "runtime": "python",
+      "api_contracts": [
+        "api-116@1.0.0"
+      ],
+      "events_in": [
+        "event.in.116.v1"
+      ],
+      "events_out": [
+        "event.out.116.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-115@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-117",
+      "repo": "https://github.com/254carbon/service-117",
+      "path": "service-117",
+      "domain": "ml",
+      "version": "1.7.0",
+      "maturity": "beta",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-117@1.0.0"
+      ],
+      "events_in": [
+        "event.in.117.v1"
+      ],
+      "events_out": [
+        "event.out.117.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-116@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-118",
+      "repo": "https://github.com/254carbon/service-118",
+      "path": "service-118",
+      "domain": "infrastructure",
+      "version": "1.8.0",
+      "maturity": "stable",
+      "runtime": "python",
+      "api_contracts": [
+        "api-118@1.0.0"
+      ],
+      "events_in": [
+        "event.in.118.v1"
+      ],
+      "events_out": [
+        "event.out.118.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-117@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-119",
+      "repo": "https://github.com/254carbon/service-119",
+      "path": "service-119",
+      "domain": "shared",
+      "version": "1.9.0",
+      "maturity": "deprecated",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-119@1.0.0"
+      ],
+      "events_in": [
+        "event.in.119.v1"
+      ],
+      "events_out": [
+        "event.out.119.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-118@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-120",
+      "repo": "https://github.com/254carbon/service-120",
+      "path": "service-120",
+      "domain": "access",
+      "version": "1.0.0",
+      "maturity": "experimental",
+      "runtime": "python",
+      "api_contracts": [
+        "api-120@1.0.0"
+      ],
+      "events_in": [
+        "event.in.120.v1"
+      ],
+      "events_out": [
+        "event.out.120.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-119@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-121",
+      "repo": "https://github.com/254carbon/service-121",
+      "path": "service-121",
+      "domain": "data-processing",
+      "version": "1.1.0",
+      "maturity": "beta",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-121@1.0.0"
+      ],
+      "events_in": [
+        "event.in.121.v1"
+      ],
+      "events_out": [
+        "event.out.121.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-120@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-122",
+      "repo": "https://github.com/254carbon/service-122",
+      "path": "service-122",
+      "domain": "ml",
+      "version": "1.2.0",
+      "maturity": "stable",
+      "runtime": "python",
+      "api_contracts": [
+        "api-122@1.0.0"
+      ],
+      "events_in": [
+        "event.in.122.v1"
+      ],
+      "events_out": [
+        "event.out.122.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-121@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-123",
+      "repo": "https://github.com/254carbon/service-123",
+      "path": "service-123",
+      "domain": "infrastructure",
+      "version": "1.3.0",
+      "maturity": "deprecated",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-123@1.0.0"
+      ],
+      "events_in": [
+        "event.in.123.v1"
+      ],
+      "events_out": [
+        "event.out.123.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-122@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-124",
+      "repo": "https://github.com/254carbon/service-124",
+      "path": "service-124",
+      "domain": "shared",
+      "version": "1.4.0",
+      "maturity": "experimental",
+      "runtime": "python",
+      "api_contracts": [
+        "api-124@1.0.0"
+      ],
+      "events_in": [
+        "event.in.124.v1"
+      ],
+      "events_out": [
+        "event.out.124.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-123@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-125",
+      "repo": "https://github.com/254carbon/service-125",
+      "path": "service-125",
+      "domain": "access",
+      "version": "1.5.0",
+      "maturity": "beta",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-125@1.0.0"
+      ],
+      "events_in": [
+        "event.in.125.v1"
+      ],
+      "events_out": [
+        "event.out.125.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-124@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-126",
+      "repo": "https://github.com/254carbon/service-126",
+      "path": "service-126",
+      "domain": "data-processing",
+      "version": "1.6.0",
+      "maturity": "stable",
+      "runtime": "python",
+      "api_contracts": [
+        "api-126@1.0.0"
+      ],
+      "events_in": [
+        "event.in.126.v1"
+      ],
+      "events_out": [
+        "event.out.126.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-125@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-127",
+      "repo": "https://github.com/254carbon/service-127",
+      "path": "service-127",
+      "domain": "ml",
+      "version": "1.7.0",
+      "maturity": "deprecated",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-127@1.0.0"
+      ],
+      "events_in": [
+        "event.in.127.v1"
+      ],
+      "events_out": [
+        "event.out.127.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-126@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-128",
+      "repo": "https://github.com/254carbon/service-128",
+      "path": "service-128",
+      "domain": "infrastructure",
+      "version": "1.8.0",
+      "maturity": "experimental",
+      "runtime": "python",
+      "api_contracts": [
+        "api-128@1.0.0"
+      ],
+      "events_in": [
+        "event.in.128.v1"
+      ],
+      "events_out": [
+        "event.out.128.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-127@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-129",
+      "repo": "https://github.com/254carbon/service-129",
+      "path": "service-129",
+      "domain": "shared",
+      "version": "1.9.0",
+      "maturity": "beta",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-129@1.0.0"
+      ],
+      "events_in": [
+        "event.in.129.v1"
+      ],
+      "events_out": [
+        "event.out.129.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-128@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-130",
+      "repo": "https://github.com/254carbon/service-130",
+      "path": "service-130",
+      "domain": "access",
+      "version": "1.0.0",
+      "maturity": "stable",
+      "runtime": "python",
+      "api_contracts": [
+        "api-130@1.0.0"
+      ],
+      "events_in": [
+        "event.in.130.v1"
+      ],
+      "events_out": [
+        "event.out.130.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-129@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-131",
+      "repo": "https://github.com/254carbon/service-131",
+      "path": "service-131",
+      "domain": "data-processing",
+      "version": "1.1.0",
+      "maturity": "deprecated",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-131@1.0.0"
+      ],
+      "events_in": [
+        "event.in.131.v1"
+      ],
+      "events_out": [
+        "event.out.131.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-130@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-132",
+      "repo": "https://github.com/254carbon/service-132",
+      "path": "service-132",
+      "domain": "ml",
+      "version": "1.2.0",
+      "maturity": "experimental",
+      "runtime": "python",
+      "api_contracts": [
+        "api-132@1.0.0"
+      ],
+      "events_in": [
+        "event.in.132.v1"
+      ],
+      "events_out": [
+        "event.out.132.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-131@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-133",
+      "repo": "https://github.com/254carbon/service-133",
+      "path": "service-133",
+      "domain": "infrastructure",
+      "version": "1.3.0",
+      "maturity": "beta",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-133@1.0.0"
+      ],
+      "events_in": [
+        "event.in.133.v1"
+      ],
+      "events_out": [
+        "event.out.133.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-132@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-134",
+      "repo": "https://github.com/254carbon/service-134",
+      "path": "service-134",
+      "domain": "shared",
+      "version": "1.4.0",
+      "maturity": "stable",
+      "runtime": "python",
+      "api_contracts": [
+        "api-134@1.0.0"
+      ],
+      "events_in": [
+        "event.in.134.v1"
+      ],
+      "events_out": [
+        "event.out.134.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-133@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-135",
+      "repo": "https://github.com/254carbon/service-135",
+      "path": "service-135",
+      "domain": "access",
+      "version": "1.5.0",
+      "maturity": "deprecated",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-135@1.0.0"
+      ],
+      "events_in": [
+        "event.in.135.v1"
+      ],
+      "events_out": [
+        "event.out.135.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-134@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-136",
+      "repo": "https://github.com/254carbon/service-136",
+      "path": "service-136",
+      "domain": "data-processing",
+      "version": "1.6.0",
+      "maturity": "experimental",
+      "runtime": "python",
+      "api_contracts": [
+        "api-136@1.0.0"
+      ],
+      "events_in": [
+        "event.in.136.v1"
+      ],
+      "events_out": [
+        "event.out.136.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-135@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-137",
+      "repo": "https://github.com/254carbon/service-137",
+      "path": "service-137",
+      "domain": "ml",
+      "version": "1.7.0",
+      "maturity": "beta",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-137@1.0.0"
+      ],
+      "events_in": [
+        "event.in.137.v1"
+      ],
+      "events_out": [
+        "event.out.137.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-136@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-138",
+      "repo": "https://github.com/254carbon/service-138",
+      "path": "service-138",
+      "domain": "infrastructure",
+      "version": "1.8.0",
+      "maturity": "stable",
+      "runtime": "python",
+      "api_contracts": [
+        "api-138@1.0.0"
+      ],
+      "events_in": [
+        "event.in.138.v1"
+      ],
+      "events_out": [
+        "event.out.138.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-137@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-139",
+      "repo": "https://github.com/254carbon/service-139",
+      "path": "service-139",
+      "domain": "shared",
+      "version": "1.9.0",
+      "maturity": "deprecated",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-139@1.0.0"
+      ],
+      "events_in": [
+        "event.in.139.v1"
+      ],
+      "events_out": [
+        "event.out.139.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-138@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-140",
+      "repo": "https://github.com/254carbon/service-140",
+      "path": "service-140",
+      "domain": "access",
+      "version": "1.0.0",
+      "maturity": "experimental",
+      "runtime": "python",
+      "api_contracts": [
+        "api-140@1.0.0"
+      ],
+      "events_in": [
+        "event.in.140.v1"
+      ],
+      "events_out": [
+        "event.out.140.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-139@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-141",
+      "repo": "https://github.com/254carbon/service-141",
+      "path": "service-141",
+      "domain": "data-processing",
+      "version": "1.1.0",
+      "maturity": "beta",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-141@1.0.0"
+      ],
+      "events_in": [
+        "event.in.141.v1"
+      ],
+      "events_out": [
+        "event.out.141.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-140@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-142",
+      "repo": "https://github.com/254carbon/service-142",
+      "path": "service-142",
+      "domain": "ml",
+      "version": "1.2.0",
+      "maturity": "stable",
+      "runtime": "python",
+      "api_contracts": [
+        "api-142@1.0.0"
+      ],
+      "events_in": [
+        "event.in.142.v1"
+      ],
+      "events_out": [
+        "event.out.142.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-141@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-143",
+      "repo": "https://github.com/254carbon/service-143",
+      "path": "service-143",
+      "domain": "infrastructure",
+      "version": "1.3.0",
+      "maturity": "deprecated",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-143@1.0.0"
+      ],
+      "events_in": [
+        "event.in.143.v1"
+      ],
+      "events_out": [
+        "event.out.143.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-142@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-144",
+      "repo": "https://github.com/254carbon/service-144",
+      "path": "service-144",
+      "domain": "shared",
+      "version": "1.4.0",
+      "maturity": "experimental",
+      "runtime": "python",
+      "api_contracts": [
+        "api-144@1.0.0"
+      ],
+      "events_in": [
+        "event.in.144.v1"
+      ],
+      "events_out": [
+        "event.out.144.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-143@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-145",
+      "repo": "https://github.com/254carbon/service-145",
+      "path": "service-145",
+      "domain": "access",
+      "version": "1.5.0",
+      "maturity": "beta",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-145@1.0.0"
+      ],
+      "events_in": [
+        "event.in.145.v1"
+      ],
+      "events_out": [
+        "event.out.145.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-144@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-146",
+      "repo": "https://github.com/254carbon/service-146",
+      "path": "service-146",
+      "domain": "data-processing",
+      "version": "1.6.0",
+      "maturity": "stable",
+      "runtime": "python",
+      "api_contracts": [
+        "api-146@1.0.0"
+      ],
+      "events_in": [
+        "event.in.146.v1"
+      ],
+      "events_out": [
+        "event.out.146.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-145@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-147",
+      "repo": "https://github.com/254carbon/service-147",
+      "path": "service-147",
+      "domain": "ml",
+      "version": "1.7.0",
+      "maturity": "deprecated",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-147@1.0.0"
+      ],
+      "events_in": [
+        "event.in.147.v1"
+      ],
+      "events_out": [
+        "event.out.147.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-146@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-148",
+      "repo": "https://github.com/254carbon/service-148",
+      "path": "service-148",
+      "domain": "infrastructure",
+      "version": "1.8.0",
+      "maturity": "experimental",
+      "runtime": "python",
+      "api_contracts": [
+        "api-148@1.0.0"
+      ],
+      "events_in": [
+        "event.in.148.v1"
+      ],
+      "events_out": [
+        "event.out.148.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-147@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    },
+    {
+      "name": "service-149",
+      "repo": "https://github.com/254carbon/service-149",
+      "path": "service-149",
+      "domain": "shared",
+      "version": "1.9.0",
+      "maturity": "beta",
+      "runtime": "nodejs",
+      "api_contracts": [
+        "api-149@1.0.0"
+      ],
+      "events_in": [
+        "event.in.149.v1"
+      ],
+      "events_out": [
+        "event.out.149.v1"
+      ],
+      "dependencies": {
+        "internal": [
+          "service-148@1.0.0"
+        ],
+        "external": [
+          "redis@7.0",
+          "postgresql@15"
+        ]
+      },
+      "last_update": "2025-10-06T14:00:00Z"
+    }
+  ]
+}

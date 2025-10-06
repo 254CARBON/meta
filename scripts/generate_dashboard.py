@@ -128,6 +128,95 @@ class DashboardGenerator:
         logger.info(f"Overview dashboard saved to {dashboard_path}")
         return str(dashboard_path)
 
+    def generate_health_dashboard(self) -> str:
+        """Generate real-time health dashboard."""
+        logger.info("Generating health dashboard...")
+
+        # Prepare health data
+        health_data = {
+            'metadata': {
+                'generated_at': datetime.now(timezone.utc).isoformat(),
+                'title': '254Carbon Platform Health Dashboard',
+                'version': '1.0.0'
+            },
+            'service_health': self._get_service_health_status(),
+            'overall_health': self._calculate_overall_health(),
+            'alerts': self._get_active_alerts(),
+            'incidents': self._get_recent_incidents(),
+            'charts': self._generate_health_charts()
+        }
+
+        # Generate HTML
+        template = self.template_env.get_template("realtime_health.html.j2")
+        html_content = template.render(**health_data)
+
+        # Save dashboard
+        dashboard_path = self.output_dir / "health.html"
+        with open(dashboard_path, 'w') as f:
+            f.write(html_content)
+
+        logger.info(f"Health dashboard saved to {dashboard_path}")
+        return str(dashboard_path)
+
+    def generate_quality_dashboard(self) -> str:
+        """Generate quality trends dashboard."""
+        logger.info("Generating quality trends dashboard...")
+
+        # Prepare quality data
+        quality_data = {
+            'metadata': {
+                'generated_at': datetime.now(timezone.utc).isoformat(),
+                'title': '254Carbon Platform Quality Trends',
+                'version': '1.0.0'
+            },
+            'quality_summary': self._get_quality_overview(),
+            'service_quality': self._get_service_quality_details(),
+            'quality_trends': self._get_quality_trends(),
+            'grade_distribution': self._get_grade_distribution(),
+            'charts': self._generate_quality_charts()
+        }
+
+        # Generate HTML
+        template = self.template_env.get_template("quality_trends.html.j2")
+        html_content = template.render(**quality_data)
+
+        # Save dashboard
+        dashboard_path = self.output_dir / "quality.html"
+        with open(dashboard_path, 'w') as f:
+            f.write(html_content)
+
+        logger.info(f"Quality dashboard saved to {dashboard_path}")
+        return str(dashboard_path)
+
+    def generate_release_dashboard(self) -> str:
+        """Generate release calendar dashboard."""
+        logger.info("Generating release calendar dashboard...")
+
+        # Prepare release data
+        release_data = {
+            'metadata': {
+                'generated_at': datetime.now(timezone.utc).isoformat(),
+                'title': '254Carbon Release Calendar',
+                'version': '1.0.0'
+            },
+            'release_trains': self._get_release_trains(),
+            'upcoming_releases': self._get_upcoming_releases(),
+            'release_history': self._get_release_history(),
+            'charts': self._generate_release_charts()
+        }
+
+        # Generate HTML
+        template = self.template_env.get_template("release_calendar.html.j2")
+        html_content = template.render(**release_data)
+
+        # Save dashboard
+        dashboard_path = self.output_dir / "releases.html"
+        with open(dashboard_path, 'w') as f:
+            f.write(html_content)
+
+        logger.info(f"Release dashboard saved to {dashboard_path}")
+        return str(dashboard_path)
+
     def _get_platform_summary(self) -> Dict[str, Any]:
         """Get platform-level summary metrics."""
         services = self.catalog_data.get('services', [])
@@ -597,11 +686,427 @@ class DashboardGenerator:
         with open(js_path, 'w') as f:
             f.write(js_content)
 
+    def _get_service_health_status(self) -> Dict[str, Any]:
+        """Get health status for all services."""
+        services = self.catalog_data.get('services', [])
+        health_status = {}
+        
+        for service in services:
+            service_name = service.get('name', 'unknown')
+            
+            # Determine health status based on quality and drift
+            quality_score = self.quality_data.get('services', {}).get(service_name, {}).get('score', 0)
+            drift_issues = self.drift_data.get('services', {}).get(service_name, {}).get('issues', [])
+            
+            # Calculate health status
+            if quality_score >= 80 and len(drift_issues) == 0:
+                status = 'healthy'
+                color = 'green'
+            elif quality_score >= 60 and len(drift_issues) <= 2:
+                status = 'warning'
+                color = 'yellow'
+            else:
+                status = 'critical'
+                color = 'red'
+            
+            health_status[service_name] = {
+                'status': status,
+                'color': color,
+                'quality_score': quality_score,
+                'drift_issues': len(drift_issues),
+                'last_updated': service.get('last_update', 'Unknown'),
+                'domain': service.get('domain', 'unknown'),
+                'maturity': service.get('maturity', 'unknown')
+            }
+        
+        return health_status
+
+    def _calculate_overall_health(self) -> Dict[str, Any]:
+        """Calculate overall platform health."""
+        service_health = self._get_service_health_status()
+        
+        total_services = len(service_health)
+        healthy_services = len([s for s in service_health.values() if s['status'] == 'healthy'])
+        warning_services = len([s for s in service_health.values() if s['status'] == 'warning'])
+        critical_services = len([s for s in service_health.values() if s['status'] == 'critical'])
+        
+        # Calculate overall health percentage
+        if total_services > 0:
+            health_percentage = (healthy_services / total_services) * 100
+        else:
+            health_percentage = 0
+        
+        return {
+            'total_services': total_services,
+            'healthy_services': healthy_services,
+            'warning_services': warning_services,
+            'critical_services': critical_services,
+            'health_percentage': round(health_percentage, 1),
+            'overall_status': 'healthy' if health_percentage >= 80 else 'warning' if health_percentage >= 60 else 'critical'
+        }
+
+    def _get_active_alerts(self) -> List[Dict[str, Any]]:
+        """Get active alerts and notifications."""
+        alerts = []
+        
+        # Check for quality threshold breaches
+        quality_data = self.quality_data.get('services', {})
+        for service_name, service_data in quality_data.items():
+            score = service_data.get('score', 0)
+            if score < 70:
+                alerts.append({
+                    'type': 'quality_threshold_breach',
+                    'severity': 'high',
+                    'service': service_name,
+                    'message': f'Quality score {score} below threshold (70)',
+                    'timestamp': datetime.now(timezone.utc).isoformat()
+                })
+        
+        # Check for drift issues
+        drift_data = self.drift_data.get('services', {})
+        for service_name, service_data in drift_data.items():
+            issues = service_data.get('issues', [])
+            if len(issues) > 3:
+                alerts.append({
+                    'type': 'drift_detected',
+                    'severity': 'medium',
+                    'service': service_name,
+                    'message': f'{len(issues)} drift issues detected',
+                    'timestamp': datetime.now(timezone.utc).isoformat()
+                })
+        
+        return alerts
+
+    def _get_recent_incidents(self) -> List[Dict[str, Any]]:
+        """Get recent incidents and outages."""
+        # This would typically load from an incident management system
+        # For now, return mock data
+        incidents = [
+            {
+                'id': 'INC-001',
+                'title': 'Service Discovery Crawler Timeout',
+                'status': 'resolved',
+                'severity': 'medium',
+                'start_time': '2025-01-05T10:30:00Z',
+                'end_time': '2025-01-05T11:15:00Z',
+                'affected_services': ['gateway', 'auth-service'],
+                'description': 'GitHub API rate limiting caused service discovery to fail'
+            },
+            {
+                'id': 'INC-002',
+                'title': 'Quality Score Calculation Error',
+                'status': 'investigating',
+                'severity': 'low',
+                'start_time': '2025-01-06T09:00:00Z',
+                'end_time': None,
+                'affected_services': ['user-service'],
+                'description': 'Incorrect quality score calculation for user-service'
+            }
+        ]
+        
+        return incidents
+
+    def _generate_health_charts(self) -> Dict[str, str]:
+        """Generate health-specific charts."""
+        charts = {}
+        
+        # Health overview pie chart
+        overall_health = self._calculate_overall_health()
+        health_fig = go.Figure(data=[go.Pie(
+            labels=['Healthy', 'Warning', 'Critical'],
+            values=[overall_health['healthy_services'], 
+                   overall_health['warning_services'], 
+                   overall_health['critical_services']],
+            colors=['#28a745', '#ffc107', '#dc3545']
+        )])
+        health_fig.update_layout(title="Service Health Distribution")
+        charts['health_overview'] = health_fig.to_html(include_plotlyjs=False, div_id="health-overview")
+        
+        # Alert timeline
+        alerts = self._get_active_alerts()
+        if alerts:
+            alert_fig = go.Figure()
+            alert_fig.add_trace(go.Scatter(
+                x=[alert['timestamp'] for alert in alerts],
+                y=[alert['severity'] for alert in alerts],
+                mode='markers',
+                marker=dict(size=10, color='red'),
+                text=[alert['message'] for alert in alerts],
+                name='Alerts'
+            ))
+            alert_fig.update_layout(title="Active Alerts Timeline")
+            charts['alert_timeline'] = alert_fig.to_html(include_plotlyjs=False, div_id="alert-timeline")
+        
+        return charts
+
+    def _get_service_quality_details(self) -> Dict[str, Any]:
+        """Get detailed quality information for all services."""
+        services_data = self.quality_data.get('services', {})
+        service_details = {}
+        
+        for service_name, service_data in services_data.items():
+            service_details[service_name] = {
+                'score': service_data.get('score', 0),
+                'grade': service_data.get('grade', 'F'),
+                'coverage': service_data.get('coverage', 0),
+                'lint_pass': service_data.get('lint_pass', False),
+                'critical_vulns': service_data.get('vuln_critical', 0),
+                'high_vulns': service_data.get('vuln_high', 0),
+                'policy_failures': service_data.get('policy_failures', 0),
+                'status': service_data.get('status', 'unknown'),
+                'last_updated': service_data.get('last_updated', 'Unknown')
+            }
+        
+        return service_details
+
+    def _get_quality_trends(self) -> List[Dict[str, Any]]:
+        """Get quality trends over time."""
+        # This would typically load from historical data
+        # For now, return mock trend data
+        trends = [
+            {
+                'date': '2025-01-01',
+                'average_score': 75.2,
+                'services_count': 3,
+                'grade_distribution': {'A': 1, 'B': 1, 'C': 1, 'D': 0, 'F': 0}
+            },
+            {
+                'date': '2025-01-02',
+                'average_score': 78.5,
+                'services_count': 3,
+                'grade_distribution': {'A': 2, 'B': 1, 'C': 0, 'D': 0, 'F': 0}
+            },
+            {
+                'date': '2025-01-03',
+                'average_score': 82.1,
+                'services_count': 3,
+                'grade_distribution': {'A': 2, 'B': 1, 'C': 0, 'D': 0, 'F': 0}
+            }
+        ]
+        
+        return trends
+
+    def _get_grade_distribution(self) -> Dict[str, int]:
+        """Get current grade distribution."""
+        services_data = self.quality_data.get('services', {})
+        grade_dist = {'A': 0, 'B': 0, 'C': 0, 'D': 0, 'F': 0}
+        
+        for service_data in services_data.values():
+            grade = service_data.get('grade', 'F')
+            if grade in grade_dist:
+                grade_dist[grade] += 1
+        
+        return grade_dist
+
+    def _generate_quality_charts(self) -> Dict[str, str]:
+        """Generate quality-specific charts."""
+        charts = {}
+        
+        # Quality trends over time
+        trends = self._get_quality_trends()
+        if trends:
+            trend_fig = go.Figure()
+            trend_fig.add_trace(go.Scatter(
+                x=[trend['date'] for trend in trends],
+                y=[trend['average_score'] for trend in trends],
+                mode='lines+markers',
+                name='Average Quality Score',
+                line=dict(color='#007bff', width=3)
+            ))
+            trend_fig.update_layout(
+                title="Quality Score Trends",
+                xaxis_title="Date",
+                yaxis_title="Average Quality Score",
+                yaxis=dict(range=[0, 100])
+            )
+            charts['quality_trends'] = trend_fig.to_html(include_plotlyjs=False, div_id="quality-trends")
+        
+        # Grade distribution pie chart
+        grade_dist = self._get_grade_distribution()
+        grade_fig = go.Figure(data=[go.Pie(
+            labels=list(grade_dist.keys()),
+            values=list(grade_dist.values()),
+            colors=['#28a745', '#20c997', '#ffc107', '#fd7e14', '#dc3545']
+        )])
+        grade_fig.update_layout(title="Grade Distribution")
+        charts['grade_distribution'] = grade_fig.to_html(include_plotlyjs=False, div_id="grade-distribution")
+        
+        # Service quality scatter plot
+        service_details = self._get_service_quality_details()
+        if service_details:
+            scatter_fig = go.Figure()
+            
+            # Group services by grade for different colors
+            grade_colors = {'A': '#28a745', 'B': '#20c997', 'C': '#ffc107', 'D': '#fd7e14', 'F': '#dc3545'}
+            
+            for grade, color in grade_colors.items():
+                grade_services = [(name, data) for name, data in service_details.items() if data['grade'] == grade]
+                if grade_services:
+                    scatter_fig.add_trace(go.Scatter(
+                        x=[data['coverage'] for _, data in grade_services],
+                        y=[data['score'] for _, data in grade_services],
+                        mode='markers',
+                        name=f'Grade {grade}',
+                        marker=dict(color=color, size=10),
+                        text=[name for name, _ in grade_services],
+                        hovertemplate='<b>%{text}</b><br>Coverage: %{x}%<br>Score: %{y}<extra></extra>'
+                    ))
+            
+            scatter_fig.update_layout(
+                title="Quality Score vs Test Coverage",
+                xaxis_title="Test Coverage (%)",
+                yaxis_title="Quality Score",
+                xaxis=dict(range=[0, 100]),
+                yaxis=dict(range=[0, 100])
+            )
+            charts['quality_scatter'] = scatter_fig.to_html(include_plotlyjs=False, div_id="quality-scatter")
+        
+        return charts
+
+    def _get_release_trains(self) -> List[Dict[str, Any]]:
+        """Get active and planned release trains."""
+        # Load from release trains configuration
+        try:
+            with open('catalog/release-trains.yaml', 'r') as f:
+                trains_data = yaml.safe_load(f)
+                return trains_data.get('trains', [])
+        except FileNotFoundError:
+            logger.warning("Release trains file not found")
+            return []
+        except Exception as e:
+            logger.error(f"Error loading release trains: {e}")
+            return []
+
+    def _get_upcoming_releases(self) -> List[Dict[str, Any]]:
+        """Get upcoming individual service releases."""
+        # This would typically load from a release planning system
+        # For now, return mock data
+        upcoming = [
+            {
+                'service': 'gateway',
+                'version': '1.2.0',
+                'release_date': '2025-01-15',
+                'status': 'planned',
+                'description': 'Gateway service update with new authentication features'
+            },
+            {
+                'service': 'auth-service',
+                'version': '1.1.0',
+                'release_date': '2025-01-20',
+                'status': 'planned',
+                'description': 'Authentication service security improvements'
+            },
+            {
+                'service': 'user-service',
+                'version': '2.0.0',
+                'release_date': '2025-01-25',
+                'status': 'planned',
+                'description': 'Major user service refactor'
+            }
+        ]
+        
+        return upcoming
+
+    def _get_release_history(self) -> List[Dict[str, Any]]:
+        """Get recent release history."""
+        # This would typically load from version control or release tracking
+        # For now, return mock data
+        history = [
+            {
+                'service': 'gateway',
+                'version': '1.1.0',
+                'release_date': '2025-01-05',
+                'status': 'completed',
+                'description': 'Gateway service bug fixes'
+            },
+            {
+                'service': 'auth-service',
+                'version': '1.0.0',
+                'release_date': '2025-01-03',
+                'status': 'completed',
+                'description': 'Initial authentication service release'
+            },
+            {
+                'service': 'user-service',
+                'version': '1.0.0',
+                'release_date': '2025-01-01',
+                'status': 'completed',
+                'description': 'Initial user service release'
+            }
+        ]
+        
+        return history
+
+    def _generate_release_charts(self) -> Dict[str, str]:
+        """Generate release-specific charts."""
+        charts = {}
+        
+        # Release timeline
+        upcoming = self._get_upcoming_releases()
+        history = self._get_release_history()
+        
+        if upcoming or history:
+            timeline_fig = go.Figure()
+            
+            # Add upcoming releases
+            if upcoming:
+                timeline_fig.add_trace(go.Scatter(
+                    x=[release['release_date'] for release in upcoming],
+                    y=[release['service'] for release in upcoming],
+                    mode='markers',
+                    name='Upcoming Releases',
+                    marker=dict(color='#ffc107', size=15, symbol='diamond'),
+                    text=[f"{release['service']} v{release['version']}" for release in upcoming],
+                    hovertemplate='<b>%{text}</b><br>Date: %{x}<extra></extra>'
+                ))
+            
+            # Add completed releases
+            if history:
+                timeline_fig.add_trace(go.Scatter(
+                    x=[release['release_date'] for release in history],
+                    y=[release['service'] for release in history],
+                    mode='markers',
+                    name='Completed Releases',
+                    marker=dict(color='#28a745', size=12, symbol='circle'),
+                    text=[f"{release['service']} v{release['version']}" for release in history],
+                    hovertemplate='<b>%{text}</b><br>Date: %{x}<extra></extra>'
+                ))
+            
+            timeline_fig.update_layout(
+                title="Release Timeline",
+                xaxis_title="Release Date",
+                yaxis_title="Service",
+                height=400
+            )
+            charts['release_timeline'] = timeline_fig.to_html(include_plotlyjs=False, div_id="release-timeline")
+        
+        # Release frequency chart
+        if history:
+            # Group releases by month
+            monthly_releases = {}
+            for release in history:
+                month = release['release_date'][:7]  # YYYY-MM
+                monthly_releases[month] = monthly_releases.get(month, 0) + 1
+            
+            freq_fig = go.Figure(data=[go.Bar(
+                x=list(monthly_releases.keys()),
+                y=list(monthly_releases.values()),
+                marker_color='#007bff'
+            )])
+            freq_fig.update_layout(
+                title="Release Frequency by Month",
+                xaxis_title="Month",
+                yaxis_title="Number of Releases"
+            )
+            charts['release_frequency'] = freq_fig.to_html(include_plotlyjs=False, div_id="release-frequency")
+        
+        return charts
+
 
 def main():
     """Main entry point."""
     parser = argparse.ArgumentParser(description="Generate interactive platform dashboards")
-    parser.add_argument("--type", choices=["overview", "service", "team"], default="overview",
+    parser.add_argument("--type", choices=["overview", "service", "team", "health", "quality", "releases"], default="overview",
                        help="Type of dashboard to generate")
     parser.add_argument("--service", type=str, help="Service name for service dashboard")
     parser.add_argument("--domain", type=str, help="Domain name for team dashboard")
@@ -627,6 +1132,12 @@ def main():
             if not args.domain:
                 parser.error("--domain required for team dashboard")
             dashboard_path = generator.generate_team_dashboard(args.domain)
+        elif args.type == "health":
+            dashboard_path = generator.generate_health_dashboard()
+        elif args.type == "quality":
+            dashboard_path = generator.generate_quality_dashboard()
+        elif args.type == "releases":
+            dashboard_path = generator.generate_release_dashboard()
         else:
             parser.print_help()
             sys.exit(1)

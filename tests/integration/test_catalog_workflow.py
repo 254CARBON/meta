@@ -11,6 +11,7 @@ import pytest
 import tempfile
 import shutil
 import subprocess
+import os
 from pathlib import Path
 
 # Add the scripts directory to Python path for imports

@@ -1,3 +1,9 @@
+##
+## GitHub Actions workflow: Drift Detection
+## Purpose: Detects spec/version drift, missing locks, and staleness; writes
+##          reports and optionally files issues / comments on PRs.
+## Triggers: nightly schedule and manual dispatch.
+##
 name: Drift Detection
 
 on:

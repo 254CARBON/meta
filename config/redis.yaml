@@ -1,0 +1,105 @@
+# Redis Configuration for 254Carbon Meta Repository
+# Provides resilient caching with Redis backend and file-based fallback
+
+redis:
+  # Connection settings
+  host: "localhost"
+  port: 6379
+  db: 0
+  password: null  # Set via environment variable REDIS_PASSWORD
+  
+  # Connection pool settings
+  max_connections: 20
+  socket_timeout: 5.0
+  socket_connect_timeout: 5.0
+  retry_on_timeout: true
+  health_check_interval: 30
+  
+  # Fallback settings
+  fallback_dir: "cache_fallback"
+  enable_fallback: true
+  
+  # Circuit breaker settings
+  circuit_breaker:
+    failure_threshold: 5
+    recovery_timeout: 60
+    expected_exceptions: ["RedisError", "ConnectionError", "TimeoutError"]
+
+# Cache TTL settings (in seconds)
+ttl:
+  catalog: 3600          # 1 hour
+  quality_scores: 1800   # 30 minutes
+  drift_state: 1800      # 30 minutes
+  health_status: 300     # 5 minutes
+  performance_metrics: 600 # 10 minutes
+  service_discovery: 7200 # 2 hours
+  manifest_cache: 3600   # 1 hour
+
+# Cache keys and patterns
+keys:
+  catalog: "catalog"
+  quality_scores: "quality_scores"
+  drift_state: "drift_state"
+  health_status: "health:{service_name}"
+  performance_metrics: "perf:{service_name}"
+  service_discovery: "discovery:{repo}"
+  manifest_cache: "manifest:{service_name}"
+  build_lock: "build_lock"
+  validation_lock: "validation_lock"
+
+# Performance settings
+performance:
+  # Enable compression for large objects
+  enable_compression: true
+  compression_threshold: 1024  # bytes
+  
+  # Enable serialization optimization
+  enable_optimization: true
+  
+  # Batch operations
+  batch_size: 100
+  batch_timeout: 1.0  # seconds
+
+# Monitoring and metrics
+monitoring:
+  # Enable detailed logging
+  enable_logging: true
+  log_level: "INFO"
+  
+  # Enable metrics collection
+  enable_metrics: true
+  
+  # Statistics reporting interval
+  stats_interval: 300  # seconds
+  
+  # Health check interval
+  health_check_interval: 60  # seconds
+
+# Development settings
+development:
+  # Use file fallback only (for testing)
+  file_fallback_only: false
+  
+  # Enable debug mode
+  debug_mode: false
+  
+  # Mock Redis for testing
+  mock_redis: false
+
+# Production settings
+production:
+  # Use Redis cluster
+  cluster_mode: false
+  cluster_nodes: []
+  
+  # Enable persistence
+  enable_persistence: true
+  
+  # Memory optimization
+  memory_optimization: true
+  
+  # Connection security
+  ssl_enabled: false
+  ssl_cert_path: null
+  ssl_key_path: null
+  ssl_ca_path: null

@@ -1,100 +1,628 @@
+<!--
+  Template: dashboards/service.html.j2
+  Purpose: Per‑service dashboard showing metadata, quality, dependencies,
+           and health indicators for a selected service.
+
+  Inputs (context):
+  - service: catalog service object with fields such as
+      name, domain, maturity, version, runtime, last_update,
+      dependencies: { internal: [], external: [] },
+      quality: { coverage, lint_pass, open_critical_vulns, score? },
+      security: { signed_images?, policy_pass? }
+
+  Rendered by: scripts/generate_dashboard.py
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ metadata.title }} - {{ service_info.name }}</title>
-    <link rel="stylesheet" href="assets/dashboard.css">
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <title>254Carbon Meta - Service Dashboard: {{ service.name }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8fafc;
+            color: #334155;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .service-header {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+        }
+        
+        .service-title {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .service-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1.5rem;
+            font-size: 2rem;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+        }
+        
+        .service-info h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+        
+        .service-meta {
+            display: flex;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+        
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .meta-label {
+            font-size: 0.8rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+        }
+        
+        .meta-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            font-size: 1.2rem;
+        }
+        
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .metric-label {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+        
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .status-healthy {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+        
+        .status-warning {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status-critical {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .status-unknown {
+            background-color: #f1f5f9;
+            color: #475569;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+            transition: width 0.3s ease;
+        }
+        
+        .chart-container {
+            height: 200px;
+            margin-top: 1rem;
+            background-color: #f8fafc;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            font-style: italic;
+        }
+        
+        .dependency-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .dependency-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .dependency-item:last-child {
+            border-bottom: none;
+        }
+        
+        .dependency-name {
+            font-weight: 500;
+            color: #1e293b;
+        }
+        
+        .dependency-type {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+        }
+        
+        .dependency-status {
+            font-size: 0.8rem;
+        }
+        
+        .events-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .event-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .event-item:last-child {
+            border-bottom: none;
+        }
+        
+        .event-name {
+            font-weight: 500;
+            color: #1e293b;
+        }
+        
+        .event-direction {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+        }
+        
+        .event-schema {
+            font-size: 0.8rem;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: #64748b;
+            border-top: 1px solid #e2e8f0;
+            margin-top: 2rem;
+        }
+        
+        .refresh-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-left: 1rem;
+        }
+        
+        .refresh-btn:hover {
+            background: #2563eb;
+        }
+        
+        .back-btn {
+            background: #6b7280;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-right: 1rem;
+        }
+        
+        .back-btn:hover {
+            background: #4b5563;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .service-meta {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="dashboard-header">
-        <h1>🔧 {{ service_info.name }} Service Dashboard</h1>
-        <p class="timestamp">Generated: {{ metadata.generated_at }}</p>
+    <div class="header">
+        <h1>Service Dashboard</h1>
+        <p>{{ service.name }} - {{ service.domain }} Service</p>
+        <button class="back-btn" onclick="history.back()">← Back</button>
+        <button class="refresh-btn" onclick="location.reload()">Refresh</button>
     </div>
-
-    <div class="service-info-section">
-        <h2>📋 Service Information</h2>
-        <ul>
-            <li><strong>Name:</strong> {{ service_info.name }}</li>
-            <li><strong>Domain:</strong> {{ service_info.domain }}</li>
-            <li><strong>Maturity:</strong> {{ service_info.maturity }}</li>
-            <li><strong>Version:</strong> {{ service_info.version }}</li>
-            <li><strong>Runtime:</strong> {{ service_info.runtime }}</li>
-            <li><strong>Repository:</strong> <a href="{{ service_info.repo }}">{{ service_info.repo }}</a></li>
-        </ul>
-    </div>
-
-    <div class="metrics-grid">
-        <div class="metric-card">
-            <div class="metric-label">Quality Score</div>
-            <div class="metric-value {% if quality_metrics.score >= 80 %}status-good{% elif quality_metrics.score >= 70 %}status-warning{% else %}status-danger{% endif %}">
-                {{ quality_metrics.score|round(1) }}
+    
+    <div class="container">
+        <!-- Service Header -->
+        <div class="service-header">
+            <div class="service-title">
+                <div class="service-icon">🔧</div>
+                <div class="service-info">
+                    <h2>{{ service.name }}</h2>
+                    <div class="service-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">Domain</span>
+                            <span class="meta-value">{{ service.domain }}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Version</span>
+                            <span class="meta-value">{{ service.version }}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Maturity</span>
+                            <span class="meta-value">{{ service.maturity }}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Runtime</span>
+                            <span class="meta-value">{{ service.runtime or 'Unknown' }}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Repository</span>
+                            <span class="meta-value">{{ service.repo }}</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-
-        <div class="metric-card">
-            <div class="metric-label">Grade</div>
-            <div class="metric-value">{{ quality_metrics.grade }}</div>
-        </div>
-
-        <div class="metric-card">
-            <div class="metric-label">Test Coverage</div>
-            <div class="metric-value {% if quality_metrics.metrics.coverage >= 0.8 %}status-good{% elif quality_metrics.metrics.coverage >= 0.7 %}status-warning{% else %}status-danger{% endif %}">
-                {{ (quality_metrics.metrics.coverage * 100)|round(1) }}%
+        
+        <div class="dashboard-grid">
+            <!-- Service Health Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon" style="background-color: #dcfce7; color: #166534;">🏥</div>
+                    <div class="card-title">Service Health</div>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Status</span>
+                    <span class="status-badge status-healthy">Healthy</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Uptime</span>
+                    <span class="metric-value">{{ service_health.uptime }}%</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Response Time</span>
+                    <span class="metric-value">{{ service_health.response_time }}ms</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Error Rate</span>
+                    <span class="metric-value">{{ service_health.error_rate }}%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ service_health.uptime }}%"></div>
+                </div>
+            </div>
+            
+            <!-- Quality Metrics Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon" style="background-color: #fef3c7; color: #92400e;">⭐</div>
+                    <div class="card-title">Quality Metrics</div>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Quality Score</span>
+                    <span class="metric-value">{{ service_quality.score }}/100</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Test Coverage</span>
+                    <span class="metric-value">{{ service_quality.coverage }}%</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Lint Status</span>
+                    <span class="status-badge {% if service_quality.lint_pass %}status-healthy{% else %}status-critical{% endif %}">
+                        {% if service_quality.lint_pass %}Pass{% else %}Fail{% endif %}
+                    </span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Vulnerabilities</span>
+                    <span class="metric-value">{{ service_quality.vulnerabilities }}</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ service_quality.score }}%"></div>
+                </div>
+            </div>
+            
+            <!-- Dependencies Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon" style="background-color: #dbeafe; color: #1e40af;">🔗</div>
+                    <div class="card-title">Dependencies</div>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Internal Dependencies</span>
+                    <span class="metric-value">{{ dependencies.internal|length }}</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">External Dependencies</span>
+                    <span class="metric-value">{{ dependencies.external|length }}</span>
+                </div>
+                <div class="dependency-list">
+                    {% for dep in dependencies.internal %}
+                    <div class="dependency-item">
+                        <div>
+                            <div class="dependency-name">{{ dep }}</div>
+                            <div class="dependency-type">Internal Service</div>
+                        </div>
+                        <span class="status-badge status-healthy">Healthy</span>
+                    </div>
+                    {% endfor %}
+                    {% for dep in dependencies.external %}
+                    <div class="dependency-item">
+                        <div>
+                            <div class="dependency-name">{{ dep }}</div>
+                            <div class="dependency-type">External Service</div>
+                        </div>
+                        <span class="status-badge status-healthy">Available</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- API Contracts Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon" style="background-color: #e0e7ff; color: #3730a3;">📋</div>
+                    <div class="card-title">API Contracts</div>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Total Contracts</span>
+                    <span class="metric-value">{{ api_contracts|length }}</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Latest Version</span>
+                    <span class="metric-value">{{ api_contracts[0].version if api_contracts else 'N/A' }}</span>
+                </div>
+                <div class="dependency-list">
+                    {% for contract in api_contracts %}
+                    <div class="dependency-item">
+                        <div>
+                            <div class="dependency-name">{{ contract.name }}</div>
+                            <div class="dependency-type">Version {{ contract.version }}</div>
+                        </div>
+                        <span class="status-badge status-healthy">Active</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Events Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon" style="background-color: #f3e8ff; color: #7c3aed;">📡</div>
+                    <div class="card-title">Events</div>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Events In</span>
+                    <span class="metric-value">{{ events.events_in|length }}</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Events Out</span>
+                    <span class="metric-value">{{ events.events_out|length }}</span>
+                </div>
+                <div class="events-list">
+                    {% for event in events.events_in %}
+                    <div class="event-item">
+                        <div>
+                            <div class="event-name">{{ event.name }}</div>
+                            <div class="event-direction">Incoming Event</div>
+                        </div>
+                        <span class="event-schema">{{ event.schema }}</span>
+                    </div>
+                    {% endfor %}
+                    {% for event in events.events_out %}
+                    <div class="event-item">
+                        <div>
+                            <div class="event-name">{{ event.name }}</div>
+                            <div class="event-direction">Outgoing Event</div>
+                        </div>
+                        <span class="event-schema">{{ event.schema }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Performance Metrics Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon" style="background-color: #f3e8ff; color: #7c3aed;">📊</div>
+                    <div class="card-title">Performance</div>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">CPU Usage</span>
+                    <span class="metric-value">{{ performance.cpu_usage }}%</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Memory Usage</span>
+                    <span class="metric-value">{{ performance.memory_usage }}%</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Throughput</span>
+                    <span class="metric-value">{{ performance.throughput }}/min</span>
+                </div>
+                <div class="chart-container">
+                    <div>Performance trends over time</div>
+                </div>
             </div>
         </div>
-
-        <div class="metric-card">
-            <div class="metric-label">Drift Issues</div>
-            <div class="metric-value {% if drift_issues.issues|length == 0 %}status-good{% else %}status-warning{% endif %}">
-                {{ drift_issues.issues|length }}
+        
+        <!-- Recent Activity Section -->
+        <div class="card" style="margin-top: 2rem;">
+            <div class="card-header">
+                <div class="card-icon" style="background-color: #f1f5f9; color: #475569;">📈</div>
+                <div class="card-title">Recent Activity</div>
+            </div>
+            <div class="dependency-list">
+                {% for activity in recent_activity %}
+                <div class="dependency-item">
+                    <div>
+                        <div class="dependency-name">{{ activity.action }}</div>
+                        <div class="dependency-type">{{ activity.timestamp }} - {{ activity.details }}</div>
+                    </div>
+                    <span class="status-badge {% if activity.status == 'success' %}status-healthy{% elif activity.status == 'warning' %}status-warning{% else %}status-critical{% endif %}">{{ activity.status }}</span>
+                </div>
+                {% endfor %}
             </div>
         </div>
     </div>
-
-    <div class="chart-container">
-        <h2>📈 Quality Trend</h2>
-        {{ charts.quality_trend|safe }}
-    </div>
-
-    <div class="dependencies-section">
-        <h2>🔗 Dependencies</h2>
-        <h3>Internal Dependencies</h3>
-        <ul>
-        {% for dep in dependencies.internal %}
-            <li>{{ dep }}</li>
-        {% endfor %}
-        </ul>
-
-        <h3>External Dependencies</h3>
-        <ul>
-        {% for dep in dependencies.external %}
-            <li>{{ dep }}</li>
-        {% endfor %}
-        </ul>
-    </div>
-
-    <div class="drift-section">
-        <h2>🔍 Drift Issues</h2>
-        {% if drift_issues.issues %}
-        <ul>
-        {% for issue in drift_issues.issues %}
-            <li class="drift-issue-{{ issue.severity }}">
-                <strong>{{ issue.type }}:</strong> {{ issue.description }}
-            </li>
-        {% endfor %}
-        </ul>
-        {% else %}
-        <p class="status-good">✅ No drift issues detected</p>
-        {% endif %}
-    </div>
-
+    
     <div class="footer">
-        <p>🤖 Generated by 254Carbon Meta Repository</p>
-        <p><a href="index.html">Back to Platform Overview</a></p>
+        <p>Generated on {{ generated_at }} | Service: {{ service.name }} | 254Carbon Meta Platform</p>
     </div>
-
-    <script src="assets/dashboard.js"></script>
+    
+    <script>
+        // Auto-refresh every 5 minutes
+        setTimeout(() => {
+            location.reload();
+        }, 300000);
+        
+        // Add some interactivity
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add click handlers for dependency items
+            const dependencyItems = document.querySelectorAll('.dependency-item');
+            dependencyItems.forEach(item => {
+                item.style.cursor = 'pointer';
+                item.addEventListener('click', function() {
+                    const dependencyName = this.querySelector('.dependency-name').textContent;
+                    console.log('Clicked dependency:', dependencyName);
+                    // Could navigate to dependency detail page
+                });
+            });
+        });
+    </script>
 </body>
 </html>

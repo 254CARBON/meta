@@ -1,0 +1,380 @@
+# 254Carbon Meta Repository - Notification Configuration
+#
+# This configuration file defines how notifications are sent across
+# different channels (Slack, email, PagerDuty, GitHub Issues).
+
+# Channel Configuration
+channels:
+  slack:
+    # Slack webhook URLs
+    webhooks:
+      alerts: ${SLACK_ALERTS_WEBHOOK}
+      reports: ${SLACK_REPORTS_WEBHOOK}
+      general: ${SLACK_GENERAL_WEBHOOK}
+    default_webhook: ${SLACK_DEFAULT_WEBHOOK}
+    
+    # Slack-specific settings
+    username: "254Carbon Meta"
+    icon_emoji: ":robot_face:"
+    channel: "#meta-alerts"
+    
+  email:
+    # SMTP configuration
+    smtp_host: ${SMTP_HOST}
+    smtp_port: ${SMTP_PORT:-587}
+    smtp_user: ${SMTP_USER}
+    smtp_password: ${SMTP_PASSWORD}
+    from_email: ${FROM_EMAIL:-noreply@254carbon.com}
+    
+    # Email templates directory
+    templates_dir: "analysis/templates/notifications"
+    
+    # Recipients
+    recipients:
+      - "platform-team@254carbon.com"
+      - "sre-team@254carbon.com"
+    
+    # Critical alert recipients
+    critical_recipients:
+      - "oncall@254carbon.com"
+      - "platform-leads@254carbon.com"
+    
+    # Event-specific recipients
+    event_recipients:
+      quality_threshold_breach:
+        - "quality-team@254carbon.com"
+      release_train_failure:
+        - "release-team@254carbon.com"
+      drift_detected:
+        - "architecture-team@254carbon.com"
+      security_alert:
+        - "security-team@254carbon.com"
+    
+  pagerduty:
+    # PagerDuty configuration
+    api_key: ${PAGERDUTY_API_KEY}
+    routing_key: ${PAGERDUTY_ROUTING_KEY}
+    api_url: "https://events.pagerduty.com/v2/enqueue"
+    
+    # PagerDuty-specific settings
+    service_key: ${PAGERDUTY_SERVICE_KEY}
+    escalation_policy: ${PAGERDUTY_ESCALATION_POLICY}
+    
+  github:
+    # GitHub configuration
+    token: ${GITHUB_TOKEN}
+    owner: "254carbon"
+    repo: "254carbon-meta"
+    
+    # GitHub-specific settings
+    default_labels:
+      - "meta-notification"
+      - "automated"
+    
+    # Issue templates
+    issue_templates:
+      quality_threshold_breach: "templates/issues/quality-breach.md"
+      release_train_failure: "templates/issues/release-failure.md"
+      drift_detected: "templates/issues/drift-detected.md"
+      security_alert: "templates/issues/security-alert.md"
+
+# Notification Routing Rules
+rules:
+  # Quality threshold breach
+  quality_threshold_breach:
+    channels: ["slack.alerts", "email", "github_issue"]
+    severity: "high"
+    conditions:
+      - "quality_score < 70"
+      - "critical_vulnerabilities > 0"
+    cooldown_minutes: 60  # Don't spam notifications
+  
+  # Release train failure
+  release_train_failure:
+    channels: ["slack.alerts", "pagerduty", "email"]
+    severity: "critical"
+    conditions:
+      - "release_status == 'failed'"
+      - "rollback_required == true"
+    cooldown_minutes: 0  # Immediate notification
+  
+  # Drift detected
+  drift_detected:
+    channels: ["slack.reports", "email"]
+    severity: "medium"
+    conditions:
+      - "spec_lag_days > 30"
+      - "missing_lock_file == true"
+    cooldown_minutes: 1440  # Daily digest
+  
+  # Security alert
+  security_alert:
+    channels: ["slack.alerts", "pagerduty", "email", "github_issue"]
+    severity: "critical"
+    conditions:
+      - "critical_vulnerabilities > 0"
+      - "security_policy_violation == true"
+    cooldown_minutes: 0  # Immediate notification
+  
+  # Service discovery
+  service_discovered:
+    channels: ["slack.reports"]
+    severity: "low"
+    conditions:
+      - "confidence_score > 0.8"
+    cooldown_minutes: 1440  # Daily digest
+  
+  # Catalog build failure
+  catalog_build_failure:
+    channels: ["slack.alerts", "email"]
+    severity: "high"
+    conditions:
+      - "build_status == 'failed'"
+      - "validation_errors > 0"
+    cooldown_minutes: 30
+  
+  # Performance regression
+  performance_regression:
+    channels: ["slack.reports", "email"]
+    severity: "medium"
+    conditions:
+      - "build_time_increase > 50%"
+      - "memory_usage_increase > 30%"
+    cooldown_minutes: 1440  # Daily digest
+  
+  # Dependency update
+  dependency_update:
+    channels: ["slack.reports"]
+    severity: "low"
+    conditions:
+      - "major_version_upgrade == true"
+      - "breaking_changes_detected == true"
+    cooldown_minutes: 1440  # Daily digest
+
+# Notification Templates
+templates:
+  # Slack message templates
+  slack:
+    quality_threshold_breach:
+      title: "🚨 Quality Threshold Breached"
+      color: "#ff0000"
+      fields:
+        - name: "Service"
+          value: "{{service_name}}"
+          short: true
+        - name: "Quality Score"
+          value: "{{quality_score}}/100"
+          short: true
+        - name: "Critical Vulnerabilities"
+          value: "{{critical_vulns}}"
+          short: true
+    
+    release_train_failure:
+      title: "💥 Release Train Failed"
+      color: "#8b0000"
+      fields:
+        - name: "Train"
+          value: "{{train_name}}"
+          short: true
+        - name: "Failed Service"
+          value: "{{failed_service}}"
+          short: true
+        - name: "Error"
+          value: "{{error_message}}"
+          short: false
+    
+    drift_detected:
+      title: "⚠️ Service Drift Detected"
+      color: "#ff9500"
+      fields:
+        - name: "Service"
+          value: "{{service_name}}"
+          short: true
+        - name: "Spec Lag"
+          value: "{{spec_lag_days}} days"
+          short: true
+        - name: "Latest Version"
+          value: "{{latest_version}}"
+          short: true
+  
+  # Email templates
+  email:
+    quality_threshold_breach:
+      subject: "[254Carbon Meta] Quality Threshold Breached - {{service_name}}"
+      template: "quality-breach.html"
+      
+    release_train_failure:
+      subject: "[254Carbon Meta] CRITICAL: Release Train Failed - {{train_name}}"
+      template: "release-failure.html"
+      
+    drift_detected:
+      subject: "[254Carbon Meta] Service Drift Detected - {{service_name}}"
+      template: "drift-detected.html"
+  
+  # GitHub issue templates
+  github:
+    quality_threshold_breach:
+      title: "[Meta] Quality Threshold Breached - {{service_name}}"
+      template: "quality-breach.md"
+      labels: ["meta-notification", "quality", "high"]
+      
+    release_train_failure:
+      title: "[Meta] CRITICAL: Release Train Failed - {{train_name}}"
+      template: "release-failure.md"
+      labels: ["meta-notification", "release", "critical"]
+      
+    drift_detected:
+      title: "[Meta] Service Drift Detected - {{service_name}}"
+      template: "drift-detected.md"
+      labels: ["meta-notification", "drift", "medium"]
+
+# Rate Limiting and Throttling
+rate_limiting:
+  # Global rate limits
+  max_notifications_per_minute: 10
+  max_notifications_per_hour: 100
+  max_notifications_per_day: 500
+  
+  # Channel-specific rate limits
+  channel_limits:
+    slack:
+      max_per_minute: 5
+      max_per_hour: 50
+    email:
+      max_per_minute: 2
+      max_per_hour: 20
+    pagerduty:
+      max_per_minute: 3
+      max_per_hour: 30
+    github_issue:
+      max_per_minute: 1
+      max_per_hour: 10
+  
+  # Cooldown periods (in minutes)
+  cooldowns:
+    quality_threshold_breach: 60
+    release_train_failure: 0
+    drift_detected: 1440
+    security_alert: 0
+    service_discovered: 1440
+    catalog_build_failure: 30
+    performance_regression: 1440
+    dependency_update: 1440
+
+# Notification Delivery Tracking
+tracking:
+  # Enable delivery tracking
+  enabled: true
+  
+  # Track delivery status
+  track_delivery: true
+  
+  # Track open rates (for email)
+  track_opens: true
+  
+  # Track click rates (for email)
+  track_clicks: true
+  
+  # Retention period for tracking data (days)
+  retention_days: 90
+  
+  # Database configuration for tracking
+  database:
+    type: "sqlite"
+    path: "analysis/reports/notification_tracking.db"
+  
+  # Metrics collection
+  metrics:
+    enabled: true
+    export_to_prometheus: true
+    prometheus_port: 9090
+
+# Notification Filtering
+filtering:
+  # Enable filtering
+  enabled: true
+  
+  # Filter by time of day (24-hour format)
+  time_filters:
+    quiet_hours:
+      start: "22:00"
+      end: "08:00"
+      timezone: "UTC"
+      channels: ["slack", "email"]  # Don't filter PagerDuty
+  
+  # Filter by day of week
+  day_filters:
+    weekend_filter:
+      days: ["saturday", "sunday"]
+      channels: ["slack", "email"]  # Don't filter PagerDuty
+      severity_threshold: "high"  # Only send high/critical on weekends
+  
+  # Filter by service
+  service_filters:
+    excluded_services:
+      - "test-service"
+      - "demo-service"
+      - "sandbox-service"
+    
+    included_services:
+      - "gateway"
+      - "auth-service"
+      - "user-service"
+  
+  # Filter by environment
+  environment_filters:
+    production_only:
+      environments: ["production"]
+      channels: ["pagerduty", "email"]
+    
+    development_filter:
+      environments: ["development", "staging"]
+      channels: ["slack"]
+      severity_threshold: "medium"
+
+# Notification Escalation
+escalation:
+  # Enable escalation
+  enabled: true
+  
+  # Escalation rules
+  rules:
+    quality_threshold_breach:
+      # Escalate if not acknowledged within 30 minutes
+      acknowledge_timeout_minutes: 30
+      escalation_channels: ["pagerduty", "email"]
+      escalation_severity: "critical"
+    
+    release_train_failure:
+      # Escalate immediately
+      acknowledge_timeout_minutes: 0
+      escalation_channels: ["pagerduty", "email"]
+      escalation_severity: "critical"
+    
+    security_alert:
+      # Escalate if not acknowledged within 15 minutes
+      acknowledge_timeout_minutes: 15
+      escalation_channels: ["pagerduty", "email"]
+      escalation_severity: "critical"
+
+# Notification Testing
+testing:
+  # Enable testing mode
+  enabled: false
+  
+  # Test channels
+  test_channels:
+    slack: "slack-test"
+    email: "test@254carbon.com"
+    pagerduty: "test-routing-key"
+    github: "test-repo"
+  
+  # Test frequency
+  test_frequency: "daily"
+  test_time: "09:00"
+  
+  # Test notifications
+  test_notifications:
+    - "quality_threshold_breach"
+    - "drift_detected"
+    - "service_discovered"

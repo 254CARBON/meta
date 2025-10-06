@@ -29,6 +29,9 @@ from typing import Dict, List, Any, Optional, Tuple
 from dataclasses import dataclass
 from packaging import version
 
+# Import our utilities
+from scripts.utils.circuit_breaker import github_api_circuit_breaker
+
 
 # Configure logging
 logging.basicConfig(
@@ -102,6 +105,9 @@ class SpecVersionChecker:
         self.upgrade_policies_file = upgrade_policies or "config/upgrade-policies.yaml"
         self.dry_run = dry_run
 
+        # Initialize circuit breaker for GitHub API protection
+        self.circuit_breaker = github_api_circuit_breaker()
+
         # Load catalog
         self.catalog = self._load_catalog()
 
@@ -170,15 +176,16 @@ class SpecVersionChecker:
 
     def _fetch_specs_registry(self) -> Dict[str, Any]:
         """Fetch specifications registry."""
-        # In a real implementation, this would fetch from:
-        # - GitHub API to get latest specs
-        # - A dedicated specs service
-        # - Package registry
+        def _fetch_registry_impl():
+            # In a real implementation, this would fetch from:
+            # - GitHub API to get latest specs
+            # - A dedicated specs service
+            # - Package registry
 
-        logger.info(f"Fetching specs registry from {self.specs_repo}")
+            logger.info(f"Fetching specs registry from {self.specs_repo}")
 
-        # Placeholder implementation with sample data
-        registry = {
+            # Placeholder implementation with sample data
+            registry = {
             "gateway-core": {
                 "versions": [
                     {"version": "1.0.0", "release_date": "2024-01-01", "breaking": False},
@@ -207,10 +214,12 @@ class SpecVersionChecker:
                     {"version": "3.0.0", "release_date": "2024-07-01", "breaking": True}
                 ]
             }
-        }
+            }
 
-        logger.info(f"Loaded specs registry with {len(registry)} specifications")
-        return registry
+            logger.info(f"Loaded specs registry with {len(registry)} specifications")
+            return registry
+
+        return self.circuit_breaker.call(_fetch_registry_impl)
 
     def check_service_spec_versions(self) -> List[UpgradeRecommendation]:
         """Check specification versions for all services."""

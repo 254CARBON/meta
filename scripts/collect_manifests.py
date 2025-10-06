@@ -32,6 +32,10 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 import fnmatch
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+# Import our utilities
+from scripts.utils.circuit_breaker import github_api_circuit_breaker
 
 
 # Configure logging
@@ -69,37 +73,45 @@ class GitHubAPI:
         adapter = HTTPAdapter(max_retries=retry_strategy)
         self.session.mount("https://", adapter)
 
+        # Initialize circuit breaker for GitHub API protection
+        self.circuit_breaker = github_api_circuit_breaker()
+
     def get_repos(self) -> List[Dict[str, Any]]:
         """Get all repositories in the organization."""
-        url = f"{self.base_url}/orgs/{self.org}/repos"
-        response = self.session.get(url, params={"per_page": 100})
-        response.raise_for_status()
+        def _get_repos_impl():
+            url = f"{self.base_url}/orgs/{self.org}/repos"
+            response = self.session.get(url, params={"per_page": 100})
+            response.raise_for_status()
+            return response.json()
 
-        repos = response.json()
+        repos = self.circuit_breaker.call(_get_repos_impl)
         logger.info(f"Found {len(repos)} repositories in organization {self.org}")
         return repos
 
     def get_file_content(self, repo: str, path: str, branch: str = "main") -> Optional[str]:
         """Get file content from repository."""
-        url = f"{self.base_url}/repos/{self.org}/{repo}/contents/{path}"
-        params = {"ref": branch}
+        def _get_file_content_impl():
+            url = f"{self.base_url}/repos/{self.org}/{repo}/contents/{path}"
+            params = {"ref": branch}
 
-        response = self.session.get(url, params=params)
+            response = self.session.get(url, params=params)
 
-        # File not found is acceptable (some repos might not have manifests yet)
-        if response.status_code == 404:
-            logger.debug(f"Manifest file not found: {repo}/{path}")
+            # File not found is acceptable (some repos might not have manifests yet)
+            if response.status_code == 404:
+                logger.debug(f"Manifest file not found: {repo}/{path}")
+                return None
+
+            response.raise_for_status()
+            data = response.json()
+
+            # Handle base64 encoded content
+            if 'content' in data:
+                import base64
+                return base64.b64decode(data['content']).decode('utf-8')
+
             return None
 
-        response.raise_for_status()
-        data = response.json()
-
-        # Handle base64 encoded content
-        if 'content' in data:
-            import base64
-            return base64.b64decode(data['content']).decode('utf-8')
-
-        return None
+        return self.circuit_breaker.call(_get_file_content_impl)
 
     def get_rate_limit(self) -> Dict[str, Any]:
         """Get current rate limit status."""
@@ -199,8 +211,8 @@ class ManifestCollector:
             return None
 
     def collect_all_manifests(self, repo_filter: Optional[str] = None) -> Dict[str, Any]:
-        """Collect manifests from all repositories."""
-        logger.info("Starting manifest collection...")
+        """Collect manifests from all repositories using parallel processing."""
+        logger.info("Starting parallel manifest collection...")
 
         # Check rate limit before starting
         rate_limit = self.github.get_rate_limit()
@@ -214,7 +226,9 @@ class ManifestCollector:
         repos = self.github.get_repos()
         repos = self.filter_repos(repos, repo_filter)
 
-        # Collect manifests
+        logger.info(f"Processing {len(repos)} repositories in parallel...")
+
+        # Collect manifests in parallel
         results = {
             'collected_at': datetime.now(timezone.utc).isoformat(),
             'total_repos': len(repos),
@@ -223,16 +237,31 @@ class ManifestCollector:
             'manifests': []
         }
 
-        for repo in repos:
-            manifest = self.collect_manifest(repo)
-            if manifest:
-                results['successful'] += 1
-                results['manifests'].append(manifest)
-            else:
-                results['failed'] += 1
+        # Use ThreadPoolExecutor for parallel collection
+        max_workers = min(len(repos), 10)  # Limit to 10 concurrent requests
 
-            # Be respectful to the API
-            time.sleep(0.5)
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            # Submit all collection tasks
+            future_to_repo = {
+                executor.submit(self.collect_manifest, repo): repo
+                for repo in repos
+            }
+
+            # Process results as they complete
+            for future in as_completed(future_to_repo):
+                repo = future_to_repo[future]
+                try:
+                    manifest = future.result()
+                    if manifest:
+                        results['successful'] += 1
+                        results['manifests'].append(manifest)
+                    else:
+                        results['failed'] += 1
+                except Exception as e:
+                    logger.error(f"Failed to collect manifest from {repo.get('name', 'unknown')}: {e}")
+                    results['failed'] += 1
+
+        logger.info(f"Parallel collection complete: {results['successful']} successful, {results['failed']} failed")
 
         # Save collection summary
         if not self.dry_run:

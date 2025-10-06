@@ -25,6 +25,9 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 import jinja2
 
+# Import our utilities
+from scripts.utils.circuit_breaker import notification_circuit_breaker
+
 
 # Configure logging
 logging.basicConfig(
@@ -50,25 +53,32 @@ class NotificationClient:
         )
         self.adapter = HTTPAdapter(max_retries=self.retry_strategy)
 
+        # Initialize circuit breaker for notification service protection
+        self.circuit_breaker = notification_circuit_breaker()
+
     def send_slack_message(self, webhook_url: str, message: str, channel: str = None) -> bool:
         """Send message to Slack."""
-        payload = {
-            "text": message,
-            "mrkdwn": True
-        }
+        def _send_slack_impl():
+            payload = {
+                "text": message,
+                "mrkdwn": True
+            }
 
-        if channel:
-            payload["channel"] = channel
+            if channel:
+                payload["channel"] = channel
 
-        try:
             session = requests.Session()
             session.mount("https://", self.adapter)
 
             response = session.post(webhook_url, json=payload, timeout=10)
             response.raise_for_status()
 
-            logger.info("✅ Notification sent to Slack")
             return True
+
+        try:
+            result = self.circuit_breaker.call(_send_slack_impl)
+            logger.info("✅ Notification sent to Slack")
+            return result
 
         except Exception as e:
             logger.error(f"❌ Failed to send Slack notification: {e}")
@@ -76,20 +86,24 @@ class NotificationClient:
 
     def send_discord_message(self, webhook_url: str, message: str, username: str = "254Carbon Meta") -> bool:
         """Send message to Discord."""
-        payload = {
-            "content": message,
-            "username": username
-        }
+        def _send_discord_impl():
+            payload = {
+                "content": message,
+                "username": username
+            }
 
-        try:
             session = requests.Session()
             session.mount("https://", self.adapter)
 
             response = session.post(webhook_url, json=payload, timeout=10)
             response.raise_for_status()
 
-            logger.info("✅ Notification sent to Discord")
             return True
+
+        try:
+            result = self.circuit_breaker.call(_send_discord_impl)
+            logger.info("✅ Notification sent to Discord")
+            return result
 
         except Exception as e:
             logger.error(f"❌ Failed to send Discord notification: {e}")

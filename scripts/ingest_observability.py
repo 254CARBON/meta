@@ -32,6 +32,10 @@ from dataclasses import dataclass, asdict
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+# Import our utilities
+from scripts.utils.circuit_breaker import observability_circuit_breaker
 
 
 # Configure logging
@@ -93,34 +97,35 @@ class PrometheusClient:
         self.session.mount("http://", adapter)
         self.session.mount("https://", adapter)
 
+        # Initialize circuit breaker for observability system protection
+        self.circuit_breaker = observability_circuit_breaker()
+
     def query(self, query: str, time_range: str = "1h") -> Dict[str, Any]:
         """Execute Prometheus query."""
-        url = f"{self.base_url}/api/v1/query"
+        def _query_impl():
+            url = f"{self.base_url}/api/v1/query"
+            params = {"query": query}
+            response = self.session.get(url, params=params)
+            response.raise_for_status()
+            return response.json()
 
-        params = {
-            "query": query,
-        }
-
-        response = self.session.get(url, params=params)
-        response.raise_for_status()
-
-        return response.json()
+        return self.circuit_breaker.call(_query_impl)
 
     def query_range(self, query: str, start_time: datetime, end_time: datetime, step: str = "5m") -> Dict[str, Any]:
         """Execute Prometheus range query."""
-        url = f"{self.base_url}/api/v1/query_range"
+        def _query_range_impl():
+            url = f"{self.base_url}/api/v1/query_range"
+            params = {
+                "query": query,
+                "start": start_time.timestamp(),
+                "end": end_time.timestamp(),
+                "step": step
+            }
+            response = self.session.get(url, params=params)
+            response.raise_for_status()
+            return response.json()
 
-        params = {
-            "query": query,
-            "start": start_time.timestamp(),
-            "end": end_time.timestamp(),
-            "step": step
-        }
-
-        response = self.session.get(url, params=params)
-        response.raise_for_status()
-
-        return response.json()
+        return self.circuit_breaker.call(_query_range_impl)
 
 
 class DatadogClient:
@@ -147,20 +152,23 @@ class DatadogClient:
         adapter = HTTPAdapter(max_retries=retry_strategy)
         self.session.mount("https://", adapter)
 
+        # Initialize circuit breaker for observability system protection
+        self.circuit_breaker = observability_circuit_breaker()
+
     def query_metrics(self, query: str, from_ts: int, to_ts: int) -> Dict[str, Any]:
         """Query Datadog metrics."""
-        url = f"{self.base_url}/query"
+        def _query_metrics_impl():
+            url = f"{self.base_url}/query"
+            params = {
+                "query": query,
+                "from": from_ts,
+                "to": to_ts
+            }
+            response = self.session.get(url, params=params)
+            response.raise_for_status()
+            return response.json()
 
-        params = {
-            "query": query,
-            "from": from_ts,
-            "to": to_ts
-        }
-
-        response = self.session.get(url, params=params)
-        response.raise_for_status()
-
-        return response.json()
+        return self.circuit_breaker.call(_query_metrics_impl)
 
 
 class ObservabilityIngester:
@@ -411,8 +419,8 @@ class ObservabilityIngester:
         return (availability_compliance + latency_compliance + error_rate_compliance) / 3
 
     def collect_all_service_metrics(self) -> Dict[str, SLAMetrics]:
-        """Collect metrics for all services."""
-        logger.info("Collecting observability metrics for all services...")
+        """Collect metrics for all services using parallel processing."""
+        logger.info("Collecting observability metrics for all services using parallel processing...")
 
         # Get list of services from catalog
         catalog_path = Path("catalog/service-index.yaml")
@@ -426,22 +434,30 @@ class ObservabilityIngester:
         services = catalog.get('services', [])
         service_metrics = {}
 
-        for service in services:
-            service_name = service['name']
+        logger.info(f"Processing {len(services)} services in parallel...")
 
-            try:
-                metrics = self.collect_service_metrics(service_name)
-                service_metrics[service_name] = metrics
-                logger.info(f"Collected metrics for {service_name}: {metrics.availability_percentage:.1f}% availability")
+        # Use ThreadPoolExecutor for parallel collection
+        max_workers = min(len(services), 8)  # Limit to 8 concurrent requests
 
-                # Be respectful to the observability API
-                import time
-                time.sleep(1)
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            # Submit all collection tasks
+            future_to_service = {
+                executor.submit(self.collect_service_metrics, service['name']): service['name']
+                for service in services
+            }
 
-            except Exception as e:
-                logger.error(f"Failed to collect metrics for {service_name}: {e}")
-                # Create placeholder metrics for failed services
-                service_metrics[service_name] = SLAMetrics(
+            # Process results as they complete
+            for future in as_completed(future_to_service):
+                service_name = future_to_service[future]
+                try:
+                    metrics = future.result()
+                    service_metrics[service_name] = metrics
+                    logger.info(f"Collected metrics for {service_name}: {metrics.availability_percentage:.1f}% availability")
+
+                except Exception as e:
+                    logger.error(f"Failed to collect metrics for {service_name}: {e}")
+                    # Create placeholder metrics for failed services
+                    service_metrics[service_name] = SLAMetrics(
                     service_name=service_name,
                     availability_percentage=0.0,
                     uptime_percentage=0.0,

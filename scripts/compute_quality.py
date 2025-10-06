@@ -30,6 +30,7 @@ from pathlib import Path
 from datetime import datetime, timezone
 from typing import Dict, List, Any, Optional, Tuple
 from dataclasses import dataclass
+from concurrent.futures import ProcessPoolExecutor, as_completed
 
 
 # Configure logging
@@ -274,58 +275,104 @@ class QualityComputer:
             logger.warning(f"Failed to load drift data: {e}")
             return {}
 
-    def compute_all_quality_scores(self) -> Dict[str, Any]:
-        """Compute quality scores for all services."""
-        logger.info("Computing quality scores for all services...")
+    def _compute_single_service_score(self, service_data: Dict[str, Any], drift_counts: Dict[str, int], thresholds: Dict[str, Any]) -> Dict[str, Any]:
+        """Compute quality score for a single service (for parallel processing)."""
+        service = service_data
+        service_name = service['name']
 
-        services = self.catalog.get('services', [])
-        if not services:
+        # Extract metrics
+        metrics = self._extract_service_metrics(service)
+
+        # Apply drift penalty
+        metrics.drift_issues = drift_counts.get(service_name, 0)
+
+        # Compute score
+        score = metrics.compute_score(thresholds)
+        grade = metrics.get_grade(score)
+        status = metrics.get_status(score, thresholds)
+
+        # Return service data
+        return {
+            'service_name': service_name,
+            'score': score,
+            'grade': grade,
+            'status': status,
+            'metrics': {
+                'coverage': metrics.coverage,
+                'lint_pass': metrics.lint_pass,
+                'critical_vulns': metrics.critical_vulns,
+                'high_vulns': metrics.high_vulns,
+                'policy_failures': metrics.policy_failures,
+                'policy_warnings': metrics.policy_warnings,
+                'build_success_rate': metrics.build_success_rate,
+                'signed_images': metrics.signed_images,
+                'sbom_present': metrics.sbom_present,
+                'deployment_freshness_days': metrics.deployment_freshness_days,
+                'drift_issues': metrics.drift_issues
+            },
+            'maturity': metrics.maturity,
+                'computed_at': datetime.now(timezone.utc).isoformat()
+            }
+
+        return result
+
+    def compute_all_quality_scores_parallel(self) -> Dict[str, Any]:
+        """Compute quality scores for all services using parallel processing."""
+        logger.info("Computing quality scores for all services using parallel processing...")
+
+        services_data = self.catalog.get('services', [])
+        if not services_data:
             logger.warning("No services found in catalog")
             return {}
 
         # Load drift data for penalty calculation
         drift_counts = self._load_drift_data()
 
-        service_scores = {}
-        all_scores = []
+        logger.info(f"Processing {len(services_data)} services in parallel...")
 
-        for service in services:
-            service_name = service['name']
+        # Use ProcessPoolExecutor for parallel computation
+        max_workers = min(len(services_data), 5)  # Limit to 5 processes
 
-            # Extract metrics
-            metrics = self._extract_service_metrics(service)
-
-            # Apply drift penalty
-            metrics.drift_issues = drift_counts.get(service_name, 0)
-
-            # Compute score
-            score = metrics.compute_score(self.thresholds)
-            grade = metrics.get_grade(score)
-            status = metrics.get_status(score, self.thresholds)
-
-            # Store service data
-            service_scores[service_name] = {
-                'score': score,
-                'grade': grade,
-                'status': status,
-                'metrics': {
-                    'coverage': metrics.coverage,
-                    'lint_pass': metrics.lint_pass,
-                    'critical_vulns': metrics.critical_vulns,
-                    'high_vulns': metrics.high_vulns,
-                    'policy_failures': metrics.policy_failures,
-                    'policy_warnings': metrics.policy_warnings,
-                    'build_success_rate': metrics.build_success_rate,
-                    'signed_images': metrics.signed_images,
-                    'sbom_present': metrics.sbom_present,
-                    'deployment_freshness_days': metrics.deployment_freshness_days,
-                    'drift_issues': metrics.drift_issues
-                },
-                'maturity': metrics.maturity,
-                'computed_at': datetime.now(timezone.utc).isoformat()
+        with ProcessPoolExecutor(max_workers=max_workers) as executor:
+            # Submit all computation tasks
+            future_to_service = {
+                executor.submit(
+                    self._compute_single_service_score,
+                    service_data,
+                    drift_counts,
+                    self.thresholds
+                ): service_data
+                for service_data in services_data
             }
 
-            all_scores.append(score)
+            # Process results as they complete
+            service_scores = {}
+            all_scores = []
+
+            for future in as_completed(future_to_service):
+                service_data = future_to_service[future]
+                try:
+                    result = future.result()
+                    service_name = result['service_name']
+
+                    # Reconstruct service data format
+                    service_scores[service_name] = {
+                        'score': result['score'],
+                        'grade': result['grade'],
+                        'status': result['status'],
+                        'metrics': result['metrics'],
+                        'maturity': result['maturity'],
+                        'computed_at': result['computed_at']
+                    }
+
+                    all_scores.append(result['score'])
+
+                except Exception as e:
+                    service_name = service_data.get('name', 'unknown')
+                    logger.error(f"Failed to compute quality for {service_name}: {e}")
+                    # Continue with other services
+
+        logger.info(f"Parallel computation complete: {len(service_scores)} services processed")
 
         # Calculate global statistics
         if all_scores:
@@ -380,7 +427,7 @@ class QualityComputer:
             }
         }
 
-        logger.info(f"Quality computation complete: {len(services)} services scored, avg: {avg_score:.1f}")
+        logger.info(f"Quality computation complete: {len(service_scores)} services scored, avg: {avg_score:.1f}")
         return quality_snapshot
 
     def _generate_insights(self, service_scores: Dict[str, Any], all_scores: List[int]) -> List[str]:

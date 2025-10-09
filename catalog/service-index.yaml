@@ -1,66 +1,631 @@
 metadata:
-  generated_at: "2025-10-06T14:07:00Z"
-  version: "1.0.0"
-  total_services: 3
-
+  generated_at: '2025-10-09T22:30:38.509155+00:00'
+  version: 1.0.0
+  total_services: 24
 services:
-  - name: gateway
-    repo: "https://github.com/254carbon/254carbon-access"
-    path: "service-gateway"
-    domain: "access"
-    version: "1.1.0"
-    maturity: "stable"
-    runtime: "python"
-    api_contracts:
-      - "gateway-core@1.1.0"
-    events_in:
-      - "pricing.curve.updates.v1"
-    events_out:
-      - "gateway.request.processed.v1"
-    dependencies:
-      internal:
-        - "auth-service@1.0.0"
-      external:
-        - "redis@7.0"
-        - "postgresql@15"
-    last_update: "2025-10-05T22:30:12Z"
-
-  - name: auth-service
-    repo: "https://github.com/254carbon/254carbon-access"
-    path: "service-auth"
-    domain: "access"
-    version: "1.0.0"
-    maturity: "stable"
-    runtime: "python"
-    api_contracts:
-      - "auth-core@1.0.0"
-    events_in:
-      - "user.login.attempt.v1"
-    events_out:
-      - "auth.token.issued.v1"
-    dependencies:
-      internal:
-        - "user-service@1.0.0"
-      external:
-        - "postgresql@15"
-        - "redis@7.0"
-    last_update: "2025-10-05T22:30:12Z"
-
-  - name: user-service
-    repo: "https://github.com/254carbon/254carbon-data"
-    path: "service-user"
-    domain: "data"
-    version: "1.0.0"
-    maturity: "stable"
-    runtime: "python"
-    api_contracts:
-      - "user-core@1.0.0"
-    events_in:
-      - "user.profile.updated.v1"
-    events_out:
-      - "user.created.v1"
-    dependencies:
-      external:
-        - "postgresql@15"
-        - "redis@7.0"
-    last_update: "2025-10-05T22:30:12Z"
+- name: aggregation
+  repo: https://github.com/254carbon/254carbon-ingestion
+  path: services/service-aggregation
+  domain: ingestion
+  version: 1.0.0
+  maturity: beta
+  runtime: python
+  api_contracts: []
+  events_in: []
+  events_out: []
+  dependencies:
+    internal:
+    - connectors
+    external:
+    - kafka
+  quality:
+    coverage: 0.61
+    lint_pass: true
+    open_critical_vulns: 0
+  security:
+    signed_images: false
+    policy_pass: false
+  last_update: '2025-10-07T19:48:27.250636+00:00'
+  status: active
+- name: aggregation-service
+  repo: https://github.com/254carbon/254carbon-data-processing
+  path: service-aggregation
+  domain: data-processing
+  version: 0.1.0
+  maturity: beta
+  runtime: python
+  api_contracts: []
+  events_in: []
+  events_out: []
+  dependencies:
+    internal: []
+    external: []
+  quality:
+    coverage: 0.69
+    lint_pass: true
+    open_critical_vulns: 0
+  security:
+    signed_images: false
+    policy_pass: false
+  last_update: '2025-10-07T19:48:58.438852+00:00'
+  status: active
+- name: auth
+  repo: https://github.com/254carbon/254carbon-access
+  path: service_auth
+  domain: access
+  version: 0.1.0
+  maturity: stable
+  runtime: python
+  api_contracts:
+  - auth-core@1.0.0
+  events_in: []
+  events_out:
+  - auth.token.validated.v1
+  dependencies:
+    internal: []
+    external:
+    - keycloak
+  quality:
+    coverage: 0.93
+    lint_pass: true
+    open_critical_vulns: 0
+  security:
+    signed_images: true
+    policy_pass: true
+  last_update: '2025-10-07T19:49:09.370927+00:00'
+  status: active
+- name: backtesting-service
+  repo: https://github.com/254carbon/254carbon-analytics
+  path: service-backtesting
+  domain: analytics
+  version: 0.1.0
+  maturity: beta
+  runtime: python
+  api_contracts: []
+  events_in:
+  - analytics.backtest.request.v1
+  events_out:
+  - analytics.backtest.completed.v1
+  dependencies:
+    internal: []
+    external:
+    - clickhouse
+    - kafka
+    - postgres
+  quality:
+    coverage: 0.64
+    lint_pass: true
+    open_critical_vulns: 0
+  security:
+    signed_images: false
+    policy_pass: false
+  last_update: '2025-10-07T19:48:03.766474+00:00'
+  status: active
+- name: connector-registry
+  repo: https://github.com/254carbon/254carbon-ingestion
+  path: services/service-connector-registry
+  domain: ingestion
+  version: 1.0.0
+  maturity: beta
+  runtime: python
+  api_contracts: []
+  events_in: []
+  events_out: []
+  dependencies:
+    internal:
+    - connectors
+    external:
+    - fastapi
+    - uvicorn
+  quality:
+    coverage: 0.7
+    lint_pass: true
+    open_critical_vulns: 0
+  security:
+    signed_images: false
+    policy_pass: true
+  last_update: '2025-10-07T19:48:27.250636+00:00'
+  status: active
+- name: curve-service
+  repo: https://github.com/254carbon/254carbon-analytics
+  path: service-curve
+  domain: analytics
+  version: 0.1.0
+  maturity: beta
+  runtime: python
+  api_contracts: []
+  events_in:
+  - curve.compute.request.v1
+  events_out:
+  - pricing.curve.updates.v1
+  dependencies:
+    internal: []
+    external:
+    - clickhouse
+    - kafka
+    - postgres
+    - redis
+  quality:
+    coverage: 0.67
+    lint_pass: true
+    open_critical_vulns: 0
+  security:
+    signed_images: false
+    policy_pass: false
+  last_update: '2025-10-07T19:48:03.770474+00:00'
+  status: active
+- name: data-quality
+  repo: https://github.com/254carbon/254carbon-ingestion
+  path: services/service-data-quality
+  domain: ingestion
+  version: 1.0.0
+  maturity: beta
+  runtime: python
+  api_contracts: []
+  events_in: []
+  events_out: []
+  dependencies:
+    internal:
+    - enrichment-service
+    - normalization-service
+    external:
+    - kafka
+  quality:
+    coverage: 0.57
+    lint_pass: false
+    open_critical_vulns: 1
+  security:
+    signed_images: false
+    policy_pass: false
+  last_update: '2025-10-07T19:48:27.254636+00:00'
+  status: active
+- name: embedding-service
+  repo: https://github.com/254carbon/254carbon-ml
+  path: service-embedding
+  domain: ml
+  version: 0.1.0
+  maturity: beta
+  runtime: python
+  api_contracts:
+  - embedding-api@0.1.0
+  events_in:
+  - ml.embedding.reindex.request.v1
+  events_out:
+  - ml.embedding.generated.v1
+  dependencies:
+    internal:
+    - vector-store-adapter
+    external:
+    - postgres
+    - redis
+  quality:
+    coverage: 0.63
+    lint_pass: true
+    open_critical_vulns: 0
+  security:
+    signed_images: false
+    policy_pass: false
+  last_update: '2025-10-07T19:48:13.018538+00:00'
+  status: active
+- name: enrichment
+  repo: https://github.com/254carbon/254carbon-ingestion
+  path: services/service-enrichment
+  domain: ingestion
+  version: 1.0.0
+  maturity: beta
+  runtime: python
+  api_contracts: []
+  events_in: []
+  events_out: []
+  dependencies:
+    internal:
+    - connectors
+    external:
+    - kafka
+  quality:
+    coverage: 0.63
+    lint_pass: true
+    open_critical_vulns: 0
+  security:
+    signed_images: false
+    policy_pass: false
+  last_update: '2025-10-07T19:48:27.254636+00:00'
+  status: active
+- name: enrichment-service
+  repo: https://github.com/254carbon/254carbon-data-processing
+  path: service-enrichment
+  domain: data-processing
+  version: 0.1.0
+  maturity: beta
+  runtime: python
+  api_contracts: []
+  events_in: []
+  events_out: []
+  dependencies:
+    internal: []
+    external: []
+  quality:
+    coverage: 0.72
+    lint_pass: true
+    open_critical_vulns: 0
+  security:
+    signed_images: false
+    policy_pass: false
+  last_update: '2025-10-07T19:48:58.438852+00:00'
+  status: active
+- name: entitlements
+  repo: https://github.com/254carbon/254carbon-access
+  path: service_entitlements
+  domain: access
+  version: 0.1.0
+  maturity: stable
+  runtime: python
+  api_contracts:
+  - entitlements-core@1.0.0
+  events_in:
+  - auth.token.validated.v1
+  events_out:
+  - entitlements.decision.made.v1
+  dependencies:
+    internal: []
+    external:
+    - postgresql
+    - redis
+  quality:
+    coverage: 0.9
+    lint_pass: true
+    open_critical_vulns: 0
+  security:
+    signed_images: true
+    policy_pass: true
+  last_update: '2025-10-07T19:49:09.374927+00:00'
+  status: active
+- name: gateway
+  repo: https://github.com/254carbon/254carbon-access
+  path: service_gateway
+  domain: access
+  version: 0.1.0
+  maturity: stable
+  runtime: python
+  api_contracts:
+  - gateway-core@1.0.0
+  events_in:
+  - pricing.curve.updates.v1
+  events_out:
+  - metrics.request.count.v1
+  dependencies:
+    internal:
+    - auth
+    - entitlements
+    - metrics
+    - projection
+    external:
+    - clickhouse
+    - redis
+  quality:
+    coverage: 0.88
+    lint_pass: true
+    open_critical_vulns: 0
+  security:
+    signed_images: true
+    policy_pass: true
+  last_update: '2025-10-08T04:49:24.866038+00:00'
+  status: active
+- name: indexer-worker
+  repo: https://github.com/254carbon/254carbon-ml
+  path: service-indexer-worker
+  domain: ml
+  version: 0.1.0
+  maturity: beta
+  runtime: python
+  api_contracts: []
+  events_in:
+  - ml.embedding.reindex.request.v1
+  events_out:
+  - ml.embedding.generated.v1
+  dependencies:
+    internal:
+    - vector-store-adapter
+    external:
+    - embedding-service
+    - postgres
+    - redis
+  quality:
+    coverage: 0.59
+    lint_pass: false
+    open_critical_vulns: 0
+  security:
+    signed_images: false
+    policy_pass: false
+  last_update: '2025-10-07T19:48:13.018538+00:00'
+  status: active
+- name: metrics
+  repo: https://github.com/254carbon/254carbon-access
+  path: service_metrics
+  domain: access
+  version: 0.1.0
+  maturity: stable
+  runtime: python
+  api_contracts:
+  - metrics-core@1.0.0
+  events_in:
+  - metrics.connection.count.v1
+  - metrics.request.count.v1
+  events_out: []
+  dependencies:
+    internal: []
+    external: []
+  quality:
+    coverage: 0.68
+    lint_pass: false
+    open_critical_vulns: 0
+  security:
+    signed_images: false
+    policy_pass: false
+  last_update: '2025-10-07T19:49:09.382927+00:00'
+  status: active
+- name: mlflow-server
+  repo: https://github.com/254carbon/254carbon-ml
+  path: service-mlflow
+  domain: ml
+  version: 0.1.0
+  maturity: beta
+  runtime: python
+  api_contracts:
+  - mlflow-api@2.8.1
+  events_in: []
+  events_out:
+  - ml.model.promoted.v1
+  dependencies:
+    internal: []
+    external:
+    - minio
+    - postgres
+    - redis
+  quality:
+    coverage: 0.55
+    lint_pass: true
+    open_critical_vulns: 1
+  security:
+    signed_images: false
+    policy_pass: false
+  last_update: '2025-10-07T19:48:13.018538+00:00'
+  status: active
+- name: model-serving
+  repo: https://github.com/254carbon/254carbon-ml
+  path: service-model-serving
+  domain: ml
+  version: 0.1.0
+  maturity: beta
+  runtime: python
+  api_contracts:
+  - model-serving-api@0.1.0
+  events_in:
+  - ml.model.promoted.v1
+  events_out:
+  - ml.inference.usage.v1
+  dependencies:
+    internal: []
+    external:
+    - minio
+    - mlflow
+    - postgres
+    - redis
+  quality:
+    coverage: 0.6
+    lint_pass: true
+    open_critical_vulns: 0
+  security:
+    signed_images: false
+    policy_pass: false
+  last_update: '2025-10-07T19:48:13.022538+00:00'
+  status: active
+- name: normalization
+  repo: https://github.com/254carbon/254carbon-ingestion
+  path: services/service-normalization
+  domain: ingestion
+  version: 1.0.0
+  maturity: beta
+  runtime: python
+  api_contracts: []
+  events_in: []
+  events_out: []
+  dependencies:
+    internal:
+    - connectors
+    external:
+    - avro
+    - kafka
+  quality:
+    coverage: 0.66
+    lint_pass: true
+    open_critical_vulns: 0
+  security:
+    signed_images: false
+    policy_pass: true
+  last_update: '2025-10-07T19:48:27.254636+00:00'
+  status: active
+- name: normalization-service
+  repo: https://github.com/254carbon/254carbon-data-processing
+  path: service-normalization
+  domain: data-processing
+  version: 0.1.0
+  maturity: beta
+  runtime: python
+  api_contracts: []
+  events_in: []
+  events_out: []
+  dependencies:
+    internal: []
+    external: []
+  quality:
+    coverage: 0.71
+    lint_pass: true
+    open_critical_vulns: 0
+  security:
+    signed_images: false
+    policy_pass: false
+  last_update: '2025-10-07T19:48:58.442852+00:00'
+  status: active
+- name: orchestrator-service
+  repo: https://github.com/254carbon/254carbon-analytics
+  path: service-orchestrator
+  domain: analytics
+  version: 0.1.0
+  maturity: beta
+  runtime: python
+  api_contracts: []
+  events_in: []
+  events_out:
+  - processing.job.status.v1
+  dependencies:
+    internal: []
+    external:
+    - kafka
+    - postgres
+  quality:
+    coverage: 0.58
+    lint_pass: false
+    open_critical_vulns: 1
+  security:
+    signed_images: false
+    policy_pass: false
+  last_update: '2025-10-07T19:48:03.774474+00:00'
+  status: active
+- name: projection
+  repo: https://github.com/254carbon/254carbon-ingestion
+  path: services/service-projection
+  domain: ingestion
+  version: 1.0.0
+  maturity: beta
+  runtime: python
+  api_contracts: []
+  events_in: []
+  events_out: []
+  dependencies:
+    internal:
+    - aggregation-service
+    external:
+    - clickhouse
+    - kafka
+    - redis
+  quality:
+    coverage: 0.6
+    lint_pass: true
+    open_critical_vulns: 0
+  security:
+    signed_images: false
+    policy_pass: false
+  last_update: '2025-10-07T19:48:27.258636+00:00'
+  status: active
+- name: projection-service
+  repo: https://github.com/254carbon/254carbon-data-processing
+  path: service-projection
+  domain: data-processing
+  version: 0.1.0
+  maturity: beta
+  runtime: python
+  api_contracts: []
+  events_in: []
+  events_out: []
+  dependencies:
+    internal: []
+    external: []
+  quality:
+    coverage: 0.68
+    lint_pass: true
+    open_critical_vulns: 0
+  security:
+    signed_images: false
+    policy_pass: false
+  last_update: '2025-10-07T19:48:58.442852+00:00'
+  status: active
+- name: scenario-service
+  repo: https://github.com/254carbon/254carbon-analytics
+  path: service-scenario
+  domain: analytics
+  version: 0.1.0
+  maturity: beta
+  runtime: python
+  api_contracts: []
+  events_in:
+  - scenario.run.request.v1
+  events_out:
+  - scenario.run.completed.v1
+  dependencies:
+    internal:
+    - curve-service
+    external:
+    - clickhouse
+    - kafka
+    - postgres
+  quality:
+    coverage: 0.7
+    lint_pass: true
+    open_critical_vulns: 0
+  security:
+    signed_images: false
+    policy_pass: false
+  last_update: '2025-10-07T19:48:03.774474+00:00'
+  status: active
+- name: search-service
+  repo: https://github.com/254carbon/254carbon-ml
+  path: service-search
+  domain: ml
+  version: 0.1.0
+  maturity: beta
+  runtime: python
+  api_contracts:
+  - search-api@0.1.0
+  events_in:
+  - search.index.updated.v1
+  events_out:
+  - search.index.updated.v1
+  dependencies:
+    internal:
+    - vector-store-adapter
+    external:
+    - embedding-service
+    - postgres
+    - redis
+  quality:
+    coverage: 0.74
+    lint_pass: true
+    open_critical_vulns: 0
+  security:
+    signed_images: false
+    policy_pass: false
+  last_update: '2025-10-07T19:48:13.022538+00:00'
+  status: active
+- name: streaming
+  repo: https://github.com/254carbon/254carbon-access
+  path: service_streaming
+  domain: access
+  version: 0.1.0
+  maturity: stable
+  runtime: python
+  api_contracts:
+  - streaming-core@1.0.0
+  events_in:
+  - market.data.updates.v1
+  - pricing.curve.updates.v1
+  - served.market.latest-prices.v1
+  events_out:
+  - metrics.connection.count.v1
+  dependencies:
+    internal:
+    - auth
+    - entitlements
+    - metrics
+    external:
+    - kafka
+    - redis
+  quality:
+    coverage: 0.74
+    lint_pass: true
+    open_critical_vulns: 0
+  security:
+    signed_images: true
+    policy_pass: true
+  last_update: '2025-10-08T04:49:36.306117+00:00'
+  status: active

@@ -1,0 +1,25 @@
+name: projection
+repo: https://github.com/254carbon/254carbon-ingestion
+path: services/service-projection
+domain: ingestion
+version: 1.0.0
+maturity: beta
+runtime: python
+api_contracts: []
+events_in: []
+events_out: []
+dependencies:
+  internal:
+  - aggregation-service
+  external:
+  - clickhouse
+  - kafka
+  - redis
+quality:
+  coverage: 0.6
+  lint_pass: true
+  open_critical_vulns: 0
+security:
+  signed_images: false
+  policy_pass: false
+last_update: '2025-10-07T19:48:27.258636+00:00'

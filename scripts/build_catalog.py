@@ -31,7 +31,7 @@ from datetime import datetime, timezone
 from typing import Dict, List, Any, Optional, Set, Tuple
 import jsonschema
 
-from scripts.utils import monitor_execution, audit_logger, redis_client
+from scripts.utils import monitor_execution, audit_logger, redis_client, AuditCategory
 
 
 # Configure logging
@@ -470,7 +470,7 @@ class CatalogBuilder:
                 "catalog_file": str(catalog_file),
                 "json_file": str(json_file)
             },
-            category=audit_logger.AuditCategory.DATA_MODIFICATION
+            category=AuditCategory.DATA_MODIFICATION
         )
 
         # Save summary metadata

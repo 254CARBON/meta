@@ -1,0 +1,23 @@
+name: enrichment
+repo: https://github.com/254carbon/254carbon-ingestion
+path: services/service-enrichment
+domain: ingestion
+version: 1.0.0
+maturity: beta
+runtime: python
+api_contracts: []
+events_in: []
+events_out: []
+dependencies:
+  internal:
+  - connectors
+  external:
+  - kafka
+quality:
+  coverage: 0.63
+  lint_pass: true
+  open_critical_vulns: 0
+security:
+  signed_images: false
+  policy_pass: false
+last_update: '2025-10-07T19:48:27.254636+00:00'

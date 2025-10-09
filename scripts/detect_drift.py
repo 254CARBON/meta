@@ -39,7 +39,7 @@ import requests
 from dataclasses import dataclass
 from packaging import version
 
-from scripts.utils import monitor_execution, audit_logger, redis_client
+from scripts.utils import monitor_execution, audit_logger, redis_client, AuditCategory
 
 
 # Configure logging
@@ -197,6 +197,7 @@ class DriftDetector:
     def __init__(self, catalog_file: str = None, specs_repo: str = "254carbon/254carbon-specs"):
         self.catalog_path = self._find_catalog_file(catalog_file)
         self.specs_registry = SpecRegistry(specs_repo)
+        self.event_registry = self._load_event_registry()
 
         # Load catalog
         self.catalog = self._load_catalog()
@@ -451,6 +452,7 @@ class DriftDetector:
         """
         logger.info("Detecting unknown event schemas...")
         issues = []
+        known_events = self.event_registry
 
         services = self.catalog.get('services', [])
 
@@ -464,6 +466,10 @@ class DriftDetector:
             all_events = events_in + events_out
 
             for event in all_events:
+                if not event:
+                    continue
+                if known_events and event in known_events:
+                    continue
                 # Placeholder: in reality, check against schema registry
                 issue = DriftIssue(
                     type="event_schema_unknown",
@@ -478,6 +484,24 @@ class DriftDetector:
 
         logger.info(f"Found {len(issues)} unknown event schema issues")
         return issues
+
+    def _load_event_registry(self) -> set[str]:
+        """Load the canonical event schema registry."""
+        registry_path = Path("config/events-registry.yaml")
+
+        if not registry_path.exists():
+            logger.debug("Event registry file not found: %s", registry_path)
+            return set()
+
+        try:
+            with registry_path.open("r", encoding="utf-8") as handle:
+                data = yaml.safe_load(handle) or {}
+        except Exception as exc:
+            logger.warning(f"Failed to load event registry: {exc}")
+            return set()
+
+        events = data.get("events", [])
+        return {str(event).strip() for event in events if event}
 
     @monitor_execution("drift-detection")
     def generate_drift_report(self) -> Dict[str, Any]:
@@ -617,21 +641,22 @@ class DriftDetector:
         logger.info(f"Updated latest drift report: {latest_file}")
 
         # Log drift detection completion
+        severity_counts = report.get("summary", {}).get("issues_by_severity", {})
+        issues_by_type = report.get("summary", {}).get("issues_by_type", {})
+        metadata = report.get("metadata", {})
         audit_logger.log_action(
             user="system",
             action="drift_detection",
             resource="drift_report",
             resource_type="drift_data",
             details={
-                "total_issues": report["summary"]["total_issues"],
-                "critical_issues": report["summary"]["critical_issues"],
-                "high_issues": report["summary"]["high_issues"],
-                "medium_issues": report["summary"]["medium_issues"],
-                "low_issues": report["summary"]["low_issues"],
-                "generated_at": report["metadata"]["generated_at"],
+                "total_issues": metadata.get("total_issues", 0),
+                "issues_by_severity": severity_counts,
+                "issues_by_type": issues_by_type,
+                "generated_at": metadata.get("generated_at"),
                 "report_file": str(report_file)
             },
-            category=audit_logger.AuditCategory.DRIFT
+            category=AuditCategory.DRIFT
         )
 
 
@@ -653,8 +678,9 @@ def main():
         detector.save_report(report)
 
         # Exit with error if there are high-severity issues
-        high_issues = len(report['summary']['issues_by_severity'].get('high', 0))
-        error_issues = len(report['summary']['issues_by_severity'].get('error', 0))
+        severity_counts = report['summary']['issues_by_severity']
+        high_issues = severity_counts.get('high', 0)
+        error_issues = severity_counts.get('error', 0)
 
         if high_issues > 0 or error_issues > 0:
             logger.warning(f"Found {high_issues} high-priority and {error_issues} error issues")

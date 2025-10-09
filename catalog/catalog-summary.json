@@ -1,0 +1,41 @@
+{
+  "generated_at": "2025-10-09T22:30:38.509155+00:00",
+  "total_services": 24,
+  "service_names": [
+    "aggregation",
+    "aggregation-service",
+    "auth",
+    "backtesting-service",
+    "connector-registry",
+    "curve-service",
+    "data-quality",
+    "embedding-service",
+    "enrichment",
+    "enrichment-service",
+    "entitlements",
+    "gateway",
+    "indexer-worker",
+    "metrics",
+    "mlflow-server",
+    "model-serving",
+    "normalization",
+    "normalization-service",
+    "orchestrator-service",
+    "projection",
+    "projection-service",
+    "scenario-service",
+    "search-service",
+    "streaming"
+  ],
+  "domains": [
+    "analytics",
+    "data-processing",
+    "ml",
+    "ingestion",
+    "access"
+  ],
+  "maturities": [
+    "stable",
+    "beta"
+  ]
+}

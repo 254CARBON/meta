@@ -1,0 +1,26 @@
+name: entitlements
+repo: https://github.com/254carbon/254carbon-access
+path: service_entitlements
+domain: access
+version: 0.1.0
+maturity: stable
+runtime: python
+api_contracts:
+- entitlements-core@1.0.0
+events_in:
+- auth.token.validated.v1
+events_out:
+- entitlements.decision.made.v1
+dependencies:
+  internal: []
+  external:
+  - postgresql
+  - redis
+quality:
+  coverage: 0.9
+  lint_pass: true
+  open_critical_vulns: 0
+security:
+  signed_images: true
+  policy_pass: true
+last_update: '2025-10-07T19:49:09.374927+00:00'

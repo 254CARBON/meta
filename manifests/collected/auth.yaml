@@ -1,0 +1,24 @@
+name: auth
+repo: https://github.com/254carbon/254carbon-access
+path: service_auth
+domain: access
+version: 0.1.0
+maturity: stable
+runtime: python
+api_contracts:
+- auth-core@1.0.0
+events_in: []
+events_out:
+- auth.token.validated.v1
+dependencies:
+  internal: []
+  external:
+  - keycloak
+quality:
+  coverage: 0.93
+  lint_pass: true
+  open_critical_vulns: 0
+security:
+  signed_images: true
+  policy_pass: true
+last_update: '2025-10-07T19:49:09.370927+00:00'

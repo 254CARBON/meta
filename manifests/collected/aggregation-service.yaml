@@ -1,0 +1,21 @@
+name: aggregation-service
+repo: https://github.com/254carbon/254carbon-data-processing
+path: service-aggregation
+domain: data-processing
+version: 0.1.0
+maturity: beta
+runtime: python
+api_contracts: []
+events_in: []
+events_out: []
+dependencies:
+  internal: []
+  external: []
+quality:
+  coverage: 0.69
+  lint_pass: true
+  open_critical_vulns: 0
+security:
+  signed_images: false
+  policy_pass: false
+last_update: '2025-10-07T19:48:58.438852+00:00'

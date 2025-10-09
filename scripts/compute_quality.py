@@ -32,7 +32,7 @@ from typing import Dict, List, Any, Optional, Tuple
 from dataclasses import dataclass
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
-from scripts.utils import monitor_execution, audit_logger, redis_client
+from scripts.utils import monitor_execution, audit_logger, redis_client, AuditCategory
 
 
 # Configure logging
@@ -59,61 +59,72 @@ class QualityMetrics:
     policy_warnings: int
     build_success_rate: float
     signed_images: bool
-    deployment_days: int
     drift_issues: int
     maturity: str
     sbom_present: bool
     deployment_freshness_days: int
 
     def compute_score(self, thresholds: Dict[str, Any]) -> int:
-        """Compute composite quality score (0-100)."""
-        # Base score
-        score = thresholds.get('base_score', 50)
+        """Compute composite quality score (0-100) using weighted dimension scores."""
+        quality_cfg = thresholds.get('quality', {})
+        weights = quality_cfg.get('weights', {})
+        base_score = quality_cfg.get('base_score', thresholds.get('base_score', 0))
 
-        # Coverage component
-        coverage_weight = thresholds.get('weights', {}).get('coverage', 0.25)
-        coverage_target = thresholds.get('coverage', {}).get('target', 0.75)
-        if self.coverage > 0:
-            coverage_score = min(100, (self.coverage / coverage_target) * 100 * coverage_weight * 4)
-            score += coverage_score
-
-        # Security component
-        security_weight = thresholds.get('weights', {}).get('security', 0.35)
-        vuln_penalty = (self.critical_vulns * 20) + (self.high_vulns * 10)
-        security_score = max(0, 100 - vuln_penalty)
-        score += (security_score * security_weight)
-
-        # Policy component
-        policy_weight = thresholds.get('weights', {}).get('policy', 0.15)
-        policy_bonus = thresholds.get('policy', {}).get('full_compliance_bonus', 15)
-        if self.policy_failures == 0:
-            score += policy_bonus * policy_weight
+        # Coverage: normalize against target
+        coverage_target = quality_cfg.get('coverage', {}).get('target', 0.75)
+        if coverage_target > 0:
+            coverage_ratio = min(self.coverage / coverage_target, 1.0)
         else:
-            policy_penalty = self.policy_failures * 5
-            score -= policy_penalty * policy_weight
+            coverage_ratio = 1.0
+        coverage_score = coverage_ratio * 100
 
-        # Stability component
-        stability_weight = thresholds.get('weights', {}).get('stability', 0.10)
-        freshness_bonus = thresholds.get('stability', {}).get('deployment_frequency_bonus', 5)
-        staleness_penalty = thresholds.get('stability', {}).get('staleness_penalty', 10)
+        # Security: penalize based on unresolved vulnerabilities
+        security_penalty = (self.critical_vulns * 40) + (self.high_vulns * 20)
+        security_score = max(0, 100 - security_penalty)
 
-        if self.deployment_freshness_days <= 7:
-            score += freshness_bonus * stability_weight
-        elif self.deployment_freshness_days > 30:
-            score -= staleness_penalty * stability_weight
+        # Policy: simple pass/fail until richer data is available
+        if self.policy_failures == 0:
+            policy_score = 100
+        else:
+            policy_score = max(0, 100 - (self.policy_failures * 35))
 
-        # Drift penalty
-        drift_weight = thresholds.get('weights', {}).get('drift', 0.15)
-        drift_penalty_per_issue = thresholds.get('drift', {}).get('penalty_per_issue', 5)
-        drift_penalty = min(self.drift_issues * drift_penalty_per_issue, 20)  # Cap at 20 points
-        score -= drift_penalty * drift_weight
+        # Stability: fresher deployments score higher
+        stability_cfg = quality_cfg.get('stability', {})
+        fresh_days = stability_cfg.get('fresh_days', 7)
+        warning_days = stability_cfg.get('warning_days', 30)
+        critical_days = stability_cfg.get('critical_days', 90)
 
-        # Apply maturity multiplier
+        if self.deployment_freshness_days <= fresh_days:
+            stability_score = 100
+        elif self.deployment_freshness_days <= warning_days:
+            stability_score = 85
+        elif self.deployment_freshness_days <= critical_days:
+            stability_score = 60
+        else:
+            stability_score = 40
+
+        # Drift: subtract per-issue penalty from perfect score
+        drift_cfg = quality_cfg.get('drift', {})
+        drift_penalty_per_issue = drift_cfg.get('penalty_per_issue', 5)
+        drift_penalty = min(self.drift_issues * drift_penalty_per_issue, 100)
+        drift_score = max(0, 100 - drift_penalty)
+
+        weighted_total = (
+            coverage_score * weights.get('coverage', 0)
+            + security_score * weights.get('security', 0)
+            + policy_score * weights.get('policy', 0)
+            + stability_score * weights.get('stability', 0)
+            + drift_score * weights.get('drift', 0)
+        )
+
+        score = base_score + weighted_total
+
         maturity_multipliers = thresholds.get('maturity_multipliers', {})
-        maturity_mult = maturity_multipliers.get(self.maturity, {}).get('coverage_weight', 1.0)
-        score = score * maturity_mult
+        maturity_cfg = maturity_multipliers.get(self.maturity, {})
+        maturity_mult = maturity_cfg.get('overall', maturity_cfg.get('coverage_weight', 1.0))
+        score *= maturity_mult
 
-        return max(0, min(100, int(score)))
+        return max(0, min(100, int(round(score))))
 
     def get_grade(self, score: int) -> str:
         """Convert score to letter grade."""
@@ -414,26 +425,44 @@ class QualityComputer:
         insights = self._generate_insights(service_scores, all_scores)
 
         # Build complete report
-        quality_snapshot = {
-            'generated_at': datetime.now(timezone.utc).isoformat(),
+        computed_at = datetime.now(timezone.utc).isoformat()
+        metadata = {
+            'generated_at': computed_at,
             'catalog_timestamp': self.catalog.get('metadata', {}).get('generated_at'),
-            'total_services': len(services),
+            'total_services': len(service_scores),
+            'computed_at': computed_at
+        }
+
+        summary = {
+            'avg_quality_score': round(avg_score, 1),
+            'median_quality_score': median_score,
+            'min_quality_score': min_score,
+            'max_quality_score': max_score,
+            'services_below_threshold': services_below_threshold,
+            'grade_distribution': grade_distribution
+        }
+
+        global_stats = {
+            'avg_score': round(avg_score, 1),
+            'median_score': median_score,
+            'min_score': min_score,
+            'max_score': max_score,
+            'services_below_threshold': services_below_threshold,
+            'grade_distribution': grade_distribution,
+            'quality_distribution': {
+                'excellent': len([s for s in service_scores.values() if s['score'] >= 90]),
+                'good': len([s for s in service_scores.values() if 80 <= s['score'] < 90]),
+                'acceptable': len([s for s in service_scores.values() if 70 <= s['score'] < 80]),
+                'needs_improvement': len([s for s in service_scores.values() if 60 <= s['score'] < 70]),
+                'failing': len([s for s in service_scores.values() if s['score'] < 60])
+            }
+        }
+
+        quality_snapshot = {
+            'metadata': metadata,
+            'summary': summary,
             'services': service_scores,
-            'global': {
-                'avg_score': round(avg_score, 1),
-                'median_score': median_score,
-                'min_score': min_score,
-                'max_score': max_score,
-                'services_below_threshold': services_below_threshold,
-                'grade_distribution': grade_distribution,
-                'quality_distribution': {
-                    'excellent': len([s for s in service_scores.values() if s['score'] >= 90]),
-                    'good': len([s for s in service_scores.values() if 80 <= s['score'] < 90]),
-                    'acceptable': len([s for s in service_scores.values() if 70 <= s['score'] < 80]),
-                    'needs_improvement': len([s for s in service_scores.values() if 60 <= s['score'] < 70]),
-                    'failing': len([s for s in service_scores.values() if s['score'] < 60])
-                }
-            },
+            'global': global_stats,
             'insights': insights,
             'thresholds_applied': {
                 'min_score': min_threshold,
@@ -520,7 +549,7 @@ class QualityComputer:
                 "grade_distribution": quality_snapshot["summary"]["grade_distribution"],
                 "snapshot_file": str(snapshot_file)
             },
-            category=audit_logger.AuditCategory.QUALITY
+            category=AuditCategory.QUALITY
         )
 
 
@@ -538,7 +567,7 @@ def main():
 
     try:
         computer = QualityComputer(args.catalog_file, args.thresholds_file)
-        quality_snapshot = computer.compute_all_quality_scores()
+        quality_snapshot = computer.compute_all_quality_scores_parallel()
         computer.save_quality_snapshot(quality_snapshot)
 
         logger.info("Quality computation completed successfully")

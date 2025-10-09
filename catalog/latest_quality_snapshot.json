@@ -1,0 +1,528 @@
+{
+  "metadata": {
+    "generated_at": "2025-10-09T22:31:21.756712+00:00",
+    "catalog_timestamp": "2025-10-09T22:30:38.509155+00:00",
+    "total_services": 24,
+    "computed_at": "2025-10-09T22:31:21.756712+00:00"
+  },
+  "summary": {
+    "avg_quality_score": 91.6,
+    "median_quality_score": 93,
+    "min_quality_score": 75,
+    "max_quality_score": 100,
+    "services_below_threshold": [],
+    "grade_distribution": {
+      "A": 21,
+      "C": 3
+    }
+  },
+  "services": {
+    "aggregation": {
+      "score": 91,
+      "grade": "A",
+      "status": "passing",
+      "metrics": {
+        "coverage": 0.61,
+        "lint_pass": true,
+        "critical_vulns": 0,
+        "high_vulns": 0,
+        "policy_failures": 0,
+        "policy_warnings": 0,
+        "build_success_rate": 0.95,
+        "signed_images": false,
+        "sbom_present": false,
+        "deployment_freshness_days": 2,
+        "drift_issues": 0
+      },
+      "maturity": "beta",
+      "computed_at": "2025-10-09T22:31:21.736282+00:00"
+    },
+    "aggregation-service": {
+      "score": 93,
+      "grade": "A",
+      "status": "passing",
+      "metrics": {
+        "coverage": 0.69,
+        "lint_pass": true,
+        "critical_vulns": 0,
+        "high_vulns": 0,
+        "policy_failures": 0,
+        "policy_warnings": 0,
+        "build_success_rate": 0.95,
+        "signed_images": false,
+        "sbom_present": false,
+        "deployment_freshness_days": 2,
+        "drift_issues": 0
+      },
+      "maturity": "beta",
+      "computed_at": "2025-10-09T22:31:21.736767+00:00"
+    },
+    "auth": {
+      "score": 100,
+      "grade": "A",
+      "status": "passing",
+      "metrics": {
+        "coverage": 0.93,
+        "lint_pass": true,
+        "critical_vulns": 0,
+        "high_vulns": 0,
+        "policy_failures": 0,
+        "policy_warnings": 0,
+        "build_success_rate": 0.95,
+        "signed_images": true,
+        "sbom_present": false,
+        "deployment_freshness_days": 2,
+        "drift_issues": 0
+      },
+      "maturity": "stable",
+      "computed_at": "2025-10-09T22:31:21.737992+00:00"
+    },
+    "curve-service": {
+      "score": 92,
+      "grade": "A",
+      "status": "passing",
+      "metrics": {
+        "coverage": 0.67,
+        "lint_pass": true,
+        "critical_vulns": 0,
+        "high_vulns": 0,
+        "policy_failures": 0,
+        "policy_warnings": 0,
+        "build_success_rate": 0.95,
+        "signed_images": false,
+        "sbom_present": false,
+        "deployment_freshness_days": 2,
+        "drift_issues": 0
+      },
+      "maturity": "beta",
+      "computed_at": "2025-10-09T22:31:21.738383+00:00"
+    },
+    "data-quality": {
+      "score": 76,
+      "grade": "C",
+      "status": "passing",
+      "metrics": {
+        "coverage": 0.57,
+        "lint_pass": false,
+        "critical_vulns": 1,
+        "high_vulns": 0,
+        "policy_failures": 0,
+        "policy_warnings": 0,
+        "build_success_rate": 0.95,
+        "signed_images": false,
+        "sbom_present": false,
+        "deployment_freshness_days": 2,
+        "drift_issues": 0
+      },
+      "maturity": "beta",
+      "computed_at": "2025-10-09T22:31:21.739058+00:00"
+    },
+    "backtesting-service": {
+      "score": 92,
+      "grade": "A",
+      "status": "passing",
+      "metrics": {
+        "coverage": 0.64,
+        "lint_pass": true,
+        "critical_vulns": 0,
+        "high_vulns": 0,
+        "policy_failures": 0,
+        "policy_warnings": 0,
+        "build_success_rate": 0.95,
+        "signed_images": false,
+        "sbom_present": false,
+        "deployment_freshness_days": 2,
+        "drift_issues": 0
+      },
+      "maturity": "beta",
+      "computed_at": "2025-10-09T22:31:21.739245+00:00"
+    },
+    "connector-registry": {
+      "score": 93,
+      "grade": "A",
+      "status": "passing",
+      "metrics": {
+        "coverage": 0.7,
+        "lint_pass": true,
+        "critical_vulns": 0,
+        "high_vulns": 0,
+        "policy_failures": 0,
+        "policy_warnings": 0,
+        "build_success_rate": 0.95,
+        "signed_images": false,
+        "sbom_present": false,
+        "deployment_freshness_days": 2,
+        "drift_issues": 0
+      },
+      "maturity": "beta",
+      "computed_at": "2025-10-09T22:31:21.739290+00:00"
+    },
+    "embedding-service": {
+      "score": 91,
+      "grade": "A",
+      "status": "passing",
+      "metrics": {
+        "coverage": 0.63,
+        "lint_pass": true,
+        "critical_vulns": 0,
+        "high_vulns": 0,
+        "policy_failures": 0,
+        "policy_warnings": 0,
+        "build_success_rate": 0.95,
+        "signed_images": false,
+        "sbom_present": false,
+        "deployment_freshness_days": 2,
+        "drift_issues": 0
+      },
+      "maturity": "beta",
+      "computed_at": "2025-10-09T22:31:21.740138+00:00"
+    },
+    "enrichment": {
+      "score": 91,
+      "grade": "A",
+      "status": "passing",
+      "metrics": {
+        "coverage": 0.63,
+        "lint_pass": true,
+        "critical_vulns": 0,
+        "high_vulns": 0,
+        "policy_failures": 0,
+        "policy_warnings": 0,
+        "build_success_rate": 0.95,
+        "signed_images": false,
+        "sbom_present": false,
+        "deployment_freshness_days": 2,
+        "drift_issues": 0
+      },
+      "maturity": "beta",
+      "computed_at": "2025-10-09T22:31:21.740547+00:00"
+    },
+    "enrichment-service": {
+      "score": 94,
+      "grade": "A",
+      "status": "passing",
+      "metrics": {
+        "coverage": 0.72,
+        "lint_pass": true,
+        "critical_vulns": 0,
+        "high_vulns": 0,
+        "policy_failures": 0,
+        "policy_warnings": 0,
+        "build_success_rate": 0.95,
+        "signed_images": false,
+        "sbom_present": false,
+        "deployment_freshness_days": 2,
+        "drift_issues": 0
+      },
+      "maturity": "beta",
+      "computed_at": "2025-10-09T22:31:21.741344+00:00"
+    },
+    "entitlements": {
+      "score": 100,
+      "grade": "A",
+      "status": "passing",
+      "metrics": {
+        "coverage": 0.9,
+        "lint_pass": true,
+        "critical_vulns": 0,
+        "high_vulns": 0,
+        "policy_failures": 0,
+        "policy_warnings": 0,
+        "build_success_rate": 0.95,
+        "signed_images": true,
+        "sbom_present": false,
+        "deployment_freshness_days": 2,
+        "drift_issues": 0
+      },
+      "maturity": "stable",
+      "computed_at": "2025-10-09T22:31:21.741623+00:00"
+    },
+    "gateway": {
+      "score": 100,
+      "grade": "A",
+      "status": "passing",
+      "metrics": {
+        "coverage": 0.88,
+        "lint_pass": true,
+        "critical_vulns": 0,
+        "high_vulns": 0,
+        "policy_failures": 0,
+        "policy_warnings": 0,
+        "build_success_rate": 0.95,
+        "signed_images": true,
+        "sbom_present": false,
+        "deployment_freshness_days": 1,
+        "drift_issues": 0
+      },
+      "maturity": "stable",
+      "computed_at": "2025-10-09T22:31:21.742503+00:00"
+    },
+    "indexer-worker": {
+      "score": 90,
+      "grade": "A",
+      "status": "passing",
+      "metrics": {
+        "coverage": 0.59,
+        "lint_pass": false,
+        "critical_vulns": 0,
+        "high_vulns": 0,
+        "policy_failures": 0,
+        "policy_warnings": 0,
+        "build_success_rate": 0.95,
+        "signed_images": false,
+        "sbom_present": false,
+        "deployment_freshness_days": 2,
+        "drift_issues": 0
+      },
+      "maturity": "beta",
+      "computed_at": "2025-10-09T22:31:21.743034+00:00"
+    },
+    "metrics": {
+      "score": 98,
+      "grade": "A",
+      "status": "passing",
+      "metrics": {
+        "coverage": 0.68,
+        "lint_pass": false,
+        "critical_vulns": 0,
+        "high_vulns": 0,
+        "policy_failures": 0,
+        "policy_warnings": 0,
+        "build_success_rate": 0.95,
+        "signed_images": false,
+        "sbom_present": false,
+        "deployment_freshness_days": 2,
+        "drift_issues": 0
+      },
+      "maturity": "stable",
+      "computed_at": "2025-10-09T22:31:21.743779+00:00"
+    },
+    "mlflow-server": {
+      "score": 75,
+      "grade": "C",
+      "status": "passing",
+      "metrics": {
+        "coverage": 0.55,
+        "lint_pass": true,
+        "critical_vulns": 1,
+        "high_vulns": 0,
+        "policy_failures": 0,
+        "policy_warnings": 0,
+        "build_success_rate": 0.95,
+        "signed_images": false,
+        "sbom_present": false,
+        "deployment_freshness_days": 2,
+        "drift_issues": 0
+      },
+      "maturity": "beta",
+      "computed_at": "2025-10-09T22:31:21.744250+00:00"
+    },
+    "model-serving": {
+      "score": 90,
+      "grade": "A",
+      "status": "passing",
+      "metrics": {
+        "coverage": 0.6,
+        "lint_pass": true,
+        "critical_vulns": 0,
+        "high_vulns": 0,
+        "policy_failures": 0,
+        "policy_warnings": 0,
+        "build_success_rate": 0.95,
+        "signed_images": false,
+        "sbom_present": false,
+        "deployment_freshness_days": 2,
+        "drift_issues": 0
+      },
+      "maturity": "beta",
+      "computed_at": "2025-10-09T22:31:21.744933+00:00"
+    },
+    "normalization": {
+      "score": 92,
+      "grade": "A",
+      "status": "passing",
+      "metrics": {
+        "coverage": 0.66,
+        "lint_pass": true,
+        "critical_vulns": 0,
+        "high_vulns": 0,
+        "policy_failures": 0,
+        "policy_warnings": 0,
+        "build_success_rate": 0.95,
+        "signed_images": false,
+        "sbom_present": false,
+        "deployment_freshness_days": 2,
+        "drift_issues": 0
+      },
+      "maturity": "beta",
+      "computed_at": "2025-10-09T22:31:21.745336+00:00"
+    },
+    "normalization-service": {
+      "score": 94,
+      "grade": "A",
+      "status": "passing",
+      "metrics": {
+        "coverage": 0.71,
+        "lint_pass": true,
+        "critical_vulns": 0,
+        "high_vulns": 0,
+        "policy_failures": 0,
+        "policy_warnings": 0,
+        "build_success_rate": 0.95,
+        "signed_images": false,
+        "sbom_present": false,
+        "deployment_freshness_days": 2,
+        "drift_issues": 0
+      },
+      "maturity": "beta",
+      "computed_at": "2025-10-09T22:31:21.745922+00:00"
+    },
+    "orchestrator-service": {
+      "score": 76,
+      "grade": "C",
+      "status": "passing",
+      "metrics": {
+        "coverage": 0.58,
+        "lint_pass": false,
+        "critical_vulns": 1,
+        "high_vulns": 0,
+        "policy_failures": 0,
+        "policy_warnings": 0,
+        "build_success_rate": 0.95,
+        "signed_images": false,
+        "sbom_present": false,
+        "deployment_freshness_days": 2,
+        "drift_issues": 0
+      },
+      "maturity": "beta",
+      "computed_at": "2025-10-09T22:31:21.746583+00:00"
+    },
+    "projection": {
+      "score": 90,
+      "grade": "A",
+      "status": "passing",
+      "metrics": {
+        "coverage": 0.6,
+        "lint_pass": true,
+        "critical_vulns": 0,
+        "high_vulns": 0,
+        "policy_failures": 0,
+        "policy_warnings": 0,
+        "build_success_rate": 0.95,
+        "signed_images": false,
+        "sbom_present": false,
+        "deployment_freshness_days": 2,
+        "drift_issues": 0
+      },
+      "maturity": "beta",
+      "computed_at": "2025-10-09T22:31:21.747731+00:00"
+    },
+    "projection-service": {
+      "score": 93,
+      "grade": "A",
+      "status": "passing",
+      "metrics": {
+        "coverage": 0.68,
+        "lint_pass": true,
+        "critical_vulns": 0,
+        "high_vulns": 0,
+        "policy_failures": 0,
+        "policy_warnings": 0,
+        "build_success_rate": 0.95,
+        "signed_images": false,
+        "sbom_present": false,
+        "deployment_freshness_days": 2,
+        "drift_issues": 0
+      },
+      "maturity": "beta",
+      "computed_at": "2025-10-09T22:31:21.748043+00:00"
+    },
+    "scenario-service": {
+      "score": 93,
+      "grade": "A",
+      "status": "passing",
+      "metrics": {
+        "coverage": 0.7,
+        "lint_pass": true,
+        "critical_vulns": 0,
+        "high_vulns": 0,
+        "policy_failures": 0,
+        "policy_warnings": 0,
+        "build_success_rate": 0.95,
+        "signed_images": false,
+        "sbom_present": false,
+        "deployment_freshness_days": 2,
+        "drift_issues": 0
+      },
+      "maturity": "beta",
+      "computed_at": "2025-10-09T22:31:21.748924+00:00"
+    },
+    "search-service": {
+      "score": 95,
+      "grade": "A",
+      "status": "passing",
+      "metrics": {
+        "coverage": 0.74,
+        "lint_pass": true,
+        "critical_vulns": 0,
+        "high_vulns": 0,
+        "policy_failures": 0,
+        "policy_warnings": 0,
+        "build_success_rate": 0.95,
+        "signed_images": false,
+        "sbom_present": false,
+        "deployment_freshness_days": 2,
+        "drift_issues": 0
+      },
+      "maturity": "beta",
+      "computed_at": "2025-10-09T22:31:21.749375+00:00"
+    },
+    "streaming": {
+      "score": 100,
+      "grade": "A",
+      "status": "passing",
+      "metrics": {
+        "coverage": 0.74,
+        "lint_pass": true,
+        "critical_vulns": 0,
+        "high_vulns": 0,
+        "policy_failures": 0,
+        "policy_warnings": 0,
+        "build_success_rate": 0.95,
+        "signed_images": true,
+        "sbom_present": false,
+        "deployment_freshness_days": 1,
+        "drift_issues": 0
+      },
+      "maturity": "stable",
+      "computed_at": "2025-10-09T22:31:21.750070+00:00"
+    }
+  },
+  "global": {
+    "avg_score": 91.6,
+    "median_score": 93,
+    "min_score": 75,
+    "max_score": 100,
+    "services_below_threshold": [],
+    "grade_distribution": {
+      "A": 21,
+      "C": 3
+    },
+    "quality_distribution": {
+      "excellent": 21,
+      "good": 0,
+      "acceptable": 3,
+      "needs_improvement": 0,
+      "failing": 0
+    }
+  },
+  "insights": [
+    "\ud83c\udfc6 Platform quality is excellent with strong engineering practices",
+    "\ud83d\udcca 15 services have low test coverage (< 70%)",
+    "\ud83d\udd12 3 services have critical vulnerabilities"
+  ],
+  "thresholds_applied": {
+    "min_score": 70,
+    "fail_under": 60
+  }
+}

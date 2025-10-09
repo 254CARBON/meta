@@ -1,0 +1,193 @@
+services:
+  aggregation:
+    quality:
+      coverage: 0.61
+      lint_pass: true
+      open_critical_vulns: 0
+    security:
+      signed_images: false
+      policy_pass: false
+  aggregation-service:
+    quality:
+      coverage: 0.69
+      lint_pass: true
+      open_critical_vulns: 0
+    security:
+      signed_images: false
+      policy_pass: false
+  auth:
+    quality:
+      coverage: 0.93
+      lint_pass: true
+      open_critical_vulns: 0
+    security:
+      signed_images: true
+      policy_pass: true
+  backtesting-service:
+    quality:
+      coverage: 0.64
+      lint_pass: true
+      open_critical_vulns: 0
+    security:
+      signed_images: false
+      policy_pass: false
+  connector-registry:
+    quality:
+      coverage: 0.7
+      lint_pass: true
+      open_critical_vulns: 0
+    security:
+      signed_images: false
+      policy_pass: false
+  curve-service:
+    quality:
+      coverage: 0.67
+      lint_pass: true
+      open_critical_vulns: 0
+    security:
+      signed_images: false
+      policy_pass: false
+  data-quality:
+    quality:
+      coverage: 0.57
+      lint_pass: false
+      open_critical_vulns: 1
+    security:
+      signed_images: false
+      policy_pass: false
+  embedding-service:
+    quality:
+      coverage: 0.63
+      lint_pass: true
+      open_critical_vulns: 0
+    security:
+      signed_images: false
+      policy_pass: false
+  enrichment:
+    quality:
+      coverage: 0.63
+      lint_pass: true
+      open_critical_vulns: 0
+    security:
+      signed_images: false
+      policy_pass: false
+  enrichment-service:
+    quality:
+      coverage: 0.72
+      lint_pass: true
+      open_critical_vulns: 0
+    security:
+      signed_images: false
+      policy_pass: false
+  entitlements:
+    quality:
+      coverage: 0.9
+      lint_pass: true
+      open_critical_vulns: 0
+    security:
+      signed_images: true
+      policy_pass: true
+  gateway:
+    quality:
+      coverage: 0.88
+      lint_pass: true
+      open_critical_vulns: 0
+    security:
+      signed_images: true
+      policy_pass: true
+  indexer-worker:
+    quality:
+      coverage: 0.59
+      lint_pass: false
+      open_critical_vulns: 0
+    security:
+      signed_images: false
+      policy_pass: false
+  metrics:
+    quality:
+      coverage: 0.68
+      lint_pass: false
+      open_critical_vulns: 0
+    security:
+      signed_images: false
+      policy_pass: false
+  mlflow-server:
+    quality:
+      coverage: 0.55
+      lint_pass: true
+      open_critical_vulns: 1
+    security:
+      signed_images: false
+      policy_pass: false
+  model-serving:
+    quality:
+      coverage: 0.6
+      lint_pass: true
+      open_critical_vulns: 0
+    security:
+      signed_images: false
+      policy_pass: false
+  normalization:
+    quality:
+      coverage: 0.66
+      lint_pass: true
+      open_critical_vulns: 0
+    security:
+      signed_images: false
+      policy_pass: false
+  normalization-service:
+    quality:
+      coverage: 0.71
+      lint_pass: true
+      open_critical_vulns: 0
+    security:
+      signed_images: false
+      policy_pass: false
+  orchestrator-service:
+    quality:
+      coverage: 0.58
+      lint_pass: false
+      open_critical_vulns: 1
+    security:
+      signed_images: false
+      policy_pass: false
+  projection:
+    quality:
+      coverage: 0.6
+      lint_pass: true
+      open_critical_vulns: 0
+    security:
+      signed_images: false
+      policy_pass: false
+  projection-service:
+    quality:
+      coverage: 0.68
+      lint_pass: true
+      open_critical_vulns: 0
+    security:
+      signed_images: false
+      policy_pass: false
+  scenario-service:
+    quality:
+      coverage: 0.7
+      lint_pass: true
+      open_critical_vulns: 0
+    security:
+      signed_images: false
+      policy_pass: false
+  search-service:
+    quality:
+      coverage: 0.74
+      lint_pass: true
+      open_critical_vulns: 0
+    security:
+      signed_images: false
+      policy_pass: false
+  streaming:
+    quality:
+      coverage: 0.74
+      lint_pass: true
+      open_critical_vulns: 0
+    security:
+      signed_images: true
+      policy_pass: true

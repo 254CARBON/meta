@@ -155,3 +155,83 @@
 2025-10-06 14:09:46,508 - ERROR - Failed to compute quality for service-148: QualityMetrics.__init__() missing 1 required positional argument: 'deployment_days'
 2025-10-06 14:09:46,508 - ERROR - Failed to compute quality for service-149: QualityMetrics.__init__() missing 1 required positional argument: 'deployment_days'
 2025-10-06 14:09:46,528 - INFO - Parallel computation complete: 0 services processed
+2025-10-09 22:10:10,925 - INFO - Loading catalog from catalog/service-index.yaml
+2025-10-09 22:10:10,983 - ERROR - Quality computation failed: 'QualityComputer' object has no attribute 'compute_all_quality_scores'
+2025-10-09 22:10:29,233 - INFO - Loading catalog from catalog/service-index.yaml
+2025-10-09 22:10:29,289 - INFO - Execution monitor initialized
+2025-10-09 22:10:29,289 - INFO - Computing quality scores for all services using parallel processing...
+2025-10-09 22:10:29,289 - WARNING - Drift report not found: catalog/latest_drift_report.json
+2025-10-09 22:10:29,289 - INFO - Processing 24 services in parallel...
+2025-10-09 22:10:29,307 - ERROR - Failed to compute quality for aggregation: QualityMetrics.__init__() missing 1 required positional argument: 'deployment_days'
+2025-10-09 22:10:29,307 - ERROR - Failed to compute quality for curve-service: QualityMetrics.__init__() missing 1 required positional argument: 'deployment_days'
+2025-10-09 22:10:29,308 - ERROR - Failed to compute quality for aggregation-service: QualityMetrics.__init__() missing 1 required positional argument: 'deployment_days'
+2025-10-09 22:10:29,309 - ERROR - Failed to compute quality for data-quality: QualityMetrics.__init__() missing 1 required positional argument: 'deployment_days'
+2025-10-09 22:10:29,309 - ERROR - Failed to compute quality for enrichment: QualityMetrics.__init__() missing 1 required positional argument: 'deployment_days'
+2025-10-09 22:10:29,310 - ERROR - Failed to compute quality for auth: QualityMetrics.__init__() missing 1 required positional argument: 'deployment_days'
+2025-10-09 22:10:29,311 - ERROR - Failed to compute quality for embedding-service: QualityMetrics.__init__() missing 1 required positional argument: 'deployment_days'
+2025-10-09 22:10:29,312 - ERROR - Failed to compute quality for enrichment-service: QualityMetrics.__init__() missing 1 required positional argument: 'deployment_days'
+2025-10-09 22:10:29,312 - ERROR - Failed to compute quality for connector-registry: QualityMetrics.__init__() missing 1 required positional argument: 'deployment_days'
+2025-10-09 22:10:29,313 - ERROR - Failed to compute quality for backtesting-service: QualityMetrics.__init__() missing 1 required positional argument: 'deployment_days'
+2025-10-09 22:10:29,314 - ERROR - Failed to compute quality for entitlements: QualityMetrics.__init__() missing 1 required positional argument: 'deployment_days'
+2025-10-09 22:10:29,314 - ERROR - Failed to compute quality for gateway: QualityMetrics.__init__() missing 1 required positional argument: 'deployment_days'
+2025-10-09 22:10:29,315 - ERROR - Failed to compute quality for indexer-worker: QualityMetrics.__init__() missing 1 required positional argument: 'deployment_days'
+2025-10-09 22:10:29,316 - ERROR - Failed to compute quality for metrics: QualityMetrics.__init__() missing 1 required positional argument: 'deployment_days'
+2025-10-09 22:10:29,316 - ERROR - Failed to compute quality for mlflow-server: QualityMetrics.__init__() missing 1 required positional argument: 'deployment_days'
+2025-10-09 22:10:29,316 - ERROR - Failed to compute quality for model-serving: QualityMetrics.__init__() missing 1 required positional argument: 'deployment_days'
+2025-10-09 22:10:29,317 - ERROR - Failed to compute quality for normalization: QualityMetrics.__init__() missing 1 required positional argument: 'deployment_days'
+2025-10-09 22:10:29,317 - ERROR - Failed to compute quality for normalization-service: QualityMetrics.__init__() missing 1 required positional argument: 'deployment_days'
+2025-10-09 22:10:29,318 - ERROR - Failed to compute quality for orchestrator-service: QualityMetrics.__init__() missing 1 required positional argument: 'deployment_days'
+2025-10-09 22:10:29,318 - ERROR - Failed to compute quality for projection: QualityMetrics.__init__() missing 1 required positional argument: 'deployment_days'
+2025-10-09 22:10:29,319 - ERROR - Failed to compute quality for projection-service: QualityMetrics.__init__() missing 1 required positional argument: 'deployment_days'
+2025-10-09 22:10:29,319 - ERROR - Failed to compute quality for scenario-service: QualityMetrics.__init__() missing 1 required positional argument: 'deployment_days'
+2025-10-09 22:10:29,319 - ERROR - Failed to compute quality for search-service: QualityMetrics.__init__() missing 1 required positional argument: 'deployment_days'
+2025-10-09 22:10:29,320 - ERROR - Failed to compute quality for streaming: QualityMetrics.__init__() missing 1 required positional argument: 'deployment_days'
+2025-10-09 22:10:29,324 - INFO - Parallel computation complete: 0 services processed
+2025-10-09 22:10:29,325 - ERROR - Quality computation failed: name 'services' is not defined
+2025-10-09 22:11:12,737 - INFO - Loading catalog from catalog/service-index.yaml
+2025-10-09 22:11:12,794 - INFO - Execution monitor initialized
+2025-10-09 22:11:12,795 - INFO - Computing quality scores for all services using parallel processing...
+2025-10-09 22:11:12,795 - WARNING - Drift report not found: catalog/latest_drift_report.json
+2025-10-09 22:11:12,795 - INFO - Processing 24 services in parallel...
+2025-10-09 22:11:12,827 - INFO - Parallel computation complete: 24 services processed
+2025-10-09 22:11:12,827 - INFO - Quality computation complete: 24 services scored, avg: 100.0
+2025-10-09 22:11:12,830 - INFO - Saved quality snapshot to catalog/quality-snapshot.json
+2025-10-09 22:11:12,831 - INFO - Updated latest quality snapshot: catalog/latest_quality_snapshot.json
+2025-10-09 22:11:12,831 - ERROR - Quality computation failed: 'metadata'
+2025-10-09 22:11:52,452 - INFO - Loading catalog from catalog/service-index.yaml
+2025-10-09 22:11:52,510 - INFO - Execution monitor initialized
+2025-10-09 22:11:52,510 - INFO - Computing quality scores for all services using parallel processing...
+2025-10-09 22:11:52,510 - INFO - Using cached quality scores
+2025-10-09 22:11:52,511 - INFO - Saved quality snapshot to catalog/quality-snapshot.json
+2025-10-09 22:11:52,512 - INFO - Updated latest quality snapshot: catalog/latest_quality_snapshot.json
+2025-10-09 22:11:52,512 - ERROR - Quality computation failed: 'metadata'
+2025-10-09 22:12:07,137 - INFO - Loading catalog from catalog/service-index.yaml
+2025-10-09 22:12:07,194 - INFO - Execution monitor initialized
+2025-10-09 22:12:07,194 - INFO - Computing quality scores for all services using parallel processing...
+2025-10-09 22:12:07,194 - WARNING - Drift report not found: catalog/latest_drift_report.json
+2025-10-09 22:12:07,194 - INFO - Processing 24 services in parallel...
+2025-10-09 22:12:07,228 - INFO - Parallel computation complete: 24 services processed
+2025-10-09 22:12:07,228 - INFO - Quality computation complete: 24 services scored, avg: 100.0
+2025-10-09 22:12:07,233 - INFO - Saved quality snapshot to catalog/quality-snapshot.json
+2025-10-09 22:12:07,236 - INFO - Updated latest quality snapshot: catalog/latest_quality_snapshot.json
+2025-10-09 22:12:07,237 - INFO - Quality computation completed successfully
+2025-10-09 22:30:48,906 - INFO - Loading catalog from catalog/service-index.yaml
+2025-10-09 22:30:48,966 - INFO - Execution monitor initialized
+2025-10-09 22:30:48,966 - INFO - Computing quality scores for all services using parallel processing...
+2025-10-09 22:30:48,966 - WARNING - Drift report not found: catalog/latest_drift_report.json
+2025-10-09 22:30:48,966 - INFO - Processing 24 services in parallel...
+2025-10-09 22:30:48,999 - INFO - Parallel computation complete: 24 services processed
+2025-10-09 22:30:48,999 - INFO - Quality computation complete: 24 services scored, avg: 0.0
+2025-10-09 22:30:49,004 - INFO - Saved quality snapshot to catalog/quality-snapshot.json
+2025-10-09 22:30:49,007 - INFO - Updated latest quality snapshot: catalog/latest_quality_snapshot.json
+2025-10-09 22:30:49,008 - INFO - Quality computation completed successfully
+2025-10-09 22:31:21,665 - INFO - Loading catalog from catalog/service-index.yaml
+2025-10-09 22:31:21,722 - INFO - Execution monitor initialized
+2025-10-09 22:31:21,723 - INFO - Computing quality scores for all services using parallel processing...
+2025-10-09 22:31:21,723 - WARNING - Drift report not found: catalog/latest_drift_report.json
+2025-10-09 22:31:21,723 - INFO - Processing 24 services in parallel...
+2025-10-09 22:31:21,756 - INFO - Parallel computation complete: 24 services processed
+2025-10-09 22:31:21,756 - INFO - Quality computation complete: 24 services scored, avg: 91.6
+2025-10-09 22:31:21,759 - INFO - Saved quality snapshot to catalog/quality-snapshot.json
+2025-10-09 22:31:21,761 - INFO - Updated latest quality snapshot: catalog/latest_quality_snapshot.json
+2025-10-09 22:31:21,762 - INFO - Quality computation completed successfully

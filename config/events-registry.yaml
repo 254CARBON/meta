@@ -1,0 +1,14 @@
+events:
+- analytics.backtest.completed.v1
+- analytics.backtest.progress.v1
+- analytics.backtest.request.v1
+- analytics.result.exported.v1
+- curve.compute.request.v1
+- ingestion.miso.raw.v1
+- normalized.market.ticks.v1
+- pricing.curve.updates.v1
+- processing.job.status.v1
+- projection.invalidate.analytics.v1
+- scenario.run.completed.v1
+- scenario.run.progress.v1
+- scenario.run.request.v1

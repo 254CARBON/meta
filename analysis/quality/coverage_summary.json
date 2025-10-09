@@ -1,0 +1,29 @@
+{
+  "generated_at": "2025-10-09T22:30:00Z",
+  "services": [
+    {"name": "gateway", "coverage": 0.88, "lint_pass": true, "open_critical_vulns": 0, "signed_images": true, "policy_pass": true},
+    {"name": "auth", "coverage": 0.93, "lint_pass": true, "open_critical_vulns": 0, "signed_images": true, "policy_pass": true},
+    {"name": "entitlements", "coverage": 0.90, "lint_pass": true, "open_critical_vulns": 0, "signed_images": true, "policy_pass": true},
+    {"name": "metrics", "coverage": 0.68, "lint_pass": false, "open_critical_vulns": 0, "signed_images": false, "policy_pass": false},
+    {"name": "streaming", "coverage": 0.74, "lint_pass": true, "open_critical_vulns": 0, "signed_images": true, "policy_pass": true},
+    {"name": "aggregation", "coverage": 0.61, "lint_pass": true, "open_critical_vulns": 0, "signed_images": false, "policy_pass": false},
+    {"name": "data-quality", "coverage": 0.57, "lint_pass": false, "open_critical_vulns": 1, "signed_images": false, "policy_pass": false},
+    {"name": "enrichment", "coverage": 0.63, "lint_pass": true, "open_critical_vulns": 0, "signed_images": false, "policy_pass": false},
+    {"name": "normalization", "coverage": 0.66, "lint_pass": true, "open_critical_vulns": 0, "signed_images": false, "policy_pass": false},
+    {"name": "projection", "coverage": 0.60, "lint_pass": true, "open_critical_vulns": 0, "signed_images": false, "policy_pass": false},
+    {"name": "connector-registry", "coverage": 0.70, "lint_pass": true, "open_critical_vulns": 0, "signed_images": false, "policy_pass": false},
+    {"name": "aggregation-service", "coverage": 0.69, "lint_pass": true, "open_critical_vulns": 0, "signed_images": false, "policy_pass": false},
+    {"name": "enrichment-service", "coverage": 0.72, "lint_pass": true, "open_critical_vulns": 0, "signed_images": false, "policy_pass": false},
+    {"name": "normalization-service", "coverage": 0.71, "lint_pass": true, "open_critical_vulns": 0, "signed_images": false, "policy_pass": false},
+    {"name": "projection-service", "coverage": 0.68, "lint_pass": true, "open_critical_vulns": 0, "signed_images": false, "policy_pass": false},
+    {"name": "backtesting-service", "coverage": 0.64, "lint_pass": true, "open_critical_vulns": 0, "signed_images": false, "policy_pass": false},
+    {"name": "curve-service", "coverage": 0.67, "lint_pass": true, "open_critical_vulns": 0, "signed_images": false, "policy_pass": false},
+    {"name": "orchestrator-service", "coverage": 0.58, "lint_pass": false, "open_critical_vulns": 1, "signed_images": false, "policy_pass": false},
+    {"name": "scenario-service", "coverage": 0.70, "lint_pass": true, "open_critical_vulns": 0, "signed_images": false, "policy_pass": false},
+    {"name": "embedding-service", "coverage": 0.63, "lint_pass": true, "open_critical_vulns": 0, "signed_images": false, "policy_pass": false},
+    {"name": "indexer-worker", "coverage": 0.59, "lint_pass": false, "open_critical_vulns": 0, "signed_images": false, "policy_pass": false},
+    {"name": "mlflow-server", "coverage": 0.55, "lint_pass": true, "open_critical_vulns": 1, "signed_images": false, "policy_pass": false},
+    {"name": "model-serving", "coverage": 0.60, "lint_pass": true, "open_critical_vulns": 0, "signed_images": false, "policy_pass": false},
+    {"name": "search-service", "coverage": 0.74, "lint_pass": true, "open_critical_vulns": 0, "signed_images": false, "policy_pass": false}
+  ]
+}

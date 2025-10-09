@@ -70,6 +70,18 @@ agent-context: install
 collect-manifests: install
 	$(PYTHON) scripts/collect_manifests.py
 
+# Aggregate manifests from the local workspace
+collect-local: install
+	$(PYTHON) scripts/aggregate_local_manifests.py
+
+# Refresh quality overrides from CI artifacts
+quality-refresh: install
+	$(PYTHON) scripts/update_quality_overrides.py
+
+# Generate events registry from specs repository
+registry-events: install
+	$(PYTHON) scripts/generate_event_registry.py
+
 # Validate dependency graph
 validate-graph: install
 	$(PYTHON) scripts/validate_graph.py

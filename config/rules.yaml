@@ -38,8 +38,12 @@ dependency:
     infrastructure: 1
     shared: 2
     access: 3
-    data-processing: 4
-    ml: 5
+    ingestion: 4
+    data-processing: 5
+    analytics: 6
+    ml: 7
+    observability: 8
+    security: 9
 
 # Forbidden dependency patterns (reverse edges)
 forbidden_reverse_edges:
@@ -136,7 +140,7 @@ manifest:
   validation_patterns:
     name: "^[a-z][a-z0-9-]*[a-z0-9]$"
     version: "^\\d+\\.\\d+\\.\\d+$"
-    domain: "^(access|data-processing|ml|infrastructure|shared)$"
+    domain: "^(access|ingestion|data-processing|analytics|ml|infrastructure|shared|security|observability)$"
     maturity: "^(experimental|beta|stable|deprecated)$"
     runtime: "^(python|nodejs|go|java|docker)$"
 

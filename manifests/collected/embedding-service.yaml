@@ -1,0 +1,27 @@
+name: embedding-service
+repo: https://github.com/254carbon/254carbon-ml
+path: service-embedding
+domain: ml
+version: 0.1.0
+maturity: beta
+runtime: python
+api_contracts:
+- embedding-api@0.1.0
+events_in:
+- ml.embedding.reindex.request.v1
+events_out:
+- ml.embedding.generated.v1
+dependencies:
+  internal:
+  - vector-store-adapter
+  external:
+  - postgres
+  - redis
+quality:
+  coverage: 0.63
+  lint_pass: true
+  open_critical_vulns: 0
+security:
+  signed_images: false
+  policy_pass: false
+last_update: '2025-10-07T19:48:13.018538+00:00'

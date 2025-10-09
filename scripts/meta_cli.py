@@ -9,11 +9,13 @@ impact analysis, architecture suggestions, and more.
 Usage:
     python scripts/meta_cli.py catalog build
     python scripts/meta_cli.py quality compute
+    python scripts/meta_cli.py quality refresh-overrides
     python scripts/meta_cli.py drift detect
     python scripts/meta_cli.py upgrade plan --service gateway
     python scripts/meta_cli.py release plan --train Q4-upgrade
     python scripts/meta_cli.py impact analyze --pr 123
     python scripts/meta_cli.py architecture suggest
+    python scripts/meta_cli.py registry events
 
 Notes:
 - Thin wrapper around individual scripts with a consistent UX and basic logging.
@@ -80,6 +82,25 @@ class MetaCLI:
             cmd.append("--debug")
 
         self._run_command(cmd, "Quality computation")
+
+    def run_quality_refresh_overrides(self, args: argparse.Namespace) -> None:
+        """Refresh quality overrides from CI artifacts.
+
+        Args:
+            args: Parsed CLI args with optional coverage_file, output_file, dry_run, debug.
+        """
+        cmd = [sys.executable, str(self.scripts_dir / "update_quality_overrides.py")]
+
+        if args.coverage_file:
+            cmd.extend(["--coverage-file", args.coverage_file])
+        if args.output_file:
+            cmd.extend(["--output-file", args.output_file])
+        if args.dry_run:
+            cmd.append("--dry-run")
+        if args.debug:
+            cmd.append("--debug")
+
+        self._run_command(cmd, "Quality overrides refresh")
 
     def run_drift_detect(self, args: argparse.Namespace) -> None:
         """Detect drift issues.
@@ -327,6 +348,42 @@ class MetaCLI:
 
         self._run_command(cmd, "Manifest collection")
 
+    def run_collect_local_manifests(self, args: argparse.Namespace) -> None:
+        """Aggregate manifests from the local workspace.
+
+        Args:
+            args: Parsed CLI args with optional workspace_root, output_dir, and dry_run flags.
+        """
+        cmd = [sys.executable, str(self.scripts_dir / "aggregate_local_manifests.py")]
+
+        if args.workspace_root:
+            cmd.extend(["--workspace-root", args.workspace_root])
+        if args.output_dir:
+            cmd.extend(["--output-dir", args.output_dir])
+        if args.dry_run:
+            cmd.append("--dry-run")
+
+        self._run_command(cmd, "Local manifest aggregation")
+
+    def run_registry_events(self, args: argparse.Namespace) -> None:
+        """Generate events registry from specs repository.
+
+        Args:
+            args: Parsed CLI args with optional specs_root, output_file, dry_run, debug.
+        """
+        cmd = [sys.executable, str(self.scripts_dir / "generate_event_registry.py")]
+
+        if args.specs_root:
+            cmd.extend(["--specs-root", args.specs_root])
+        if args.output_file:
+            cmd.extend(["--output-file", args.output_file])
+        if args.dry_run:
+            cmd.append("--dry-run")
+        if args.debug:
+            cmd.append("--debug")
+
+        self._run_command(cmd, "Event registry generation")
+
     def _run_command(self, cmd: List[str], operation_name: str) -> None:
         """Run a subprocess command.
 
@@ -432,9 +489,11 @@ class MetaCLI:
         print("\n🎯 Quick Actions:")
         print("  meta catalog build      - Build service catalog")
         print("  meta quality compute    - Compute quality scores")
+        print("  meta quality refresh-overrides - Regenerate quality overrides from CI")
         print("  meta drift detect       - Detect drift issues")
         print("  meta upgrade plan       - Check for upgrades")
         print("  meta architecture suggest - Analyze architecture")
+        print("  meta registry events    - Sync event registry with specs")
 
     def show_help(self) -> None:
         """Show comprehensive help."""
@@ -447,14 +506,19 @@ class MetaCLI:
         print("  catalog build           Build service catalog from manifests")
         print("  catalog validate        Validate catalog integrity")
         print("  collect manifests       Collect manifests from repositories")
+        print("  collect local           Aggregate manifests from local workspace")
         print()
         print("📊 QUALITY OPERATIONS")
         print("  quality compute         Compute quality scores for all services")
+        print("  quality refresh-overrides Regenerate overrides from CI artifacts")
         print("  quality report          Generate quality dashboard report")
         print()
         print("🔍 DRIFT OPERATIONS")
         print("  drift detect            Detect version and spec drift")
         print("  drift report            Generate drift analysis report")
+        print()
+        print("📚 REGISTRY")
+        print("  registry events         Generate events registry from specs")
         print()
         print("⬆️ UPGRADE OPERATIONS")
         print("  upgrade plan            Plan specification upgrades")
@@ -546,6 +610,11 @@ Examples:
     compute_parser.add_argument("--catalog-file", help="Catalog file to use")
     compute_parser.add_argument("--thresholds-file", help="Thresholds configuration file")
 
+    refresh_parser = quality_subparsers.add_parser('refresh-overrides', help='Regenerate quality overrides from CI results')
+    refresh_parser.add_argument("--coverage-file", help="Coverage summary file")
+    refresh_parser.add_argument("--output-file", help="Output overrides file")
+    refresh_parser.add_argument("--dry-run", action="store_true", help="Print overrides without writing")
+
     # Drift commands
     drift_parser = subparsers.add_parser('drift', help='Drift detection operations')
     drift_subparsers = drift_parser.add_subparsers(dest='subcommand')
@@ -597,6 +666,15 @@ Examples:
     suggest_parser = architecture_subparsers.add_parser('suggest', help='Suggest architecture improvements')
     suggest_parser.add_argument("--catalog-file", help="Catalog file to use")
     suggest_parser.add_argument("--output-format", choices=["json", "markdown"], default="markdown")
+
+    # Registry commands
+    registry_parser = subparsers.add_parser('registry', help='Registry maintenance operations')
+    registry_subparsers = registry_parser.add_subparsers(dest='subcommand')
+
+    events_registry_parser = registry_subparsers.add_parser('events', help='Generate events registry from specs')
+    events_registry_parser.add_argument("--specs-root", help="Path to specs repository")
+    events_registry_parser.add_argument("--output-file", help="Output file for registry")
+    events_registry_parser.add_argument("--dry-run", action="store_true", help="Preview registry without writing")
 
     # AI agent commands
     agent_parser = subparsers.add_parser('agent-context', help='AI agent operations')
@@ -659,6 +737,11 @@ Examples:
     manifests_parser.add_argument("--repo-filter", help="Repository name filter")
     manifests_parser.add_argument("--org", default="254carbon")
 
+    local_collect_parser = collect_subparsers.add_parser('local', help='Aggregate local workspace manifests')
+    local_collect_parser.add_argument("--workspace-root", help="Workspace root to scan (defaults to repo root)")
+    local_collect_parser.add_argument("--output-dir", help="Output directory for normalized manifests")
+    local_collect_parser.add_argument("--dry-run", action="store_true", help="Collect without writing files")
+
     return parser
 
 
@@ -695,6 +778,8 @@ def main():
         elif args.command == 'quality':
             if args.subcommand == 'compute':
                 cli.run_quality_compute(args)
+            elif args.subcommand == 'refresh-overrides':
+                cli.run_quality_refresh_overrides(args)
             else:
                 parser.print_help()
         elif args.command == 'drift':
@@ -749,9 +834,16 @@ def main():
                 cli.run_graph_validate(args)
             else:
                 parser.print_help()
+        elif args.command == 'registry':
+            if args.subcommand == 'events':
+                cli.run_registry_events(args)
+            else:
+                parser.print_help()
         elif args.command == 'collect':
             if args.subcommand == 'manifests':
                 cli.run_collect_manifests(args)
+            elif args.subcommand == 'local':
+                cli.run_collect_local_manifests(args)
             else:
                 parser.print_help()
         elif args.command == 'status':

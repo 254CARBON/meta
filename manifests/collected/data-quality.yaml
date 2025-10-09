@@ -1,0 +1,24 @@
+name: data-quality
+repo: https://github.com/254carbon/254carbon-ingestion
+path: services/service-data-quality
+domain: ingestion
+version: 1.0.0
+maturity: beta
+runtime: python
+api_contracts: []
+events_in: []
+events_out: []
+dependencies:
+  internal:
+  - enrichment-service
+  - normalization-service
+  external:
+  - kafka
+quality:
+  coverage: 0.57
+  lint_pass: false
+  open_critical_vulns: 1
+security:
+  signed_images: false
+  policy_pass: false
+last_update: '2025-10-07T19:48:27.254636+00:00'

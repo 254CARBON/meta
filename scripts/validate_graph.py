@@ -347,13 +347,21 @@ class GraphValidator:
         logger.info("Validating directional cohesion...")
 
         violations = []
-        domain_layers = {
-            "infrastructure": 1,
-            "shared": 2,
-            "access": 3,
-            "data-processing": 4,
-            "ml": 5
-        }
+        domain_layers_cfg = self.rules.get("dependency", {}).get("domain_layers", {})
+        if isinstance(domain_layers_cfg, dict) and domain_layers_cfg:
+            domain_layers = {str(domain): int(level) for domain, level in domain_layers_cfg.items()}
+        else:
+            domain_layers = {
+                "infrastructure": 1,
+                "shared": 2,
+                "access": 3,
+                "ingestion": 4,
+                "data-processing": 5,
+                "analytics": 6,
+                "ml": 7,
+                "observability": 8,
+                "security": 9,
+            }
 
         services = self.catalog.get('services', [])
         service_domains = {s['name']: s.get('domain') for s in services}

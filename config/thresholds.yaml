@@ -12,7 +12,7 @@
 # Quality scoring configuration
 quality:
   # Base score (starting point before applying metrics)
-  base_score: 50
+  base_score: 0
 
   # Dimension weights (must sum to 1.0)
   weights:
@@ -50,6 +50,9 @@ quality:
     weight: 0.10          # Weight in overall score
     deployment_frequency_bonus: 5  # Bonus for recent deployments
     staleness_penalty: 10    # Penalty for stale versions
+    fresh_days: 7
+    warning_days: 30
+    critical_days: 90
 
   # Drift penalty
   drift:
@@ -83,21 +86,25 @@ maturity_multipliers:
     coverage_weight: 0.8   # Reduce coverage importance for experimental
     security_weight: 0.6   # Reduce security importance for experimental
     stability_weight: 0.5  # Reduce stability importance for experimental
+    overall: 0.85
 
   beta:
     coverage_weight: 0.9   # Slightly reduce for beta
     security_weight: 0.8
     stability_weight: 0.7
+    overall: 0.95
 
   stable:
     coverage_weight: 1.0   # Full weight for stable services
     security_weight: 1.0
     stability_weight: 1.0
+    overall: 1.0
 
   deprecated:
     coverage_weight: 0.6   # Reduce for deprecated services
     security_weight: 0.4
     stability_weight: 0.3
+    overall: 0.7
 
 # Quality grades and thresholds
 quality_grades:

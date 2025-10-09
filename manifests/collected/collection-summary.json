@@ -1,0 +1,174 @@
+{
+  "collected_at": "2025-10-09T22:30:13.211453+00:00",
+  "total_services": 24,
+  "services": [
+    {
+      "name": "aggregation",
+      "repo": "https://github.com/254carbon/254carbon-ingestion",
+      "domain": "ingestion",
+      "source_manifest": "ingestion/services/service-aggregation/service-manifest.yaml",
+      "last_update": "2025-10-07T19:48:27.250636+00:00"
+    },
+    {
+      "name": "aggregation-service",
+      "repo": "https://github.com/254carbon/254carbon-data-processing",
+      "domain": "data-processing",
+      "source_manifest": "data-processing/service-aggregation/service-manifest.yaml",
+      "last_update": "2025-10-07T19:48:58.438852+00:00"
+    },
+    {
+      "name": "auth",
+      "repo": "https://github.com/254carbon/254carbon-access",
+      "domain": "access",
+      "source_manifest": "access/service_auth/service-manifest.yaml",
+      "last_update": "2025-10-07T19:49:09.370927+00:00"
+    },
+    {
+      "name": "backtesting-service",
+      "repo": "https://github.com/254carbon/254carbon-analytics",
+      "domain": "analytics",
+      "source_manifest": "analytics/service-backtesting/service-manifest.yaml",
+      "last_update": "2025-10-07T19:48:03.766474+00:00"
+    },
+    {
+      "name": "connector-registry",
+      "repo": "https://github.com/254carbon/254carbon-ingestion",
+      "domain": "ingestion",
+      "source_manifest": "ingestion/services/service-connector-registry/service-manifest.yaml",
+      "last_update": "2025-10-07T19:48:27.250636+00:00"
+    },
+    {
+      "name": "curve-service",
+      "repo": "https://github.com/254carbon/254carbon-analytics",
+      "domain": "analytics",
+      "source_manifest": "analytics/service-curve/service-manifest.yaml",
+      "last_update": "2025-10-07T19:48:03.770474+00:00"
+    },
+    {
+      "name": "data-quality",
+      "repo": "https://github.com/254carbon/254carbon-ingestion",
+      "domain": "ingestion",
+      "source_manifest": "ingestion/services/service-data-quality/service-manifest.yaml",
+      "last_update": "2025-10-07T19:48:27.254636+00:00"
+    },
+    {
+      "name": "embedding-service",
+      "repo": "https://github.com/254carbon/254carbon-ml",
+      "domain": "ml",
+      "source_manifest": "ml/service-embedding/service-manifest.yaml",
+      "last_update": "2025-10-07T19:48:13.018538+00:00"
+    },
+    {
+      "name": "enrichment",
+      "repo": "https://github.com/254carbon/254carbon-ingestion",
+      "domain": "ingestion",
+      "source_manifest": "ingestion/services/service-enrichment/service-manifest.yaml",
+      "last_update": "2025-10-07T19:48:27.254636+00:00"
+    },
+    {
+      "name": "enrichment-service",
+      "repo": "https://github.com/254carbon/254carbon-data-processing",
+      "domain": "data-processing",
+      "source_manifest": "data-processing/service-enrichment/service-manifest.yaml",
+      "last_update": "2025-10-07T19:48:58.438852+00:00"
+    },
+    {
+      "name": "entitlements",
+      "repo": "https://github.com/254carbon/254carbon-access",
+      "domain": "access",
+      "source_manifest": "access/service_entitlements/service-manifest.yaml",
+      "last_update": "2025-10-07T19:49:09.374927+00:00"
+    },
+    {
+      "name": "gateway",
+      "repo": "https://github.com/254carbon/254carbon-access",
+      "domain": "access",
+      "source_manifest": "access/service_gateway/service-manifest.yaml",
+      "last_update": "2025-10-08T04:49:24.866038+00:00"
+    },
+    {
+      "name": "indexer-worker",
+      "repo": "https://github.com/254carbon/254carbon-ml",
+      "domain": "ml",
+      "source_manifest": "ml/service-indexer-worker/service-manifest.yaml",
+      "last_update": "2025-10-07T19:48:13.018538+00:00"
+    },
+    {
+      "name": "metrics",
+      "repo": "https://github.com/254carbon/254carbon-access",
+      "domain": "access",
+      "source_manifest": "access/service_metrics/service-manifest.yaml",
+      "last_update": "2025-10-07T19:49:09.382927+00:00"
+    },
+    {
+      "name": "mlflow-server",
+      "repo": "https://github.com/254carbon/254carbon-ml",
+      "domain": "ml",
+      "source_manifest": "ml/service-mlflow/service-manifest.yaml",
+      "last_update": "2025-10-07T19:48:13.018538+00:00"
+    },
+    {
+      "name": "model-serving",
+      "repo": "https://github.com/254carbon/254carbon-ml",
+      "domain": "ml",
+      "source_manifest": "ml/service-model-serving/service-manifest.yaml",
+      "last_update": "2025-10-07T19:48:13.022538+00:00"
+    },
+    {
+      "name": "normalization",
+      "repo": "https://github.com/254carbon/254carbon-ingestion",
+      "domain": "ingestion",
+      "source_manifest": "ingestion/services/service-normalization/service-manifest.yaml",
+      "last_update": "2025-10-07T19:48:27.254636+00:00"
+    },
+    {
+      "name": "normalization-service",
+      "repo": "https://github.com/254carbon/254carbon-data-processing",
+      "domain": "data-processing",
+      "source_manifest": "data-processing/service-normalization/service-manifest.yaml",
+      "last_update": "2025-10-07T19:48:58.442852+00:00"
+    },
+    {
+      "name": "orchestrator-service",
+      "repo": "https://github.com/254carbon/254carbon-analytics",
+      "domain": "analytics",
+      "source_manifest": "analytics/service-orchestrator/service-manifest.yaml",
+      "last_update": "2025-10-07T19:48:03.774474+00:00"
+    },
+    {
+      "name": "projection",
+      "repo": "https://github.com/254carbon/254carbon-ingestion",
+      "domain": "ingestion",
+      "source_manifest": "ingestion/services/service-projection/service-manifest.yaml",
+      "last_update": "2025-10-07T19:48:27.258636+00:00"
+    },
+    {
+      "name": "projection-service",
+      "repo": "https://github.com/254carbon/254carbon-data-processing",
+      "domain": "data-processing",
+      "source_manifest": "data-processing/service-projection/service-manifest.yaml",
+      "last_update": "2025-10-07T19:48:58.442852+00:00"
+    },
+    {
+      "name": "scenario-service",
+      "repo": "https://github.com/254carbon/254carbon-analytics",
+      "domain": "analytics",
+      "source_manifest": "analytics/service-scenario/service-manifest.yaml",
+      "last_update": "2025-10-07T19:48:03.774474+00:00"
+    },
+    {
+      "name": "search-service",
+      "repo": "https://github.com/254carbon/254carbon-ml",
+      "domain": "ml",
+      "source_manifest": "ml/service-search/service-manifest.yaml",
+      "last_update": "2025-10-07T19:48:13.022538+00:00"
+    },
+    {
+      "name": "streaming",
+      "repo": "https://github.com/254carbon/254carbon-access",
+      "domain": "access",
+      "source_manifest": "access/service_streaming/service-manifest.yaml",
+      "last_update": "2025-10-08T04:49:36.306117+00:00"
+    }
+  ]
+}

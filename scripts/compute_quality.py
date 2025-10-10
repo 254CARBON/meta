@@ -63,6 +63,10 @@ class QualityMetrics:
     maturity: str
     sbom_present: bool
     deployment_freshness_days: int
+    unit_pass: bool = True
+    integration_pass: bool = True
+    contract_pass: bool = True
+    performance_pass: bool = True
 
     def compute_score(self, thresholds: Dict[str, Any]) -> int:
         """Compute composite quality score (0-100) using weighted dimension scores."""
@@ -83,10 +87,18 @@ class QualityMetrics:
         security_score = max(0, 100 - security_penalty)
 
         # Policy: simple pass/fail until richer data is available
-        if self.policy_failures == 0:
+        policy_failures = self.policy_failures
+        if not self.integration_pass:
+            policy_failures += 1
+        if not self.contract_pass:
+            policy_failures += 1
+        if not self.performance_pass:
+            policy_failures += 1
+
+        if policy_failures == 0:
             policy_score = 100
         else:
-            policy_score = max(0, 100 - (self.policy_failures * 35))
+            policy_score = max(0, 100 - (policy_failures * 35))
 
         # Stability: fresher deployments score higher
         stability_cfg = quality_cfg.get('stability', {})
@@ -165,6 +177,7 @@ class QualityComputer:
         # Load catalog and thresholds
         self.catalog = self._load_catalog()
         self.thresholds = self._load_thresholds()
+        self.quality_overrides = self._load_quality_overrides()
 
         # Reports directory
         self.reports_dir = Path("catalog")
@@ -206,6 +219,34 @@ class QualityComputer:
         with open(thresholds_path) as f:
             return yaml.safe_load(f)
 
+    def _load_quality_overrides(self) -> Dict[str, Any]:
+        """Load Phase 7 quality overrides produced by service repositories."""
+        overrides: Dict[str, Any] = {}
+        root = Path(__file__).resolve().parents[2]
+
+        for repo_dir in root.iterdir():
+            if not repo_dir.is_dir():
+                continue
+
+            artifact_path = repo_dir / "artifacts" / "phase7-quality.json"
+            if not artifact_path.exists():
+                continue
+
+            try:
+                with artifact_path.open("r", encoding="utf-8") as handle:
+                    data = json.load(handle)
+            except Exception as exc:
+                logger.warning(f"Failed to load quality overrides from {artifact_path}: {exc}")
+                continue
+
+            for service_name, metrics in data.get("services", {}).items():
+                overrides[service_name] = metrics
+
+        if overrides:
+            logger.info(f"Loaded Phase 7 quality overrides for {len(overrides)} services")
+
+        return overrides
+
     def _get_default_thresholds(self) -> Dict[str, Any]:
         """Get default quality thresholds."""
         return {
@@ -233,6 +274,32 @@ class QualityComputer:
         """Extract quality metrics from service data."""
         # Get quality data from service
         quality_data = service.get('quality', {})
+        override = self.quality_overrides.get(service.get('name')) or {}
+
+        def _resolve_pass(primary_key: str, status_key: str, default: bool = True) -> bool:
+            value = override.get(primary_key)
+            if isinstance(value, bool):
+                return value
+            if isinstance(value, str):
+                return value.lower() == 'passed'
+
+            status_value = override.get(status_key)
+            if isinstance(status_value, bool):
+                return status_value
+            if isinstance(status_value, str):
+                return status_value.lower() == 'passed'
+            return default
+
+        coverage = override.get('coverage', quality_data.get('coverage', 0.0) or 0.0)
+        lint_pass = override.get('lint_pass', quality_data.get('lint_pass', False))
+        unit_pass = _resolve_pass('unit_pass', 'unit_status', True)
+        integration_pass = _resolve_pass('integration_pass', 'integration_status', True)
+        contract_pass = _resolve_pass('contract_pass', 'contract_status', True)
+        performance_pass = _resolve_pass('performance_pass', 'performance_status', True)
+
+        policy_failures = override.get('policy_failures', quality_data.get('policy_failures', 0) or 0)
+        policy_warnings = override.get('policy_warnings', quality_data.get('policy_warnings', 0) or 0)
+        lint_pass = bool(lint_pass)
 
         # Get drift data (simplified - in real implementation would read from drift report)
         drift_issues = 0  # Placeholder
@@ -251,18 +318,22 @@ class QualityComputer:
 
         return QualityMetrics(
             service_name=service['name'],
-            coverage=quality_data.get('coverage', 0.0),
-            lint_pass=quality_data.get('lint_pass', False),
+            coverage=coverage,
+            lint_pass=lint_pass,
             critical_vulns=quality_data.get('open_critical_vulns', 0),
             high_vulns=0,  # Would be populated from security scan data
-            policy_failures=0,  # Would be populated from policy check results
-            policy_warnings=0,  # Would be populated from policy check results
+            policy_failures=policy_failures,
+            policy_warnings=policy_warnings,
             build_success_rate=0.95,  # Would be populated from CI/CD data
             signed_images=service.get('security', {}).get('signed_images', False),
             sbom_present=False,  # Would be populated from SBOM data
             deployment_freshness_days=deployment_freshness_days,
             drift_issues=drift_issues,
-            maturity=service.get('maturity', 'unknown')
+            maturity=service.get('maturity', 'unknown'),
+            unit_pass=unit_pass,
+            integration_pass=integration_pass,
+            contract_pass=contract_pass,
+            performance_pass=performance_pass
         )
 
     def _load_drift_data(self) -> Dict[str, int]:
@@ -300,13 +371,15 @@ class QualityComputer:
         # Apply drift penalty
         metrics.drift_issues = drift_counts.get(service_name, 0)
 
+        override_data = self.quality_overrides.get(service_name)
+
         # Compute score
         score = metrics.compute_score(thresholds)
         grade = metrics.get_grade(score)
         status = metrics.get_status(score, thresholds)
 
         # Return service data
-        return {
+        result = {
             'service_name': service_name,
             'score': score,
             'grade': grade,
@@ -322,11 +395,18 @@ class QualityComputer:
                 'signed_images': metrics.signed_images,
                 'sbom_present': metrics.sbom_present,
                 'deployment_freshness_days': metrics.deployment_freshness_days,
-                'drift_issues': metrics.drift_issues
+                'drift_issues': metrics.drift_issues,
+                'unit_pass': metrics.unit_pass,
+                'integration_pass': metrics.integration_pass,
+                'contract_pass': metrics.contract_pass,
+                'performance_pass': metrics.performance_pass,
             },
             'maturity': metrics.maturity,
-                'computed_at': datetime.now(timezone.utc).isoformat()
-            }
+            'computed_at': datetime.now(timezone.utc).isoformat()
+        }
+
+        if override_data:
+            result['phase7'] = override_data
 
         return result
 

@@ -1,0 +1,31 @@
+2025-10-10 20:36:23,852 - INFO - Loading catalog from catalog/service-index.yaml
+2025-10-10 20:36:23,899 - INFO - Running comprehensive catalog validation...
+2025-10-10 20:36:23,899 - INFO - Validating catalog against schema...
+2025-10-10 20:36:23,907 - INFO - ✓ Schema validation passed
+2025-10-10 20:36:23,907 - INFO - Validating metadata...
+2025-10-10 20:36:23,907 - INFO - ✓ Metadata validation passed
+2025-10-10 20:36:23,907 - INFO - Validating services...
+2025-10-10 20:36:23,907 - ERROR - ✗ Service issue: Service aggregation domain must be one of: ['access', 'data-processing', 'ml', 'infrastructure', 'shared']
+2025-10-10 20:36:23,907 - ERROR - ✗ Service issue: Service backtesting-service domain must be one of: ['access', 'data-processing', 'ml', 'infrastructure', 'shared']
+2025-10-10 20:36:23,907 - ERROR - ✗ Service issue: Service connector-registry domain must be one of: ['access', 'data-processing', 'ml', 'infrastructure', 'shared']
+2025-10-10 20:36:23,907 - ERROR - ✗ Service issue: Service curve-service domain must be one of: ['access', 'data-processing', 'ml', 'infrastructure', 'shared']
+2025-10-10 20:36:23,907 - ERROR - ✗ Service issue: Service data-quality domain must be one of: ['access', 'data-processing', 'ml', 'infrastructure', 'shared']
+2025-10-10 20:36:23,908 - ERROR - ✗ Service issue: Service enrichment domain must be one of: ['access', 'data-processing', 'ml', 'infrastructure', 'shared']
+2025-10-10 20:36:23,908 - ERROR - ✗ Service issue: Service normalization domain must be one of: ['access', 'data-processing', 'ml', 'infrastructure', 'shared']
+2025-10-10 20:36:23,908 - ERROR - ✗ Service issue: Service orchestrator-service domain must be one of: ['access', 'data-processing', 'ml', 'infrastructure', 'shared']
+2025-10-10 20:36:23,908 - ERROR - ✗ Service issue: Service projection domain must be one of: ['access', 'data-processing', 'ml', 'infrastructure', 'shared']
+2025-10-10 20:36:23,908 - ERROR - ✗ Service issue: Service scenario-service domain must be one of: ['access', 'data-processing', 'ml', 'infrastructure', 'shared']
+2025-10-10 20:36:23,908 - INFO - Validating dependency relationships...
+2025-10-10 20:36:23,908 - ERROR - ✗ Dependency issue: Service aggregation depends on unknown service: connectors
+2025-10-10 20:36:23,908 - ERROR - ✗ Dependency issue: Service connector-registry depends on unknown service: connectors
+2025-10-10 20:36:23,908 - ERROR - ✗ Dependency issue: Service embedding-service depends on unknown service: vector-store-adapter
+2025-10-10 20:36:23,908 - ERROR - ✗ Dependency issue: Service enrichment depends on unknown service: connectors
+2025-10-10 20:36:23,908 - ERROR - ✗ Dependency issue: Service indexer-worker depends on unknown service: vector-store-adapter
+2025-10-10 20:36:23,908 - ERROR - ✗ Dependency issue: Service normalization depends on unknown service: connectors
+2025-10-10 20:36:23,908 - ERROR - ✗ Dependency issue: Service search-service depends on unknown service: vector-store-adapter
+2025-10-10 20:36:23,908 - INFO - Validating domain consistency...
+2025-10-10 20:36:23,908 - INFO - ✓ Domain validation passed
+2025-10-10 20:36:23,908 - INFO - Validating catalog completeness...
+2025-10-10 20:36:23,908 - INFO - ✓ Completeness validation passed
+2025-10-10 20:36:23,908 - INFO - Validation complete: 4/6 checks passed
+2025-10-10 20:36:23,908 - ERROR - ✗ 2 validations failed
